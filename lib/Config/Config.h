@@ -15,4 +15,6 @@
 #define LS_CALIBRATION_COUNT 10
 #define LS_CALIBRATION_BUFFER 30
 
+#define LS_ES_DEFAULT 100
+
 #endif // CONFIG_H

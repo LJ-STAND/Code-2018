@@ -12,6 +12,8 @@ class LightSensorArray {
 public:
     LightSensorArray();
 
+    void init();
+
     void read();
 
     int readSensor(int sensor);
@@ -33,9 +35,8 @@ public:
 
     int thresholds[LS_NUM];
 
-    LightSensorCluster cluster1 = LightSensorCluster(0.0, 0);
-    LightSensorCluster cluster2 = LightSensorCluster(0.0, 0);
-    LightSensorCluster cluster3 = LightSensorCluster(0.0, 0);
+    int starts[4];
+    int ends[4];
 
     int numClusters = 0;
 
