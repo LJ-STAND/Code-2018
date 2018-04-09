@@ -15,6 +15,8 @@
 
 #define LS_CALIBRATION_BUFFER 30
 
+#define LS_ES_DEFAULT 100
+
 // --- Motors --- //
 
 #define MOTOR_PID_KP 0.5

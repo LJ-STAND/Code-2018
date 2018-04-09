@@ -56,101 +56,10 @@ void LightSensorArray::read() {
 void LightSensorArray::calculateClusters(bool doneFillInSensors) {
     bool *lightData = !doneFillInSensors ? data : filledInData;
 
-    resetClusters();
-
-    bool cluster1Done = false;
-    bool cluster2Done = false;
-    bool cluster3Done = false;
-
-    LightSensorCluster cluster4 = LightSensorCluster(0.0, 0);
-
-    for (int i = 0; i < LS_NUM; i++) {
-        if (cluster1Done) {
-            if (cluster2Done) {
-                if (cluster3Done) {
-                    if (lightData[i]) {
-                        if (cluster4.getLength() == 0) {
-                            cluster4 = LightSensorCluster((double)i, 1);
-                        } else {
-                            cluster4.addSensorClockwise();
-                        }
-
-                        if (i == LS_NUM - 1 && cluster1.getLeftSensor() == 0) {
-                            cluster1.addCluster(cluster4);
-                            cluster4 = LightSensorCluster(0.0, 0);
-                        }
-                    } else {
-                        if (cluster4.getLength() != 0) {
-                            if (!doneFillInSensors) {
-                                fillInSensors();
-                            } else {
-                                resetClusters();
-                            }
-
-                            break;
-                        }
-                    }
-                } else {
-                    if (lightData[i]) {
-                        if (cluster3.getLength() == 0) {
-                            cluster3 = LightSensorCluster((double)i, 1);
-                        } else {
-                            cluster3.addSensorClockwise();
-                        }
-
-                        if (i == LS_NUM - 1 && cluster1.getLeftSensor() == 0) {
-                            cluster1.addCluster(cluster3);
-                            cluster3 = LightSensorCluster(0.0, 0);
-                        }
-                    } else {
-                        if (cluster3.getLength() != 0) {
-                            cluster3Done = true;
-                        }
-                    }
-                }
-            } else {
-                if (lightData[i]) {
-                    if (cluster2.getLength() == 0) {
-                        cluster2 = LightSensorCluster((double)i, 1);
-                    } else {
-                        cluster2.addSensorClockwise();
-                    }
-
-                    if (i == LS_NUM - 1 && cluster1.getLeftSensor() == 0) {
-                        cluster1.addCluster(cluster2);
-                        cluster2 = LightSensorCluster(0.0, 0);
-                    }
-                } else {
-                    if (cluster2.getLength() != 0) {
-                        cluster2Done = true;
-                    }
-                }
-            }
-        } else {
-            if (lightData[i]) {
-                if (cluster1.getLength() == 0) {
-                    cluster1 = LightSensorCluster((double)i, 1);
-                } else {
-                    cluster1.addSensorClockwise();
-                }
-            } else {
-                if (cluster1.getLength() != 0) {
-                    cluster1Done = true;
-                }
-            }
-        }
-    }
-
-    numClusters = (int)(cluster1.getLength() != 0) + (int)(cluster2.getLength() != 0) + (int)(cluster3.getLength() != 0);
-
-    // What about this?
-
-    bool previousValue = false;
-
-    int starts[4];
-    int ends[4];
+    resetStartEnds();
 
     int index = 0;
+    bool previousValue = false;
 
     for (int i = 0; i < LS_NUM; i++) {
         if (lightData[i] && !previousValue) {
@@ -158,27 +67,30 @@ void LightSensorArray::calculateClusters(bool doneFillInSensors) {
         }
 
         if (!lightData[i] && previousValue) {
-            ends[index] = i;
+            ends[index] = i - 1;
             index++;
 
             if (index > 3) {
-                // Do the filling in sensors thing
-                break;
+                // Too many clusters.
+                if (!doneFillInSensors) {
+                    fillInSensors();
+                } else {
+                    resetStartEnds();
+                    numClusters = 0;
+                }
+                return;
             }
         }
 
-        previousValue = lightData[i];
+        previousValue = value;
     }
 
-    if (ends[3] == 0 && starts[3] != 0) {
-        starts[0] = starts[3];
+    int tempNumClusters = (int)(starts[0] != LS_ES_DEFAULT) + (int)(starts[1] != LS_ES_DEFAULT) + (int)(starts[2] != LS_ES_DEFAULT) + (int)(starts[3] != LS_ES_DEFAULT);
+    if (tempNumClusters != index) {
+        // If the final cluster didn't end, index will be one less than tempNumClusters.
+        starts[0] = starts[index];
     }
-
-    int angle1 = (starts[0] + ends[0]) / 2.0 * LS_NUM_MULTIPLIER;
-    int angle2 = (starts[1] + ends[1]) / 2.0 * LS_NUM_MULTIPLIER;
-    int angle3 = (starts[2] + ends[2]) / 2.0 * LS_NUM_MULTIPLIER;
-
-    numClusters = (int)(ends[0] == 0) + (int)(ends[1] == 0) + (int)(ends[2] == 0);
+    numClusters = index;
 }
 
 void LightSensorArray::fillInSensors() {
@@ -198,13 +110,13 @@ void LightSensorArray::calculateLine() {
         angle = NO_LINE_ANGLE;
         size = NO_LINE_SIZE;
     } else {
-        double cluster1Angle = cluster1.getAngle();
-        double cluster2Angle = cluster2.getAngle();
-        double cluster3Angle = cluster3.getAngle();
+        double cluster1Angle = midAngleBetween(start[0] * LS_NUM_MULTIPLIER, end[0] * LS_NUM_MULTIPLIER);
+        double cluster2Angle = midAngleBetween(start[1] * LS_NUM_MULTIPLIER, end[1] * LS_NUM_MULTIPLIER);
+        double cluster3Angle = midAngleBetween(start[2] * LS_NUM_MULTIPLIER, end[2] * LS_NUM_MULTIPLIER);
 
         if (numClusters == 1) {
             angle = cluster1Angle;
-            size = 1 - cos(degreesToRadians(angleBetween(cluster1.getLeftAngle(), cluster1.getRightAngle()) / 2.0));
+            size = 1 - cos(degreesToRadians(angleBetween(starts[0] * LS_NUM_MULTIPLIER, ends[0] * LS_NUM_MULTIPLIER) / 2.0));
         } else if (numClusters == 2) {
             angle = angleBetween(cluster1Angle, cluster2Angle) <= 180 ? midAngleBetween(cluster1Angle, cluster2Angle) : midAngleBetween(cluster2Angle, cluster1Angle);
             size = 1 - cos(degreesToRadians(angleBetween(cluster1Angle, cluster2Angle) <= 180 ? angleBetween(cluster1Angle, cluster2Angle) / 2.0 : angleBetween(cluster2Angle, cluster1Angle) / 2.0));
@@ -229,10 +141,11 @@ void LightSensorArray::calculateLine() {
     }
 }
 
-void LightSensorArray::resetClusters() {
-    cluster1 = LightSensorCluster(0.0, 0);
-    cluster2 = LightSensorCluster(0.0, 0);
-    cluster3 = LightSensorCluster(0.0, 0);
+void LightSensorArray::resetStartEnds() {
+    for (int i = 0; i < 4; i++) {
+        starts[i] = LS_ES_DEFAULT;
+        ends[i] = LS_ES_DEFAULT;
+    }
 }
 
 double LightSensorArray::getLineAngle() {
