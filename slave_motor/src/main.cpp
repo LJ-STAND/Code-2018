@@ -3,38 +3,35 @@
 #include <Pins.h>
 #include <PID.h>
 
-Motor motorLeft(MOTOR_LEFT_PWM, MOTOR_LEFT_INA, MOTOR_LEFT_INB, MOTOR_LEFT_ENA, MOTOR_LEFT_ENB, ENCODER_L_A);
-Motor motorRight(MOTOR_RIGHT_PWM, MOTOR_RIGHT_INA, MOTOR_RIGHT_INB, MOTOR_RIGHT_ENA, MOTOR_RIGHT_ENB, ENCODER_R_A);
-Motor motorBackLeft(MOTOR_BACKLEFT_PWM, MOTOR_BACKLEFT_INA, MOTOR_BACKLEFT_INB, MOTOR_BACKLEFT_ENA, MOTOR_BACKLEFT_ENB, ENCODER_BL_A);
-Motor motorBackRight(MOTOR_BACKRIGHT_PWM, MOTOR_BACKRIGHT_INA, MOTOR_BACKRIGHT_INB, MOTOR_BACKRIGHT_ENA, MOTOR_BACKRIGHT_ENB, ENCODER_BR_A);
+MotorArray motors;
 
 void setup() {
     analogWriteResolution(16);
 
-    motorLeft.init();
-    motorRight.init();
-    motorBackLeft.init();
-    motorBackRight.init();
+    motors.motorLeft.init();
+    motors.motorRight.init();
+    motors.motorBackLeft.init();
+    motors.motorBackRight.init();
 
-    motorLeft.setRPM(1000);
-    motorRight.setRPM(1000);
-    motorBackLeft.setRPM(1000);
-    motorBackRight.setRPM(1000);
+    motors.motorLeft.setRPM(1000);
+    motors.motorRight.setRPM(1000);
+    motors.motorBackLeft.setRPM(1000);
+    motors.motorBackRight.setRPM(1000);
 }
 
 void loop() {
-    motorLeft.move();
-    motorRight.move();
-    motorBackLeft.move();
-    motorBackRight.move();
+    motors.motorLeft.move();
+    motors.motorRight.move();
+    motors.motorBackLeft.move();
+    motors.motorBackRight.move();
 
-    Serial.print(motorLeft.getRPM());
+    Serial.print(motors.motorLeft.getRPM());
     Serial.print("\t");
-    Serial.print(motorRight.getRPM());
+    Serial.print(motors.motorRight.getRPM());
     Serial.print("\t");
-    Serial.print(motorBackLeft.getRPM());
+    Serial.print(motors.motorBackLeft.getRPM());
     Serial.print("\t");
-    Serial.println(motorBackRight.getRPM());
+    Serial.println(motors.motorBackRight.getRPM());
 }
 
 // #include <t3spi.h>
