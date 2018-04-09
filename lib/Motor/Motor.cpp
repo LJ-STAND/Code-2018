@@ -26,7 +26,7 @@ void Motor::init() {
     lastTime = micros();
 }
 
-void Motor::move() {
+void Motor::update() {
     updateRPM();
     // pwm = constrain(pwm + rpmPID.update(rpm, rpmSetpoint), 0, MAX_PWM) * sign(rpmSetpoint);
     Serial.println(String(rpm) + ", " + String(rpmSetpoint) + ", " + rpmPID.update(rpm, rpmSetpoint));
@@ -48,7 +48,7 @@ void Motor::move() {
     }
 }
 
-void Motor::setRPM(int value) {
+void Motor::move(int value) {
     rpmSetpoint = value;
 }
 
@@ -60,7 +60,7 @@ void Motor::frequency(int frequency) {
     analogWriteFrequency(pwmPin, frequency);
 }
 
-void Motor::updateRPM() {
+void Motor::updateEncoderRPM() {
     uint8_t value = digitalRead(encoderPin);
     if (digitalRead(encoderPin) != previousValue) {
         unsigned long currentTime = micros();

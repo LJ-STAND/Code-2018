@@ -27,4 +27,6 @@
 
 #define MOTOR_MULTIPLIER 707106781186547572737310929369 // equal to sin/cos(45)
 
+#define MAX_SPEED 1000
+
 #endif // CONFIG_H

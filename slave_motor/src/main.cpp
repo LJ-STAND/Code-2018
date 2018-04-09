@@ -8,22 +8,16 @@ MotorArray motors;
 void setup() {
     analogWriteResolution(16);
 
-    motors.motorLeft.init();
-    motors.motorRight.init();
-    motors.motorBackLeft.init();
-    motors.motorBackRight.init();
+    motors.init();
 
-    motors.motorLeft.setRPM(1000);
-    motors.motorRight.setRPM(1000);
-    motors.motorBackLeft.setRPM(1000);
-    motors.motorBackRight.setRPM(1000);
+    motors.motorLeft.move(1000);
+    motors.motorRight.move(1000);
+    motors.motorBackLeft.move(1000);
+    motors.motorBackRight.move(1000);
 }
 
 void loop() {
-    motors.motorLeft.move();
-    motors.motorRight.move();
-    motors.motorBackLeft.move();
-    motors.motorBackRight.move();
+    motors.update();
 
     Serial.print(motors.motorLeft.getRPM());
     Serial.print("\t");
