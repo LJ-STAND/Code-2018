@@ -7,8 +7,6 @@ Motor::Motor(int pwm, int inA, int inB, int enA, int enB, int encoder) {
     enAPin = enA;
     enBPin = enB;
     encoderPin = encoder;
-
-    rpmPID = PID(MOTOR_PID_KP, MOTOR_PID_KI, MOTOR_PID_KD);
 }
 
 void Motor::init() {
@@ -17,6 +15,7 @@ void Motor::init() {
     pinMode(inBPin, OUTPUT);
     pinMode(enAPin, OUTPUT);
     pinMode(enBPin, OUTPUT);
+    pinMode(encoderPin, INPUT);
 
     digitalWrite(enAPin, HIGH);
     digitalWrite(enBPin, HIGH);
@@ -24,12 +23,13 @@ void Motor::init() {
     frequency(915.527);
 
     lastTime = micros();
+
+    previousValue = digitalRead(encoderPin);
 }
 
 void Motor::update() {
     updateRPM();
-    // pwm = constrain(pwm + rpmPID.update(rpm, rpmSetpoint), 0, MAX_PWM) * sign(rpmSetpoint);
-    Serial.println(String(rpm) + ", " + String(rpmSetpoint) + ", " + rpmPID.update(rpm, rpmSetpoint));
+    pwm = constrain(pwm + rpmPID.update(rpm, rpmSetpoint), 0, MAX_PWM) * sign(rpmSetpoint);
 
     if (pwm > 0) {
         analogWrite(pwmPin, constrain(pwm, 0, MAX_PWM));
@@ -62,7 +62,8 @@ void Motor::frequency(int frequency) {
 
 void Motor::updateEncoderRPM() {
     uint8_t value = digitalRead(encoderPin);
-    if (digitalRead(encoderPin) != previousValue) {
+
+    if (value != previousValue) {
         unsigned long currentTime = micros();
         rpm = 1.0 / (12.0 * ((double)(micros() - lastTime) / 1000000.0 / 60.0));
         lastTime = currentTime;
