@@ -13,11 +13,6 @@ public:
     LightSensorArray() {}
 
     void init();
-<<<<<<< HEAD
-=======
-
-    void read();
->>>>>>> ca390a87733042635afb9fd37c0aca27ceadfa77
 
     void read();
     int readSensor(int sensor);

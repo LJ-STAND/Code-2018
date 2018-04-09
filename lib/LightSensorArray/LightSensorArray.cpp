@@ -78,11 +78,12 @@ void LightSensorArray::calculateClusters(bool doneFillInSensors) {
                     resetStartEnds();
                     numClusters = 0;
                 }
+
                 return;
             }
         }
 
-        previousValue = value;
+        previousValue = lightData[i];
     }
 
     int tempNumClusters = (int)(starts[0] != LS_ES_DEFAULT) + (int)(starts[1] != LS_ES_DEFAULT) + (int)(starts[2] != LS_ES_DEFAULT) + (int)(starts[3] != LS_ES_DEFAULT);
@@ -90,6 +91,7 @@ void LightSensorArray::calculateClusters(bool doneFillInSensors) {
         // If the final cluster didn't end, index will be one less than tempNumClusters.
         starts[0] = starts[index];
     }
+
     numClusters = index;
 }
 
