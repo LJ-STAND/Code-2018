@@ -25,4 +25,6 @@
 
 #define MAX_PWM 65535
 
+#define MOTOR_MULTIPLIER 707106781186547572737310929369 // equal to sin/cos(45)
+
 #endif // CONFIG_H
