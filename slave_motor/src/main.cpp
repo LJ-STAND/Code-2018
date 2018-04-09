@@ -3,38 +3,38 @@
 #include <Pins.h>
 #include <PID.h>
 
-Motor motorLeft(MOTOR_LEFT_PWM, MOTOR_LEFT_INA, MOTOR_LEFT_INB, MOTOR_LEFT_ENA, MOTOR_LEFT_ENB);
-Motor motorRight(MOTOR_RIGHT_PWM, MOTOR_RIGHT_INA, MOTOR_RIGHT_INB, MOTOR_RIGHT_ENA, MOTOR_RIGHT_ENB);
-Motor motorBackLeft(MOTOR_BACKLEFT_PWM, MOTOR_BACKLEFT_INA, MOTOR_BACKLEFT_INB, MOTOR_BACKLEFT_ENA, MOTOR_BACKLEFT_ENB);
-Motor motorBackRight(MOTOR_BACKRIGHT_PWM, MOTOR_BACKRIGHT_INA, MOTOR_BACKRIGHT_INB, MOTOR_BACKRIGHT_ENA, MOTOR_BACKRIGHT_ENB);
-
-void encoderLeftInterrupt() {
-    motorLeft.encoderInterrupt();
-}
-
-void encoderRightInterrupt() {
-    motorRight.encoderInterrupt();
-}
-
-void encoderBackLeftInterrupt() {
-    motorBackLeft.encoderInterrupt();
-}
-
-void encoderBackRightInterrupt() {
-    motorBackRight.encoderInterrupt();
-}
+Motor motorLeft(MOTOR_LEFT_PWM, MOTOR_LEFT_INA, MOTOR_LEFT_INB, MOTOR_LEFT_ENA, MOTOR_LEFT_ENB, ENCODER_L_A);
+Motor motorRight(MOTOR_RIGHT_PWM, MOTOR_RIGHT_INA, MOTOR_RIGHT_INB, MOTOR_RIGHT_ENA, MOTOR_RIGHT_ENB, ENCODER_R_A);
+Motor motorBackLeft(MOTOR_BACKLEFT_PWM, MOTOR_BACKLEFT_INA, MOTOR_BACKLEFT_INB, MOTOR_BACKLEFT_ENA, MOTOR_BACKLEFT_ENB, ENCODER_BL_A);
+Motor motorBackRight(MOTOR_BACKRIGHT_PWM, MOTOR_BACKRIGHT_INA, MOTOR_BACKRIGHT_INB, MOTOR_BACKRIGHT_ENA, MOTOR_BACKRIGHT_ENB, ENCODER_BR_A);
 
 void setup() {
     analogWriteResolution(16);
 
-    attachInterrupt(ENCODER_L_A, encoderLeftInterrupt, CHANGE);
-    attachInterrupt(ENCODER_R_A, encoderRightInterrupt, CHANGE);
-    attachInterrupt(ENCODER_BL_A, encoderBackLeftInterrupt, CHANGE);
-    attachInterrupt(ENCODER_BR_A, encoderBackRightInterrupt, CHANGE);
+    motorLeft.init();
+    motorRight.init();
+    motorBackLeft.init();
+    motorBackRight.init();
+
+    motorLeft.setRPM(1000);
+    motorRight.setRPM(1000);
+    motorBackLeft.setRPM(1000);
+    motorBackRight.setRPM(1000);
 }
 
 void loop() {
+    motorLeft.move();
+    motorRight.move();
+    motorBackLeft.move();
+    motorBackRight.move();
 
+    Serial.print(motorLeft.getRPM());
+    Serial.print("\t");
+    Serial.print(motorRight.getRPM());
+    Serial.print("\t");
+    Serial.print(motorBackLeft.getRPM());
+    Serial.print("\t");
+    Serial.println(motorBackRight.getRPM());
 }
 
 // #include <t3spi.h>

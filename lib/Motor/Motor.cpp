@@ -1,5 +1,16 @@
 #include "Motor.h"
 
+Motor::Motor(int pwm, int inA, int inB, int enA, int enB, int encoder) {
+    pwmPin = pwm;
+    inAPin = inA;
+    inBPin = inB;
+    enAPin = enA;
+    enBPin = enB;
+    encoderPin = encoder;
+
+    rpmPID = PID(MOTOR_PID_KP, MOTOR_PID_KI, MOTOR_PID_KD);
+}
+
 void Motor::init() {
     pinMode(pwmPin, OUTPUT);
     pinMode(inAPin, OUTPUT);
@@ -15,12 +26,10 @@ void Motor::init() {
     lastTime = micros();
 }
 
-void Motor::encoderInterrupt() {
-    counts++;
-}
-
 void Motor::move() {
-    pwm = constrain(pwm + rpmPID.update(getRPM(), rpmSetpoint), 0, MAX_PWM) * sign(rpmSetpoint);
+    updateRPM();
+    // pwm = constrain(pwm + rpmPID.update(rpm, rpmSetpoint), 0, MAX_PWM) * sign(rpmSetpoint);
+    Serial.println(String(rpm) + ", " + String(rpmSetpoint) + ", " + rpmPID.update(rpm, rpmSetpoint));
 
     if (pwm > 0) {
         analogWrite(pwmPin, constrain(pwm, 0, MAX_PWM));
@@ -39,8 +48,8 @@ void Motor::move() {
     }
 }
 
-void Motor::setRPM(int rpm) {
-    rpmSetpoint = rpm;
+void Motor::setRPM(int value) {
+    rpmSetpoint = value;
 }
 
 void Motor::brake() {
@@ -51,9 +60,16 @@ void Motor::frequency(int frequency) {
     analogWriteFrequency(pwmPin, frequency);
 }
 
-int Motor::getRPM() {
-    unsigned long currentTime = micros();
-    return ((double)counts / 12.0) / ((double)(micros() - lastTime) / 1000000.0 / 60.0);
-    lastTime = currentTime;
-    counts = 0;
+void Motor::updateRPM() {
+    uint8_t value = digitalRead(encoderPin);
+    if (digitalRead(encoderPin) != previousValue) {
+        unsigned long currentTime = micros();
+        rpm = 1.0 / (12.0 * ((double)(micros() - lastTime) / 1000000.0 / 60.0));
+        lastTime = currentTime;
+        previousValue = value;
+    }
+}
+
+double Motor::getRPM() {
+    return rpm;
 }

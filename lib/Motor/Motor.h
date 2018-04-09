@@ -10,18 +10,15 @@
 class Motor {
 public:
     Motor() {}
-    Motor(int pwm, int inA, int inB, int enA, int enB) : pwmPin(pwm), inAPin(inA), inBPin(inB), enAPin(enA), enBPin(enB) {
-        rpmPID = PID(MOTOR_PID_KP, MOTOR_PID_KI, MOTOR_PID_KD);
-    }
+    Motor(int pwm, int inA, int inB, int enA, int enB, int encoder);
 
     void init();
     void move();
     void frequency(int frequency);
     void brake();
-    int getRPM();
-    void setRPM(int rpm);
-
-    void encoderInterrupt();
+    double getRPM();
+    void updateRPM();
+    void setRPM(int value);
 
 private:
     int pwmPin;
@@ -29,13 +26,15 @@ private:
     int inBPin;
     int enAPin;
     int enBPin;
+    int encoderPin;
 
-    volatile int counts;
+    uint8_t previousValue;
     unsigned long lastTime;
 
     PID rpmPID;
 
     int pwm;
+    double rpm = 0.0;
     int rpmSetpoint;
 };
 
