@@ -1,30 +1,34 @@
 #include "Motor.h"
 
-Motor::Motor(int pwm, int inA, int inB, int enA, int enB) {
-    pwmPin = pwm;
-    inAPin = inA;
-    inBPin = inB;
-    enAPin = enA;
-    enBPin = enB;
-
-    pinMode(pwm, OUTPUT);
-    pinMode(inA, OUTPUT);
-    pinMode(inB, OUTPUT);
-    pinMode(enA, OUTPUT);
-    pinMode(enB, OUTPUT);
+void Motor::init() {
+    pinMode(pwmPin, OUTPUT);
+    pinMode(inAPin, OUTPUT);
+    pinMode(inBPin, OUTPUT);
+    pinMode(enAPin, OUTPUT);
+    pinMode(enBPin, OUTPUT);
 
     digitalWrite(enAPin, HIGH);
     digitalWrite(enBPin, HIGH);
+
+    frequency(915.527);
+
+    lastTime = micros();
 }
 
-void Motor::move(int speed) {
-    if (speed > 0) {
-        analogWrite(pwmPin, constrain(speed, 0, 255));
+void Motor::encoderInterrupt() {
+    counts++;
+}
+
+void Motor::move() {
+    pwm = constrain(pwm + rpmPID.update(getRPM(), rpmSetpoint), 0, MAX_PWM) * sign(rpmSetpoint);
+
+    if (pwm > 0) {
+        analogWrite(pwmPin, constrain(pwm, 0, MAX_PWM));
 
         digitalWrite(inAPin, HIGH);
         digitalWrite(inBPin, LOW);
-    } else if (speed < 0) {
-        analogWrite(pwmPin, constrain(-speed, 0, 255));
+    } else if (pwm < 0) {
+        analogWrite(pwmPin, constrain(-pwm, 0, MAX_PWM));
 
         digitalWrite(inAPin, LOW);
         digitalWrite(inBPin, HIGH);
@@ -35,10 +39,21 @@ void Motor::move(int speed) {
     }
 }
 
+void Motor::setRPM(int rpm) {
+    rpmSetpoint = rpm;
+}
+
 void Motor::brake() {
-    move(0);
+    setRPM(0);
 }
 
 void Motor::frequency(int frequency) {
     analogWriteFrequency(pwmPin, frequency);
+}
+
+int Motor::getRPM() {
+    unsigned long currentTime = micros();
+    return ((double)counts / 12.0) / ((double)(micros() - lastTime) / 1000000.0 / 60.0);
+    lastTime = currentTime;
+    counts = 0;
 }

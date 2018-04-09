@@ -10,10 +10,11 @@
 
 class LightSensorArray {
 public:
-    LightSensorArray();
+    LightSensorArray() {}
+
+    void init();
 
     void read();
-
     int readSensor(int sensor);
     void changeMUXChannel(uint8_t channel);
 

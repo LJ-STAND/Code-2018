@@ -1,122 +1,74 @@
+#include <t3spi.h>
 #include <Arduino.h>
-#include <SPI.h>
 
-#define CSPIN 43
-#define CSPIN1 43
-#define CSPIN2 55
-#define CSPIN3 54
-#define MISO 45
-#define MOSI 44
-#define SCLK 46
-// //
-// uint8_t transmitSPI(uint8_t data)
-// {
-//    // select device (active low)
-//    digitalWrite(CSPIN, LOW);
-//
-//    // send bits 7..0
-//    for (int i = 0; i < 8; i++) {
-//        // consider leftmost bit
-//        // set line high if bit is 1, low if bit is 0
-//        digitalWrite(MOSI, (data >> i) & 0x1 == 0x1 ? HIGH : LOW);
-//
-//        delay(1);
-//        // pulse clock to indicate that bit value should be read
-//        digitalWrite(SCLK, HIGH);
-//        delay(1);
-//        digitalWrite(SCLK, LOW);
-//    }
-//
-//    delay(10);
-//
-//    uint8_t result;
-//
-//    for (int i = 0; i < 8; i++) {
-//         result |= digitalRead(MISO) << (7 - i);
-//         delay(1);
-//         digitalWrite(SCLK, HIGH);
-//         delay(1);
-//         digitalWrite(SCLK, LOW);
-//    }
-//
-//    // deselect device
-//    digitalWrite(CSPIN, HIGH);
-//
-//    return result;
-// }
-//
-// uint8_t read() {
-//     uint8_t result = 0;
-//
-//     for (int i = 0; i < 8; i++) {
-//          result = result | (digitalRead(MISO) << (7 - i));
-//          delay(1);
-//          digitalWrite(SCLK, HIGH);
-//          delay(1);
-//          digitalWrite(SCLK, LOW);
-//     }
-//
-//     // deselect device
-//     digitalWrite(CSPIN, HIGH);
-//
-//     return result;
-// }
+//The number of integers per data packet
+#define dataLength 256
 
-void setup() {
-    Serial.begin(9600);
+//Initialize the arrays for outgoing data
+//volatile uint8_t  data[dataLength] = {};
+volatile uint16_t data[dataLength] = {69};
 
 
+//Initialize the arrays for incoming data
+//volatile uint8_t returnData[dataLength] = {};
+volatile uint16_t returnData[dataLength] = {};
 
-    pinMode(CSPIN1, OUTPUT);
-    pinMode(CSPIN2, OUTPUT);
-    pinMode(CSPIN3, OUTPUT);
 
-    digitalWrite(CSPIN1, HIGH);
-    digitalWrite(CSPIN2, HIGH);
-    digitalWrite(CSPIN3, HIGH);
-    // pinMode(SCLK, OUTPUT);
-    // pinMode(MOSI, OUTPUT);
-    // pinMode(MISO, INPUT);
-    // // digitalWrite(CSPIN, HIGH);
+T3SPI spi;
 
-    // digitalWrite(CSPIN1, LOW);
-    // SPI2.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
-    // SPI2.transfer((0x13 << 8) | 0x2);
-    // SPI2.endTransaction();
-    // digitalWrite(CSPIN1, HIGH);
+void setup(){
+	spi = T3SPI();
 
-    // digitalWrite(CSPIN2, LOW);
-    // SPI2.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
-    // SPI2.transfer((0x13 << 8) | 0x2);
-    // SPI2.endTransaction();
-    // digitalWrite(CSPIN2, HIGH);
-    //
-    // digitalWrite(CSPIN3, LOW);
-    // SPI2.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
-    // SPI2.transfer((0x13 << 8) | 0x2);
-    // SPI2.endTransaction();
-    // digitalWrite(CSPIN3, HIGH);
+	Serial.begin(9600);
 
-    SPI2.begin();
+	//Begin SPI in MASTER (SCK pin, MOSI pin, MISO pin, CS pin, Active State)
+	spi.begin_MASTER(ALT_SCK, MOSI, MISO, CS0, CS_ActiveLOW);
+
+	//Set the CTAR (CTARn, Frame Size, SPI Mode, Shift Mode, Clock Divider)
+	//spi.setCTAR(CTAR0,8,SPI_MODE0,LSB_FIRST,SPI_CLOCK_DIV2);
+	spi.setCTAR(CTAR_0,16,SPI_MODE0,LSB_FIRST,SPI_CLOCK_DIV32);
+
+	//Populate data array
+	for (int i=0; i<dataLength; i++){
+		data[i]=i;
+	}
+
+	//Wait for Slave
+	delay(5000);
 }
 
-void loop() {
+void loop(){
 
-    digitalWrite(CSPIN1, LOW);
-    // digitalWrite(CSPIN2, HIGH);
-    // digitalWrite(CSPIN3, HIGH);
-    SPI2.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
-    //
-    Serial.println(SPI2.transfer(0x80 | 0xC));
-    //
-    //
-    SPI2.endTransaction();
-    // delay(10);
-    digitalWrite(CSPIN1, HIGH);
-    // digitalWrite(CSPIN2, LOW);
-    // digitalWrite(CSPIN3, LOW);
-    //
-    // Serial.println(transmitSPI(0x8C));
-    delay(50);
+	//Capture the time before sending data
+	spi.timeStamp1 = micros();
 
-}
+	//Send n number of data packets
+	for (int i=0; i<1; i++) {
+
+		//Send data (data array, data array length, CTARn, CS pin)
+		//spi.txrx8(data, returnData, dataLength,CTAR0,CS1);}
+		spi.txrx16(data, returnData, dataLength,CTAR_0,CS0);}
+
+		//Capture the time when transfer is done
+		spi.timeStamp2 = micros();
+
+		//Print data sent & data received
+		for (int i=0; i<dataLength; i++){
+			Serial.print("data[");
+			Serial.print(i);
+			Serial.print("]: ");
+			Serial.print(data[i]);
+			Serial.print("   returnData[");
+			Serial.print(i);
+			Serial.print("]: ");
+			Serial.println(returnData[i]);
+			Serial.flush();}
+
+			//Print statistics for the previous transfer
+			spi.printStatistics(dataLength);
+
+			//Reset the packet count
+			spi.packetCT=0;
+
+			delay(2000);
+		}

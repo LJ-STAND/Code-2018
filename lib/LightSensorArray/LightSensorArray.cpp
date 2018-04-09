@@ -1,6 +1,6 @@
 #include "LightSensorArray.h"
 
-LightSensorArray::LightSensorArray() {
+void LightSensorArray::init() {
     pinMode(MUX_EN, OUTPUT);
     pinMode(MUX_WR, OUTPUT);
     pinMode(MUX_CS, OUTPUT);
@@ -75,7 +75,7 @@ void LightSensorArray::calculateClusters(bool doneFillInSensors) {
                             cluster4.addSensorClockwise();
                         }
 
-                        if (i == 23 && cluster1.getLeftSensor() == 0) {
+                        if (i == LS_NUM - 1 && cluster1.getLeftSensor() == 0) {
                             cluster1.addCluster(cluster4);
                             cluster4 = LightSensorCluster(0.0, 0);
                         }
@@ -98,7 +98,7 @@ void LightSensorArray::calculateClusters(bool doneFillInSensors) {
                             cluster3.addSensorClockwise();
                         }
 
-                        if (i == 23 && cluster1.getLeftSensor() == 0) {
+                        if (i == LS_NUM - 1 && cluster1.getLeftSensor() == 0) {
                             cluster1.addCluster(cluster3);
                             cluster3 = LightSensorCluster(0.0, 0);
                         }
@@ -116,7 +116,7 @@ void LightSensorArray::calculateClusters(bool doneFillInSensors) {
                         cluster2.addSensorClockwise();
                     }
 
-                    if (i == 23 && cluster1.getLeftSensor() == 0) {
+                    if (i == LS_NUM - 1 && cluster1.getLeftSensor() == 0) {
                         cluster1.addCluster(cluster2);
                         cluster2 = LightSensorCluster(0.0, 0);
                     }
@@ -142,6 +142,43 @@ void LightSensorArray::calculateClusters(bool doneFillInSensors) {
     }
 
     numClusters = (int)(cluster1.getLength() != 0) + (int)(cluster2.getLength() != 0) + (int)(cluster3.getLength() != 0);
+
+    // What about this?
+
+    bool previousValue = false;
+
+    int starts[4];
+    int ends[4];
+
+    int index = 0;
+
+    for (int i = 0; i < LS_NUM; i++) {
+        if (lightData[i] && !previousValue) {
+            starts[index] = i;
+        }
+
+        if (!lightData[i] && previousValue) {
+            ends[index] = i;
+            index++;
+
+            if (index > 3) {
+                // Do the filling in sensors thing
+                break;
+            }
+        }
+
+        previousValue = lightData[i];
+    }
+
+    if (ends[3] == 0 && starts[3] != 0) {
+        starts[0] = starts[3];
+    }
+
+    int angle1 = (starts[0] + ends[0]) / 2.0 * LS_NUM_MULTIPLIER;
+    int angle2 = (starts[1] + ends[1]) / 2.0 * LS_NUM_MULTIPLIER;
+    int angle3 = (starts[2] + ends[2]) / 2.0 * LS_NUM_MULTIPLIER;
+
+    numClusters = (int)(ends[0] == 0) + (int)(ends[1] == 0) + (int)(ends[2] == 0);
 }
 
 void LightSensorArray::fillInSensors() {

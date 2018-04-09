@@ -129,10 +129,6 @@ private:
 	static void setCS_ActiveLOW(uint32_t);
 };
 
-
-//extern T3SPI_MASTER T3SPI;
-#define SPIClass T3SPI //_MASTER
-#define SPI T3SPI
 extern T3SPI spi;
 
 #endif /* _t3spi_h */

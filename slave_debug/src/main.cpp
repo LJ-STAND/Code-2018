@@ -688,27 +688,24 @@ void setup(void) {
     digitalWrite(DEBUG_LED_DEFENDER, HIGH);
 
     leds.begin();
-    leds.setBrightness(40);
+    leds.setBrightness(20);
 
     tft.begin();
 
     tft.setRotation(3);
     tft.fillScreen(BLACK);
 
+    tft.setCursor(5, 0);
+    tft.setTextSize(3);
+    tft.print("LJ STAND");
 
-    // //
-    // tft.fillRect(0, 0, BOXSIZE, BOXSIZE, RED);
-    // tft.fillRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, YELLOW);
-    // tft.fillRect(BOXSIZE*2, 0, BOXSIZE, BOXSIZE, GREEN);
-    // tft.fillRect(BOXSIZE*3, 0, BOXSIZE, BOXSIZE, CYAN);
-    // tft.fillRect(BOXSIZE*4, 0, BOXSIZE, BOXSIZE, BLUE);
-    // tft.fillRect(BOXSIZE*5, 0, BOXSIZE, BOXSIZE, MAGENTA);
-    // tft.fillRect(BOXSIZE*6, 0, BOXSIZE, BOXSIZE, WHITE);
+    tft.drawRoundRect(tft.width() - 45, 5, 40, 20, 4, WHITE);
+    tft.fillRect(tft.width() - 5, 10, 2, 10, WHITE);
+    tft.fillRoundRect(tft.width() - 5, 10, 3, 10, 2, WHITE);
 
+    tft.fillRoundRect(tft.width() - 41, 9, 32, 12, 1, GREEN);
 
-
-    // tft.drawRect(0, 0, BOXSIZE, BOXSIZE, WHITE);
-    // currentcolor = RED;
+    tft.drawLine(0, 30, tft.width(), 30, WHITE);
 
     uint16_t grey = tft.color565(150, 150, 150);
     uint16_t width1, height1, width2, height2;
@@ -905,12 +902,12 @@ void loop()
     //
     Serial.println(String(p.x > 300 && p.y < 800) + ": " + String(p.x) + " " + String(p.y));
 
-    tft.setCursor(0, 0);
-    tft.fillRect(0, 0, 300, 30, BLACK);
-    tft.print(batteryAverage.average() * BATT_MULTIPILER);
-    batteryAverage.update(analogRead(V_BAT));
+    // tft.setCursor(0, 0);
+    // tft.fillRect(0, 0, 300, 30, BLACK);
+    // tft.print(batteryAverage.average() * BATT_MULTIPILER);
+    // batteryAverage.update(analogRead(V_BAT));
 
-    delay(100);
+    // delay(100);
 
     if (p.x > 300 && p.y < 800) {
         if (canPress) {

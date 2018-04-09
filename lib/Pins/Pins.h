@@ -17,15 +17,6 @@
 #define MUX_A3 36
 #define MUX_A4 37
 
-#define MUX_EN_PORT // PTB21
-#define MUX_WR_PORT // PTA17
-#define MUX_CS_PORT // PTC11
-#define MUX_A0_PORT // PTE24
-#define MUX_A1_PORT // PTE25
-#define MUX_A2_PORT // PTC8
-#define MUX_A3_PORT // PTC9
-#define MUX_A4_PORT // PTC10
-
 // --- Motors --- //
 
 #define ENCODER_L_A 32
@@ -78,3 +69,27 @@
 #define DEBUG_LED_DEFENDER 3
 
 #define V_BAT A22
+
+// --- SPI --- //
+
+#define MASTER_MOSI MOSI
+#define MASTER_MISO MISO
+#define MASTER_SCLK ALT_SCK
+#define MASTER_CS_SENSOR CS1
+#define MASTER_CS_DEBUG CS4
+#define MASTER_CS_MOTOR CS0
+
+#define SLAVE_SENSOR_MOSI MOSI
+#define SLAVE_SENSOR_MISO MISO
+#define SLAVE_SENSOR_SCLK ALT_SCK
+#define SLAVE_SENSOR_CS CS0
+
+#define SLAVE_DEBUG_MOSI MOSI
+#define SLAVE_DEBUG_MISO MISO
+#define SLAVE_DEBUG_SCLK ALT_SCK
+#define SLAVE_DEBUG_CS CS0
+
+#define SLAVE_MOTOR_MOSI MOSI
+#define SLAVE_MOTOR_MISO MISO
+#define SLAVE_MOTOR_SCLK ALT_SCK
+#define SLAVE_MOTOR_CS CS0
