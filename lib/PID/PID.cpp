@@ -37,7 +37,6 @@ double PID::update(double input, double setpoint, double modulus) {
     lastInput = input;
 
     double correction = kp * error + ki * integral - kd * derivative;
-    Serial.println("Correction: " + String(correction));
 
     return absMax == 0 ? correction : constrain(correction, -absMax, absMax);
 }

@@ -28,12 +28,12 @@ private:
     int enBPin;
     int encoderPin;
 
-    uint8_t previousValue;
-    unsigned long lastTime;
+    uint8_t previousValue = 0;
+    unsigned long lastTime = 0;
 
-    PID rpmPID;
+    PID rpmPID = PID(MOTOR_PID_KP, MOTOR_PID_KI, MOTOR_PID_KD);
 
-    int pwm;
+    int pwm = 0;
     double rpm = 0.0;
     int rpmSetpoint;
 };

@@ -20,7 +20,7 @@
 // --- Motors --- //
 
 #define MOTOR_PID_KP 0.5
-#define MOTOR_PID_KI 0
+#define MOTOR_PID_KI 0.0
 #define MOTOR_PID_KD 0.02
 
 #define MAX_PWM 65535
