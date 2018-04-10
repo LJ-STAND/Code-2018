@@ -93,3 +93,36 @@
 #define SLAVE_MOTOR_MISO MISO
 #define SLAVE_MOTOR_SCLK ALT_SCK
 #define SLAVE_MOTOR_CS CS0
+
+
+
+
+#define TSOP_0 0
+#define TSOP_1 1
+#define TSOP_2 2
+#define TSOP_3 3
+#define TSOP_4 4
+#define TSOP_5 5
+#define TSOP_6 6
+#define TSOP_7 7
+#define TSOP_8 8
+#define TSOP_9 9
+#define TSOP_10 19
+#define TSOP_11 20
+#define TSOP_12 21
+#define TSOP_13 22
+#define TSOP_14 23
+#define TSOP_15 24
+#define TSOP_16 25
+#define TSOP_17 26
+#define TSOP_18 27
+#define TSOP_19 28
+#define TSOP_20 29
+#define TSOP_21 30
+#define TSOP_22 31
+#define TSOP_23 32
+
+#define TSOP_PWR_1 43
+#define TSOP_PWR_2 44
+#define TSOP_PWR_3 45
+#define TSOP_PWR_4 47

@@ -32,6 +32,19 @@ void LightSensorArray::changeMUXChannel(uint8_t channel) {
     digitalWriteFast(MUX_WR, HIGH);
 }
 
+void LightSensorArray::calibrate() {
+    for (int i = 0; i < LS_NUM; i++) {
+        int defaultValue = 0;
+
+        for (int j = 0; j < LS_CALIBRATION_COUNT; j++) {
+
+            defaultValue += readSensor(i);
+        }
+
+        thresholds[i] = round((int)((double)defaultValue / LS_CALIBRATION_COUNT) + LS_CALIBRATION_BUFFER);
+    }
+}
+
 int LightSensorArray::readSensor(int sensor) {
     if (sensor == 0) {
         return analogRead(LS0);
@@ -112,9 +125,9 @@ void LightSensorArray::calculateLine() {
         angle = NO_LINE_ANGLE;
         size = NO_LINE_SIZE;
     } else {
-        double cluster1Angle = midAngleBetween(start[0] * LS_NUM_MULTIPLIER, end[0] * LS_NUM_MULTIPLIER);
-        double cluster2Angle = midAngleBetween(start[1] * LS_NUM_MULTIPLIER, end[1] * LS_NUM_MULTIPLIER);
-        double cluster3Angle = midAngleBetween(start[2] * LS_NUM_MULTIPLIER, end[2] * LS_NUM_MULTIPLIER);
+        double cluster1Angle = midAngleBetween(starts[0] * LS_NUM_MULTIPLIER, ends[0] * LS_NUM_MULTIPLIER);
+        double cluster2Angle = midAngleBetween(starts[1] * LS_NUM_MULTIPLIER, ends[1] * LS_NUM_MULTIPLIER);
+        double cluster3Angle = midAngleBetween(starts[2] * LS_NUM_MULTIPLIER, ends[2] * LS_NUM_MULTIPLIER);
 
         if (numClusters == 1) {
             angle = cluster1Angle;

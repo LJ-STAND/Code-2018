@@ -1,4 +1,4 @@
-#include <Motor.h>
+#include <MotorArray.h>
 #include <Arduino.h>
 #include <Pins.h>
 #include <PID.h>
@@ -13,17 +13,14 @@ void setup() {
     motors.motorBackLeft.init();
     motors.motorBackRight.init();
 
-    motors.motorLeft.setRPM(1000);
-    motors.motorRight.setRPM(1000);
-    motors.motorBackLeft.setRPM(1000);
-    motors.motorBackRight.setRPM(1000);
+    motors.move(0, 1000, 0);
 }
 
 void loop() {
-    motors.motorLeft.move();
-    motors.motorRight.move();
-    motors.motorBackLeft.move();
-    motors.motorBackRight.move();
+    motors.motorLeft.updateRPM();
+    motors.motorRight.updateRPM();
+    motors.motorBackLeft.updateRPM();
+    motors.motorBackRight.updateRPM();
 
     Serial.print(motors.motorLeft.getRPM());
     Serial.print("\t");

@@ -3,10 +3,9 @@
 
 #include <Arduino.h>
 #include <Pins.h>
-#include <LightSensor.h>
-#include <LightSensorCluster.h>
 #include <Bits.h>
 #include <Common.h>
+#include <Config.h>
 
 class LightSensorArray {
 public:
@@ -21,6 +20,9 @@ public:
     void calculateClusters(bool doneFillInSensors = false);
     void fillInSensors();
     void calculateLine();
+    void resetStartEnds();
+
+    void calibrate();
 
     double getLineAngle();
     double getLineSize();
@@ -28,7 +30,6 @@ public:
     uint16_t getFirst16Bit();
     uint16_t getSecond16Bit();
 
-    LightSensor sensors[LS_NUM];
     bool data[LS_NUM];
     bool filledInData[LS_NUM];
 

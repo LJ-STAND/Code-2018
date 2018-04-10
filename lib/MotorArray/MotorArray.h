@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <Pins.h>
 #include <Common.h>
-#include <MoveData.h>
 #include <Motor.h>
 #include <Config.h>
 
@@ -17,7 +16,7 @@ public:
 
     MotorArray();
     void move(int angle, int rotation, int speed);
-    void move(MoveData data);
+    // void move(MoveData data);
     void brake();
 };
 
