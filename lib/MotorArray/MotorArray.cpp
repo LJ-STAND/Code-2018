@@ -7,7 +7,23 @@ MotorArray::MotorArray() {
     Motor motorBackRight = Motor(MOTOR_BACKRIGHT_PWM, MOTOR_BACKRIGHT_INA, MOTOR_BACKRIGHT_INB, MOTOR_BACKRIGHT_ENA, MOTOR_BACKRIGHT_ENB, ENCODER_BR_A);
 }
 
+void MotorArray::init() {
+    motorLeft.init();
+    motorRight.init();
+    motorBackLeft.init();
+    motorBackRight.init();
+}
+
+void MotorArray::update() {
+    motorLeft.update();
+    motorRight.update();
+    motorBackLeft.update();
+    motorBackRight.update();
+}
+
 void MotorArray::move(int angle, int rotation, int speed) {
+
+    speedRPM = mim(speed * MAX_SPEED / 100.0, MAX_SPEED)
 
     double a = cos(degreesToRadians(angle)) * MOTOR_MULTIPLIER;
     double b = sin(degreesToRadians(angle)) * MOTOR_MULTIPLIER;
@@ -17,14 +33,14 @@ void MotorArray::move(int angle, int rotation, int speed) {
     double motorBackLeftValue = a - b;
     double motorLeftValue = a + b;
 
-    double updatedSpeed = (double) speed / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftValue), doubleAbs(motorRightValue)), doubleAbs(motorBackRightValue)), doubleAbs(motorBackLeftValue)));
+    double updatedSpeed = (double) speedRPM / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftValue), doubleAbs(motorRightValue)), doubleAbs(motorBackRightValue)), doubleAbs(motorBackLeftValue)));
 
     int motorRightSpeed = (int) round(motorRightValue * updatedSpeed) + rotation;
     int motorLeftSpeed = (int) round(motorLeftValue * updatedSpeed) + rotation;
     int motorBackRightSpeed = (int) round(motorBackRightValue * updatedSpeed) + rotation;
     int motorBackLeftSpeed = (int) round(motorBackLeftValue * updatedSpeed) + rotation;
 
-    double updatedSpeed2 = (double) 255 / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftSpeed), doubleAbs(motorRightSpeed)), doubleAbs(motorBackRightSpeed)), doubleAbs(motorBackLeftSpeed)));
+    double updatedSpeed2 = (double) MAX_SPEED / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftSpeed), doubleAbs(motorRightSpeed)), doubleAbs(motorBackRightSpeed)), doubleAbs(motorBackLeftSpeed)));
 
     if (updatedSpeed2 < 1) {
         int motorRightSpeed = (int) round(motorRightSpeed * updatedSpeed2);

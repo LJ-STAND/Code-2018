@@ -30,7 +30,6 @@
 
 #define MOTOR_MULTIPLIER 707106781186547572737310929369 // equal to sin/cos(45)
 
-
 #define TSOP_NUM 24
 
 #define TSOP_LOOP_COUNT 255
@@ -58,5 +57,7 @@
 #define TSOP_HAS_BALL_STRENGTH 130
 
 #define DEBUG_TSOP false
+
+#define MAX_SPEED 1000
 
 #endif // CONFIG_H
