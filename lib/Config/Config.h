@@ -9,7 +9,7 @@
 // --- Light Sensors --- //
 
 #define LS_NUM 36
-#define LS_NUM_MULTIPLIER 10 // Equal to 360 / LS_NUM
+#define LS_NUM_MULTIPLIER 10 // = 360 / LS_NUM
 
 #define LS_CALIBRATION_COUNT 50
 
@@ -28,7 +28,7 @@
 
 #define MAX_PWM 65535
 
-#define MOTOR_MULTIPLIER 707106781186547572737310929369 // equal to sin/cos(45)
+#define MOTOR_MULTIPLIER 0.707106781186547572737310929369 // = sin&cos(45)
 
 #define TSOP_NUM 24
 
