@@ -688,7 +688,7 @@ void setup(void) {
     digitalWrite(DEBUG_LED_DEFENDER, HIGH);
 
     leds.begin();
-    leds.setBrightness(20);
+    leds.setBrightness(50);
 
     tft.begin();
 
@@ -702,8 +702,6 @@ void setup(void) {
     tft.drawRoundRect(tft.width() - 45, 5, 40, 20, 4, WHITE);
     tft.fillRect(tft.width() - 5, 10, 2, 10, WHITE);
     tft.fillRoundRect(tft.width() - 5, 10, 3, 10, 2, WHITE);
-
-    tft.fillRoundRect(tft.width() - 41, 9, 32, 12, 1, GREEN);
 
     tft.drawLine(0, 30, tft.width(), 30, WHITE);
 
@@ -725,12 +723,15 @@ void setup(void) {
     tft.print("START");
 
     Serial.begin(9600);
+    Serial5.begin(9600);
 }
 
 #define MINPRESSURE 10
 #define MAXPRESSURE 1000
 
 #define BATT_MULTIPILER 0.01767938931
+#define MIN_BATT_VOLTAGE 8.00
+#define MAX_BATT_VOLTAGE 12.6
 
 bool on = false;
 bool canPress = true;
@@ -900,12 +901,24 @@ void loop()
     // pressure of 0 means no pressing!
     //
     //
-    Serial.println(String(p.x > 300 && p.y < 800) + ": " + String(p.x) + " " + String(p.y));
+    // Serial.println(String(p.x > 300 && p.y < 800) + ": " + String(p.x) + " " + String(p.y));
 
     // tft.setCursor(0, 0);
     // tft.fillRect(0, 0, 300, 30, BLACK);
-    // tft.print(batteryAverage.average() * BATT_MULTIPILER);
-    // batteryAverage.update(analogRead(V_BAT));
+    batteryAverage.update(analogRead(V_BAT));
+
+    double batteryLevel = (double)(fmin(fmax(batteryAverage.average() * BATT_MULTIPILER, MIN_BATT_VOLTAGE), MAX_BATT_VOLTAGE) - MIN_BATT_VOLTAGE) / (double)(MAX_BATT_VOLTAGE - MIN_BATT_VOLTAGE);
+
+
+    if (batteryLevel > 0) {
+        tft.fillRect(tft.width() - 41, 9, 32.0 * batteryLevel, 12, batteryLevel < 0.2 ? RED : GREEN);
+    }
+
+    tft.fillRect(tft.width() - 9 - (32 * (1.0 - batteryLevel)), 9, 32.0 * (1.0 - batteryLevel), 12, BLACK);
+
+    if (Serial5.available()) {
+        Serial.print(Serial5.read());
+    }
 
     // delay(100);
 

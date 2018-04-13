@@ -1,10 +1,10 @@
 #include "MotorArray.h"
 
 MotorArray::MotorArray() {
-    Motor motorLeft = Motor(MOTOR_LEFT_PWM, MOTOR_LEFT_INA, MOTOR_LEFT_INB, MOTOR_LEFT_ENA, MOTOR_LEFT_ENB, ENCODER_L_A);
-    Motor motorRight = Motor(MOTOR_RIGHT_PWM, MOTOR_RIGHT_INA, MOTOR_RIGHT_INB, MOTOR_RIGHT_ENA, MOTOR_RIGHT_ENB, ENCODER_R_A);
-    Motor motorBackLeft = Motor(MOTOR_BACKLEFT_PWM, MOTOR_BACKLEFT_INA, MOTOR_BACKLEFT_INB, MOTOR_BACKLEFT_ENA, MOTOR_BACKLEFT_ENB, ENCODER_BL_A);
-    Motor motorBackRight = Motor(MOTOR_BACKRIGHT_PWM, MOTOR_BACKRIGHT_INA, MOTOR_BACKRIGHT_INB, MOTOR_BACKRIGHT_ENA, MOTOR_BACKRIGHT_ENB, ENCODER_BR_A);
+    motorLeft = Motor(MOTOR_LEFT_PWM, MOTOR_LEFT_INA, MOTOR_LEFT_INB, MOTOR_LEFT_ENA, MOTOR_LEFT_ENB, ENCODER_L_A);
+    motorRight = Motor(MOTOR_RIGHT_PWM, MOTOR_RIGHT_INA, MOTOR_RIGHT_INB, MOTOR_RIGHT_ENA, MOTOR_RIGHT_ENB, ENCODER_R_A);
+    motorBackLeft = Motor(MOTOR_BACKLEFT_PWM, MOTOR_BACKLEFT_INA, MOTOR_BACKLEFT_INB, MOTOR_BACKLEFT_ENA, MOTOR_BACKLEFT_ENB, ENCODER_BL_A);
+    motorBackRight = Motor(MOTOR_BACKRIGHT_PWM, MOTOR_BACKRIGHT_INA, MOTOR_BACKRIGHT_INB, MOTOR_BACKRIGHT_ENA, MOTOR_BACKRIGHT_ENB, ENCODER_BR_A);
 }
 
 void MotorArray::init() {
@@ -22,16 +22,15 @@ void MotorArray::update() {
 }
 
 void MotorArray::move(int angle, int rotation, int speed) {
-
-    speedRPM = mim(speed * MAX_SPEED / 100.0, MAX_SPEED)
+    int speedRPM = min(speed * MAX_SPEED / 100.0, MAX_SPEED);
 
     double a = cos(degreesToRadians(angle)) * MOTOR_MULTIPLIER;
     double b = sin(degreesToRadians(angle)) * MOTOR_MULTIPLIER;
 
-    double motorRightValue = b - a;
-    double motorBackRightValue = -a - b;
-    double motorBackLeftValue = a - b;
-    double motorLeftValue = a + b;
+    double motorRightValue = a - b;
+    double motorBackRightValue = a + b;
+    double motorBackLeftValue = b - a;
+    double motorLeftValue = -a - b;
 
     double updatedSpeed = (double) speedRPM / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftValue), doubleAbs(motorRightValue)), doubleAbs(motorBackRightValue)), doubleAbs(motorBackLeftValue)));
 
@@ -54,10 +53,6 @@ void MotorArray::move(int angle, int rotation, int speed) {
     motorBackRight.move(motorBackRightSpeed);
     motorBackLeft.move(motorBackLeftSpeed);
 }
-
-// void MotorArray::move(MoveData data) {
-//     move(data.angle, data.rotation, data.speed);
-// }
 
 void MotorArray::brake() {
     motorRight.brake();

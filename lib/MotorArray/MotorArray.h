@@ -15,8 +15,9 @@ public:
     Motor motorBackLeft;
 
     MotorArray();
+    void init();
     void move(int angle, int rotation, int speed);
-    // void move(MoveData data);
+    void update();
     void brake();
 };
 

@@ -13,12 +13,12 @@ public:
     Motor(int pwm, int inA, int inB, int enA, int enB, int encoder);
 
     void init();
-    void move();
+    void move(int value);
+    void update();
     void frequency(int frequency);
     void brake();
     double getRPM();
-    void updateRPM();
-    void setRPM(int value);
+    void updateEncoderRPM();
 
 private:
     int pwmPin;

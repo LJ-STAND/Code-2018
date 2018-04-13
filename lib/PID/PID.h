@@ -11,16 +11,16 @@ public:
 
     PID() {}
     PID(double p, double i, double d, double absoluteMax = 0.0);
-    
+
     double update(double input, double setpoint, double modulus = 0.0);
 
 private:
-    unsigned long lastTime;
+    unsigned long lastTime = micros();
 
     double absMax;
 
-    double integral;
-    double lastInput;
+    double integral = 0;
+    double lastInput = 0;
 };
 
 #endif

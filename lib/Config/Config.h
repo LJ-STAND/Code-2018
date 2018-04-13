@@ -11,9 +11,9 @@
 #define LS_NUM 36
 #define LS_NUM_MULTIPLIER 10 // Equal to 360 / LS_NUM
 
-#define LS_CALIBRATION_COUNT 10
+#define LS_CALIBRATION_COUNT 50
 
-#define LS_CALIBRATION_BUFFER 50
+#define LS_CALIBRATION_BUFFER 70
 
 #define LS_ES_DEFAULT 100
 
@@ -58,6 +58,22 @@
 
 #define DEBUG_TSOP false
 
-#define MAX_SPEED 1000
+#define MAX_SPEED 1500
+
+
+
+// Orbit
+
+#define ORBIT_SHORT_STRENGTH 100
+#define ORBIT_BIG_STRENGTH 80
+
+#define ORBIT_SMALL_ANGLE 5
+#define ORBIT_BIG_ANGLE 60
+
+#define ORBIT_BALL_FORWARD_ANGLE_TIGHTENER 0.5
+
+#define ORBIT_SPEED 100
+
+#define BALL_FRONT_BUFFER 10
 
 #endif // CONFIG_H

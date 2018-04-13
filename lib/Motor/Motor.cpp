@@ -28,8 +28,10 @@ void Motor::init() {
 }
 
 void Motor::update() {
-    updateRPM();
-    pwm = constrain(pwm + rpmPID.update(rpm, rpmSetpoint), 0, MAX_PWM) * sign(rpmSetpoint);
+    updateEncoderRPM();
+
+    double pidError = rpmPID.update(rpm, abs(rpmSetpoint));
+    pwm = constrain(abs(pwm) + pidError, 0, MAX_PWM) * sign(rpmSetpoint);
 
     if (pwm > 0) {
         analogWrite(pwmPin, constrain(pwm, 0, MAX_PWM));
@@ -53,7 +55,7 @@ void Motor::move(int value) {
 }
 
 void Motor::brake() {
-    setRPM(0);
+    move(0);
 }
 
 void Motor::frequency(int frequency) {
@@ -68,6 +70,8 @@ void Motor::updateEncoderRPM() {
         rpm = 1.0 / (12.0 * ((double)(micros() - lastTime) / 1000000.0 / 60.0));
         lastTime = currentTime;
         previousValue = value;
+    } else if (micros() - lastTime > 100000) {
+        rpm = 0;
     }
 }
 

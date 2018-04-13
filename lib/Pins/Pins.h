@@ -95,8 +95,6 @@
 #define SLAVE_MOTOR_CS CS0
 
 
-
-
 #define TSOP_0 0
 #define TSOP_1 1
 #define TSOP_2 2

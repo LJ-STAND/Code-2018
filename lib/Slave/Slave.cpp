@@ -16,28 +16,8 @@ uint16_t Slave::transaction(SlaveCommand command) {
     return dataIn[0];
 }
 
-void SlaveLightSensor::init() {
-    Slave::init(MASTER_CS_LIGHT);
-}
-
-double SlaveLightSensor::getLineAngle() {
-    return (double)transaction(SlaveCommand::lineAngle) / 100.0;
-}
-
-double SlaveLightSensor::getLineSize() {
-    return (double)transaction(SlaveCommand::lineSize) / 100.0;
-}
-
-uint16_t SlaveLightSensor::getFirst16Bit() {
-    return transaction(SlaveCommand::lightSensorsFirst16Bit);
-}
-
-uint16_t SlaveLightSensor::getSecond16Bit() {
-    return transaction(SlaveCommand::lightSensorsSecond16Bit);
-}
-
 void SlaveTSOP::init() {
-    Slave::init(MASTER_CS_TSOP);
+    Slave::init(CS1);
 }
 
 int SlaveTSOP::getTSOPAngle() {

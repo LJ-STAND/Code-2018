@@ -26,16 +26,6 @@ private:
     int cs;
 };
 
-class SlaveLightSensor: public Slave {
-public:
-    void init();
-    uint16_t getFirst16Bit();
-    uint16_t getSecond16Bit();
-    double getLineAngle();
-    double getLineSize();
-
-};
-
 class SlaveTSOP: public Slave {
 public:
     void init();

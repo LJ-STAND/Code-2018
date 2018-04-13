@@ -129,6 +129,8 @@ void LightSensorArray::calculateLine() {
         double cluster2Angle = midAngleBetween(starts[1] * LS_NUM_MULTIPLIER, ends[1] * LS_NUM_MULTIPLIER);
         double cluster3Angle = midAngleBetween(starts[2] * LS_NUM_MULTIPLIER, ends[2] * LS_NUM_MULTIPLIER);
 
+        Serial.println(String(cluster1Angle) + ", " + String(cluster2Angle) + ", " + String(cluster3Angle));
+
         if (numClusters == 1) {
             angle = cluster1Angle;
             size = 1 - cos(degreesToRadians(angleBetween(starts[0] * LS_NUM_MULTIPLIER, ends[0] * LS_NUM_MULTIPLIER) / 2.0));
