@@ -19,7 +19,10 @@ private:
 };
 
 class EngineStartButton : public Button {
-private:
-}
+public:
+    void draw();
+
+    bool enabled;
+};
 
 #endif // BUTTON_H

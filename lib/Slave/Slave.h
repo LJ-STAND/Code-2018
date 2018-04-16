@@ -6,19 +6,20 @@
 #include <Config.h>
 #include <BallData.h>
 
-enum SlaveCommand: int {
+enum SlaveCommand: uint8_t {
+    motorAngle,
+    motorRotation,
+    motorSpeed,
+    ballAngle,
+    ballStrength,
     lineAngle,
-    lineSize,
-    lightSensorsFirst16Bit,
-    lightSensorsSecond16Bit,
-    tsopAngle,
-    tsopStrength
+    lineSize
 };
 
 class Slave {
 public:
     void init(int csPin);
-    uint16_t transaction(SlaveCommand command);
+    uint16_t transaction(SlaveCommand command, uint16_t data = 0);
 
 private:
     volatile uint16_t dataIn[1];
@@ -26,12 +27,21 @@ private:
     int cs;
 };
 
-class SlaveTSOP: public Slave {
+class SlaveMotor: public Slave {
 public:
     void init();
-    int getTSOPAngle();
-    int getTSOPStrength();
-    BallData getBallData();
+    void setMotorAngle(uint16_t angle);
+    void setMotorRotation(uint16_t rotation);
+    void setMotorSpeed(uint16_t speed);
+};
+
+class SlaveSensor: public Slave {
+public:
+    uint16_t init();
+    uint16_t getBallAngle();
+    uint16_t getBallStrength();
+    uint16_t getLineAngle();
+    uint16_t getLineSize();
 };
 
 #endif // SLAVE_H

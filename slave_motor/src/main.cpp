@@ -1,29 +1,25 @@
-#include <MotorArray.h>
 #include <Arduino.h>
 #include <Pins.h>
-#include <PID.h>
+#include <MotorArray.h>
 #include <t3spi.h>
 #include <Timer.h>
+#include <Slave.h>
 
 MotorArray motors;
 
-volatile uint16_t dataIn[1];
-volatile uint16_t dataOut[1];
-
 volatile int speed;
 volatile int angle;
+volatile int rotation;
 
 T3SPI spi;
 
-Timer ledTimer = Timer(1000000);
+Timer ledTimer = Timer(LED_TIME_SLAVE_MOTOR);
 bool ledOn;
 
 void setup() {
-    analogWriteResolution(16);
-
     motors.init();
 
-    spi.begin_SLAVE(ALT_SCK, MOSI, MISO, CS0);
+    spi.begin_SLAVE(SLAVE_MOTOR_SCLK, SLAVE_MOTOR_MOSI, SLAVE_MOTOR_MISO, SLAVE_MOTOR_CS);
     spi.setCTAR_SLAVE(16, SPI_MODE0);
 
     NVIC_ENABLE_IRQ(IRQ_SPI0);
@@ -31,11 +27,10 @@ void setup() {
     Serial.begin(9600);
 
     pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop() {
-    motors.move(angle, 0, speed);
+    motors.move(angle, rotation, speed);
     motors.update();
 
     if (ledTimer.timeHasPassed()) {
@@ -45,13 +40,27 @@ void loop() {
 }
 
 void spi0_isr() {
-    spi.rxtx16(dataIn, dataOut, 1);
+    uint16_t dataIn = SPI0_POPR;
 
-    if (dataIn[0] != 0) {
-        if ((dataIn[0] & 0x8000) == 0x8000) {
-            speed = dataIn[0] & (~0x8000);
-        } else {
-            angle = dataIn[0] & (~0x8000);
-        }
+    uint8_t command = (dataIn >> 10);
+    uint16_t data = dataIn & 0x3FF;
+
+    uint16_t dataOut = 0;
+
+    switch (command) {
+    case SlaveCommand::motorAngle:
+        angle = data;
+        break;
+
+    case SlaveCommand::motorRotation:
+        rotation = data;
+        break;
+
+    case SlaveCommand::motorSpeed:
+        speed = data;
+        break;
     }
+
+    SPI0_PUSHR_SLAVE = dataOut;
+    SPI0_SR |= SPI_SR_RFDF;
 }

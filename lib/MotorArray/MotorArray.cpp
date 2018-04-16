@@ -8,6 +8,8 @@ MotorArray::MotorArray() {
 }
 
 void MotorArray::init() {
+    analogWriteResolution(16);
+
     motorLeft.init();
     motorRight.init();
     motorBackLeft.init();

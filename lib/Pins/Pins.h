@@ -1,4 +1,4 @@
-#include "Arduino.h"
+#include <Arduino.h>
 
 // --- Light Sensors --- //
 
@@ -68,7 +68,16 @@
 #define DEBUG_LED_ATTACKER 2
 #define DEBUG_LED_DEFENDER 3
 
-#define V_BAT A22
+#define DEBUG_RGB_LED 23
+
+// --- Screen --- //
+
+#define SCREEN_YP A3
+#define SCREEN_XM A2
+#define SCREEN_YM 18
+#define SCREEN_XP 15
+
+#define BATTERY_VOLTAGE A22
 
 // --- SPI --- //
 
@@ -94,6 +103,7 @@
 #define SLAVE_MOTOR_SCLK ALT_SCK
 #define SLAVE_MOTOR_CS CS0
 
+// --- IR --- //
 
 #define TSOP_0 0
 #define TSOP_1 1
@@ -124,3 +134,9 @@
 #define TSOP_PWR_2 44
 #define TSOP_PWR_3 45
 #define TSOP_PWR_4 47
+
+// --- IMU --- //
+
+#define IMU_1_CS 43
+#define IMU_2_CS 55
+#define IMU_3_CS 54

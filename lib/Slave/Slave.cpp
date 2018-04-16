@@ -6,31 +6,46 @@ void Slave::init(int csPin) {
     spi.enableCS(cs, CS_ActiveLOW);
 }
 
-uint16_t Slave::transaction(SlaveCommand command) {
-    dataOut[0] = (uint16_t)command;
+uint16_t Slave::transaction(SlaveCommand command, uint16_t data) {
+    dataOut[0] = (command << 10) | (data & 0x3FF);
 
-    for (int i = 0; i < 3; i++) {
-        spi.txrx16(dataOut, dataIn, 1, CTAR_0, cs);
-    }
+    spi.txrx16(dataOut, dataIn, 1, CTAR_0, cs);
 
     return dataIn[0];
 }
 
-void SlaveTSOP::init() {
-    Slave::init(CS1);
+void SlaveMotor::init() {
+    Slave::init(MASTER_CS_MOTOR);
 }
 
-int SlaveTSOP::getTSOPAngle() {
-    return transaction(SlaveCommand::tsopAngle);
+void SlaveMotor::setMotorAngle(uint16_t angle) {
+    transaction(SlaveCommand::motorAngle, angle);
 }
 
-int SlaveTSOP::getTSOPStrength() {
-    return transaction(SlaveCommand::tsopStrength);
+void SlaveMotor::setMotorRotation(uint16_t rotation) {
+    transaction(SlaveCommand::motorRotation, rotation);
 }
 
-BallData SlaveTSOP::getBallData() {
-    int angle = getTSOPAngle();
-    int strength = getTSOPStrength();
+void SlaveMotor::setMotorSpeed(uint16_t speed) {
+    transaction(SlaveCommand::motorSpeed, speed);
+}
 
-    return BallData(angle, strength, angle != TSOP_NO_BALL);
+void SlaveSensor::init() {
+    Slave::init(MASTER_CS_SENSOR);
+}
+
+uint16_t getBallAngle() {
+    return transaction(SlaveCommand::ballAngle);
+}
+
+uint16_t getBallStrength() {
+    return transaction(SlaveCommand::ballStrength);
+}
+
+uint16_t getLineAngle() {
+    return transaction(SlaveCommand::lineAngle);
+}
+
+uint16_t getLineSize() {
+    return transaction(SlaveCommand::lineSize);
 }

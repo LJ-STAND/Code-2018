@@ -58,11 +58,14 @@
 
 #define DEBUG_TSOP false
 
-#define MAX_SPEED 1500
+#define MAX_SPEED 600
 
+// --- IMU --- //
 
+#define IMU_CALIBRATION_COUNT 20
+#define IMU_CALIBRATION_TIME 50
 
-// Orbit
+// --- Orbit --- //
 
 #define ORBIT_SHORT_STRENGTH 100
 #define ORBIT_BIG_STRENGTH 80
@@ -75,5 +78,38 @@
 #define ORBIT_SPEED 100
 
 #define BALL_FRONT_BUFFER 10
+
+// --- Debug --- //
+
+#define LED_BLINK_TIME_MASTER 100000
+#define LED_BLINK_TIME_SLAVE_MOTOR 200000
+#define LED_BLINK_TIME_SLAVE_SENSOR 400000
+#define LED_BLINK_TIME_SLAVE_DEBUG 800000
+
+#define RGB_LED_COUNT 12
+
+#define BATTERY_VOLTAGE_MULTIPILER 0.01767938931
+#define MIN_BATTERY_VOLTAGE 8.00
+#define MAX_BATTERY_VOLTAGE 12.6
+
+// --- Screen --- //
+
+#define TS_MINX 150
+#define TS_MINY 90
+#define TS_MAXX 905
+#define TS_MAXY 890
+
+#define TS_RESISTANCE 300
+
+#define MIN_PRESSURE 100
+
+#define	BLACK 0x0000
+#define	BLUE 0x001F
+#define	RED 0xF800
+#define	GREEN 0x07E0
+#define CYAN 0x07FF
+#define MAGENTA 0xF81F
+#define YELLOW 0xFFE0
+#define WHITE 0xFFFF
 
 #endif // CONFIG_H
