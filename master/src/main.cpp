@@ -4,26 +4,19 @@
 #include <Pins.h>
 #include <Slave.h>
 #include <Common.h>
-#include <BallData.h>
 #include <IMU.h>
 #include <SPI.h>
 #include <Timer.h>
+#include <PID.h>
 
-typedef struct MoveData {
-    int angle = 0, speed = 0, rotation = 0;
+SlaveSensor slaveSensor;
+SlaveMotor slaveMotor;
 
-    MoveData() {}
-    MoveData(int moveAngle, int moveSpeed, int moveRotation) {
-        angle = moveAngle;
-        speed = moveSpeed;
-        rotation = moveRotation;
-    }
-} MoveData;
+int ballAngle, ballStrength;
 
-SlaveTSOP slaveTSOP;
-
-BallData ballData;
-MoveData moveData;
+uint16_t motorAngle;
+int8_t motorRotation = 0;
+int8_t motorSpeed = 0;
 
 T3SPI spi;
 
@@ -31,80 +24,65 @@ Timer ledTimer(LED_BLINK_TIME_MASTER);
 
 IMUFusion imu;
 
+PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
+
+bool ledOn;
+
 void setup() {
-
-    delay(2000);
-
-	spi = T3SPI();
-
-    // Serial
     Serial.begin(9600);
 
-    // SPI
+	spi = T3SPI();
     spi.begin_MASTER(ALT_SCK, MOSI, MISO, CS1, CS_ActiveLOW);
     spi.setCTAR(CTAR_0, 16, SPI_MODE0, LSB_FIRST, SPI_CLOCK_DIV32);
 	spi.enableCS(CS0, CS_ActiveLOW);
 
-    slaveTSOP.init();
+    slaveSensor.init();
+    slaveMotor.init();
 
-	pinMode(13, OUTPUT);
+    imu.init();
 
-    Serial5.begin(9600);
-
-    pinMode(INT_PIN, INPUT);
-	pinMode(LED, OUTPUT);
-	digitalWrite(LED, HIGH);
-
-	imu.init();
+	pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void calculateOrbit() {
-    moveData.speed = ORBIT_SPEED;
+    motorSpeed = ballAngle == 400 ? 0 : ORBIT_SPEED;
 
-    if (angleIsInside(360 - ORBIT_SMALL_ANGLE, ORBIT_SMALL_ANGLE, ballData.angle)) {
-        moveData.angle = (int)round(ballData.angle < 180 ? (ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) : (360 - (360 - ballData.angle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER));
-    } else if (angleIsInside(360 - ORBIT_BIG_ANGLE, ORBIT_BIG_ANGLE, ballData.angle)) {
-        if (ballData.angle < 180) {
-            double nearFactor = (double)(ballData.angle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
-            moveData.angle = (int)round(90 * nearFactor + ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + ballData.angle * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor);
+    if (angleIsInside(360 - ORBIT_SMALL_ANGLE, ORBIT_SMALL_ANGLE, ballAngle)) {
+        motorAngle = (int)round(ballAngle < 180 ? (ballAngle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) : (360 - (360 - ballAngle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER));
+    } else if (angleIsInside(360 - ORBIT_BIG_ANGLE, ORBIT_BIG_ANGLE, ballAngle)) {
+        if (ballAngle < 180) {
+            double nearFactor = (double)(ballAngle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
+            motorAngle = (int)round(90 * nearFactor + ballAngle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + ballAngle * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor);
         } else {
-            double nearFactor = (double)(360 - ballData.angle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
-            moveData.angle = (int)round(360 - (90 * nearFactor + (360 - ballData.angle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + (360 - ballData.angle) * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor));
+            double nearFactor = (double)(360 - ballAngle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
+            motorAngle = (int)round(360 - (90 * nearFactor + (360 - ballAngle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + (360 - ballAngle) * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor));
         }
     } else {
-        if (ballData.strength > ORBIT_SHORT_STRENGTH) {
-            moveData.angle = ballData.angle + (ballData.angle < 180 ? 90 : -90);
-        } else if (ballData.strength > ORBIT_BIG_STRENGTH) {
-            double strengthFactor = (double)(ballData.strength - ORBIT_BIG_STRENGTH) / (double)(ORBIT_SHORT_STRENGTH - ORBIT_BIG_STRENGTH);
+        if (ballStrength > ORBIT_SHORT_STRENGTH) {
+            motorAngle = ballAngle + (ballAngle < 180 ? 90 : -90);
+        } else if (ballStrength > ORBIT_BIG_STRENGTH) {
+            double strengthFactor = (double)(ballStrength - ORBIT_BIG_STRENGTH) / (double)(ORBIT_SHORT_STRENGTH - ORBIT_BIG_STRENGTH);
             double angleFactor = strengthFactor * 90;
-            moveData.angle = ballData.angle + (ballData.angle < 180 ? angleFactor : -angleFactor);
+            motorAngle = ballAngle + (ballAngle < 180 ? angleFactor : -angleFactor);
         } else {
-            moveData.angle = ballData.angle;
+            motorAngle = ballAngle;
         }
     }
 }
 
 void loop() {
-    ballData = slaveTSOP.getBallData();
+    ballAngle = slaveSensor.getBallAngle();
+    ballStrength = slaveSensor.getBallStrength();
+
 	calculateOrbit();
 
-    dataOut[0] = (uint16_t)heading;
-    spi.txrx16(dataOut, dataIn, 1, CTAR_0, CS0);
-    spi.txrx16(dataOut, dataIn, 1, CTAR_0, CS0);
-    spi.txrx16(dataOut, dataIn, 1, CTAR_0, CS0);
+    imu.update();
 
+    motorRotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
 
-	dataOut[0] = 0x8000 | (uint16_t)moveData.speed;
-	spi.txrx16(dataOut, dataIn, 1, CTAR_0, CS0);
-	spi.txrx16(dataOut, dataIn, 1, CTAR_0, CS0);
-	spi.txrx16(dataOut, dataIn, 1, CTAR_0, CS0);
-
-	dataOut[0] = 0x4000 | (uint16_t)moveData.angle;
-	spi.txrx16(dataOut, dataIn, 1, CTAR_0, CS0);
-	spi.txrx16(dataOut, dataIn, 1, CTAR_0, CS0);
-	spi.txrx16(dataOut, dataIn, 1, CTAR_0, CS0);
-
-	digitalWrite(13, HIGH);
+    slaveMotor.setMotorAngle(motorAngle);
+    slaveMotor.setMotorRotation(motorRotation);
+    slaveMotor.setMotorSpeed(motorSpeed);
 
     if (ledTimer.timeHasPassed()) {
         digitalWrite(LED_BUILTIN, ledOn);

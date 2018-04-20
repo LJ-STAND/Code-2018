@@ -25,6 +25,7 @@ void MotorArray::update() {
 
 void MotorArray::move(int angle, int rotation, int speed) {
     int speedRPM = min(speed * MAX_SPEED / 100.0, MAX_SPEED);
+    int rotationRPM = min(rotation * MAX_SPEED / 100.0, MAX_SPEED);
 
     double a = cos(degreesToRadians(angle)) * MOTOR_MULTIPLIER;
     double b = sin(degreesToRadians(angle)) * MOTOR_MULTIPLIER;
@@ -36,10 +37,10 @@ void MotorArray::move(int angle, int rotation, int speed) {
 
     double updatedSpeed = (double) speedRPM / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftValue), doubleAbs(motorRightValue)), doubleAbs(motorBackRightValue)), doubleAbs(motorBackLeftValue)));
 
-    int motorRightSpeed = (int) round(motorRightValue * updatedSpeed) + rotation;
-    int motorLeftSpeed = (int) round(motorLeftValue * updatedSpeed) + rotation;
-    int motorBackRightSpeed = (int) round(motorBackRightValue * updatedSpeed) + rotation;
-    int motorBackLeftSpeed = (int) round(motorBackLeftValue * updatedSpeed) + rotation;
+    int motorRightSpeed = (int) round(motorRightValue * updatedSpeed) - rotationRPM;
+    int motorLeftSpeed = (int) round(motorLeftValue * updatedSpeed) - rotationRPM;
+    int motorBackRightSpeed = (int) round(motorBackRightValue * updatedSpeed) - rotationRPM;
+    int motorBackLeftSpeed = (int) round(motorBackLeftValue * updatedSpeed) - rotationRPM;
 
     double updatedSpeed2 = (double) MAX_SPEED / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftSpeed), doubleAbs(motorRightSpeed)), doubleAbs(motorBackRightSpeed)), doubleAbs(motorBackLeftSpeed)));
 

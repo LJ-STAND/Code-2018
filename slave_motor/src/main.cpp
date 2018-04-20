@@ -4,16 +4,17 @@
 #include <t3spi.h>
 #include <Timer.h>
 #include <Slave.h>
+#include <Config.h>
 
 MotorArray motors;
 
-volatile int speed;
-volatile int angle;
-volatile int rotation;
+volatile int8_t speed;
+volatile uint16_t angle;
+volatile int8_t rotation;
 
 T3SPI spi;
 
-Timer ledTimer = Timer(LED_TIME_SLAVE_MOTOR);
+Timer ledTimer = Timer(LED_BLINK_TIME_SLAVE_MOTOR);
 bool ledOn;
 
 void setup() {
@@ -48,16 +49,16 @@ void spi0_isr() {
     uint16_t dataOut = 0;
 
     switch (command) {
-    case SlaveCommand::motorAngle:
-        angle = data;
+    case SlaveCommand::motorAngleCommand:
+        angle = (uint16_t)data;
         break;
 
-    case SlaveCommand::motorRotation:
-        rotation = data;
+    case SlaveCommand::motorRotationCommand:
+        rotation = (int8_t)data;
         break;
 
-    case SlaveCommand::motorSpeed:
-        speed = data;
+    case SlaveCommand::motorSpeedCommand:
+        speed = (int8_t)data;
         break;
     }
 

@@ -4,16 +4,15 @@
 #include <t3spi.h>
 #include <Pins.h>
 #include <Config.h>
-#include <BallData.h>
 
 enum SlaveCommand: uint8_t {
-    motorAngle,
-    motorRotation,
-    motorSpeed,
-    ballAngle,
-    ballStrength,
-    lineAngle,
-    lineSize
+    motorAngleCommand,
+    motorRotationCommand,
+    motorSpeedCommand,
+    ballAngleCommand,
+    ballStrengthCommand,
+    lineAngleCommand,
+    lineSizeCommand
 };
 
 class Slave {
@@ -37,7 +36,7 @@ public:
 
 class SlaveSensor: public Slave {
 public:
-    uint16_t init();
+    void init();
     uint16_t getBallAngle();
     uint16_t getBallStrength();
     uint16_t getLineAngle();

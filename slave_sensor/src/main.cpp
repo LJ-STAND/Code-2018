@@ -30,13 +30,6 @@ void loop() {
     lightSensors.calculateClusters();
     lightSensors.calculateLine();
 
-    for (int i = 0; i < LS_NUM; i++) {
-        Serial.print(lightSensors.data[i]);
-        Serial.print(", ");
-    }
-
-    Serial.println(String(lightSensors.getLineAngle()) + ", " + String(lightSensors.getLineSize()));
-
     tsops.updateOnce();
 
     if (tsops.tsopCounter > TSOP_LOOP_COUNT) {
@@ -46,20 +39,27 @@ void loop() {
 }
 
 void spi0_isr() {
-    spi.rxtx16(dataIn, dataOut, 1);
-    int command = dataIn[0];
+    uint16_t dataIn = SPI0_POPR;
+
+    uint8_t command = (dataIn >> 10);
+    uint16_t data = dataIn & 0x3FF;
+
+    uint16_t dataOut = 0;
 
     switch (command) {
-        case SlaveCommand::tsopAngle:
-            dataOut[0] = (uint16_t)tsops.getStrength();
-            break;
+    case SlaveCommand::ballAngleCommand:
+        dataOut = (uint16_t)tsops.getStrength();
+        break;
 
-        case SlaveCommand::tsopStrength:
-            dataOut[0] = (uint16_t)tsops.getAngle();
-            break;
+    case SlaveCommand::ballStrengthCommand:
+        dataOut = (uint16_t)tsops.getAngle();
+        break;
 
-        default:
-            dataOut[0] = 0;
-            break;
+    default:
+        dataOut = 0;
+        break;
     }
+
+    SPI0_PUSHR_SLAVE = dataOut;
+    SPI0_SR |= SPI_SR_RFDF;
 }

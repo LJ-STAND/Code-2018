@@ -5,6 +5,7 @@
 #include <Screen.h>
 #include <SPI.h>
 #include <MovingAverage.h>
+#include <Config.h>
 
 #define LED_STATE_COUNT 10
 
@@ -95,15 +96,15 @@ bool canPress = true;
 
 void loop() {
     if (millis() - delayTimerLastReading >= 80) {
-        for (uint8_t i = 0; i < LED_COUNT; i++) {
-            leds.setPixelColor(i, HSBToRGB((float)((i + loopCounter) % LED_COUNT) / (float)LED_COUNT * 360, 1.0, 1.0));
+        for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
+            leds.setPixelColor(i, HSBToRGB((float)((i + loopCounter) % RGB_LED_COUNT) / (float)RGB_LED_COUNT * 360, 1.0, 1.0));
         }
 
         leds.show();
 
         delayTimerLastReading = millis();
 
-        if (loopCounter < LED_COUNT - 1) {
+        if (loopCounter < RGB_LED_COUNT - 1) {
             loopCounter++;
         } else {
             loopCounter = 0;
