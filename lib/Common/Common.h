@@ -35,6 +35,8 @@ int sign(double value);
 
 double doubleAbs(double value);
 
+double distanceBetween(double x1, double y1, double x2, double y2);
+
 struct Vector2D {
     double x;
     double y;

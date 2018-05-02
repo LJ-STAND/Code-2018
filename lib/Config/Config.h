@@ -53,7 +53,9 @@
 
 #define DEBUG_TSOP false
 
-#define MAX_SPEED 1200
+#define MAX_SPEED 800
+
+#define ENCODER_UPDATE_TIME 40000
 
 // --- IMU --- //
 
@@ -114,12 +116,11 @@
 
 #define SCREEN_ROTATION 3
 
-#define TITLE_X 5
-#define TITLE_Y 0
+#define TITLE_Y 2
 #define TITLE_FONT_SIZE 3
 
 #define BATTERY_METER_RIGHT_X 45
-#define BATTERY_METER_Y 5
+#define BATTERY_METER_Y 3
 #define BATTERY_METER_WIDTH 40
 #define BATTERY_METER_HEIGHT 20
 #define BATTERY_METER_ROUNDED_RADIUS 4

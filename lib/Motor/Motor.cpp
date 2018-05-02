@@ -1,12 +1,11 @@
 #include "Motor.h"
 
-Motor::Motor(int pwm, int inA, int inB, int enA, int enB, int encoder) {
+Motor::Motor(int pwm, int inA, int inB, int enA, int enB) {
     pwmPin = pwm;
     inAPin = inA;
     inBPin = inB;
     enAPin = enA;
     enBPin = enB;
-    encoderPin = encoder;
 }
 
 void Motor::init() {
@@ -15,7 +14,6 @@ void Motor::init() {
     pinMode(inBPin, OUTPUT);
     pinMode(enAPin, OUTPUT);
     pinMode(enBPin, OUTPUT);
-    pinMode(encoderPin, INPUT);
 
     digitalWrite(enAPin, HIGH);
     digitalWrite(enBPin, HIGH);
@@ -23,15 +21,16 @@ void Motor::init() {
     frequency(915.527);
 
     lastTime = micros();
-
-    previousValue = digitalRead(encoderPin);
 }
 
 void Motor::update() {
-    updateEncoderRPM();
+    if (lastTime > ENCODER_UPDATE_TIME || count > 0) {
+        updateEncoderRPM();
+    }
 
-    double pidError = rpmPID.update(rpm, abs(rpmSetpoint));
-    pwm = constrain(abs(pwm) + pidError, 0, MAX_PWM) * sign(rpmSetpoint);
+    Serial.println(rpm);
+
+    pwm = constrain(abs(pwm) + rpmPID.update(rpm, abs(rpmSetpoint)), 0, MAX_PWM) * sign(rpmSetpoint);
 
     if (pwm > 0) {
         analogWrite(pwmPin, constrain(pwm, 0, MAX_PWM));
@@ -63,16 +62,14 @@ void Motor::frequency(int frequency) {
 }
 
 void Motor::updateEncoderRPM() {
-    uint8_t value = digitalRead(encoderPin);
+    unsigned long currentTime = micros();
+    rpm = (count / 24) / ((currentTime - lastTime) / (1000000 * 60));
+    lastTime = currentTime;
+    count = 0;
+}
 
-    if (value != previousValue) {
-        unsigned long currentTime = micros();
-        rpm = 1.0 / (12.0 * ((double)(micros() - lastTime) / 1000000.0 / 60.0));
-        lastTime = currentTime;
-        previousValue = value;
-    } else if (micros() - lastTime > 100000) {
-        rpm = 0;
-    }
+void Motor::updateEncoderCounts() {
+    count++;
 }
 
 double Motor::getRPM() {

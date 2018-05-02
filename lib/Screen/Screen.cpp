@@ -1,35 +1,47 @@
 #include "Screen.h"
 
 void Screen::init() {
-    tft.begin();
+    TFT.begin();
 
-    tft.setRotation(SCREEN_ROTATION);
-    tft.fillScreen(BLACK);
+    TFT.setRotation(SCREEN_ROTATION);
+    TFT.fillScreen(BLACK);
 
-    tft.setCursor(TITLE_X, TITLE_Y);
-    tft.setTextSize(TITLE_FONT_SIZE);
-    tft.print("LJ STAND");
 
-    tft.drawRoundRect(tft.width() - BATTERY_METER_RIGHT_X, BATTERY_METER_Y, BATTERY_METER_WIDTH, BATTERY_METER_HEIGHT, BATTERY_METER_ROUNDED_RADIUS, WHITE);
-    tft.fillRect(tft.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_WIDTH, BATTERY_METER_Y + (BATTERY_METER_HEIGHT - BATTERY_METER_END_HEIGHT) / 2, BATTERY_METER_END_WIDTH - 1, BATTERY_METER_END_HEIGHT, WHITE);
-    tft.fillRoundRect(tft.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_WIDTH, BATTERY_METER_Y + (BATTERY_METER_HEIGHT - BATTERY_METER_END_HEIGHT) / 2, BATTERY_METER_END_WIDTH, BATTERY_METER_END_HEIGHT, BATTERY_METER_END_ROUNDED_RADIUS, WHITE);
+    TFT.setTextSize(TITLE_FONT_SIZE);
 
-    tft.drawLine(0, LINE_Y, tft.width(), LINE_Y, WHITE);
+    uint16_t width, height;
+    int16_t tempX, tempY;
 
-    engineStartButton = EngineStartButton(tft.width() / 2, LINE_Y + (tft.height() - LINE_Y) / 2, tft);
-    debugButton = TextButton(tft.width() - 70, tft.height() / 2 - 40, 50, "Debug", 1, tft);
+    TFT.getTextBounds("LJ STAND", 0, 0, &tempX, &tempY, &width, &height);
+
+    TFT.setCursor(TFT.width() / 2 - width / 2, TITLE_Y);
+    TFT.print("LJ STAND");
+
+    TFT.drawRoundRect(TFT.width() - BATTERY_METER_RIGHT_X, BATTERY_METER_Y, BATTERY_METER_WIDTH, BATTERY_METER_HEIGHT, BATTERY_METER_ROUNDED_RADIUS, WHITE);
+    TFT.fillRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_WIDTH, BATTERY_METER_Y + (BATTERY_METER_HEIGHT - BATTERY_METER_END_HEIGHT) / 2, BATTERY_METER_END_WIDTH - 1, BATTERY_METER_END_HEIGHT, WHITE);
+    TFT.fillRoundRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_WIDTH, BATTERY_METER_Y + (BATTERY_METER_HEIGHT - BATTERY_METER_END_HEIGHT) / 2, BATTERY_METER_END_WIDTH, BATTERY_METER_END_HEIGHT, BATTERY_METER_END_ROUNDED_RADIUS, WHITE);
+
+    TFT.drawLine(0, LINE_Y, TFT.width(), LINE_Y, WHITE);
+
+    engineStartButton = EngineStartButton(TFT.width() / 2, LINE_Y + (TFT.height() - LINE_Y) / 2);
+    debugButton = TextButton(TFT.width() - 35, LINE_Y + (TFT.height() - LINE_Y) / 2 - 40, 30, "Debug", 1);
+    settingsButton = TextButton(TFT.width() - 35, LINE_Y + (TFT.height() - LINE_Y) / 2 + 40, 30, "Settings", 1);
+
+    showMainScreen();
 }
 
 void Screen::clearAll() {
-    tft.fillScreen(BLACK);
+    TFT.fillScreen(BLACK);
 }
 
 void Screen::clear() {
-    tft.fillRect(0, LINE_Y + 1, tft.width(), tft.height() - LINE_Y, BLACK);
+    TFT.fillRect(0, LINE_Y + 1, TFT.width(), TFT.height() - LINE_Y, BLACK);
 }
 
 void Screen::showMainScreen() {
-
+    engineStartButton.draw();
+    debugButton.draw();
+    settingsButton.draw();
 }
 
 void Screen::updateBatteryMeter() {
@@ -37,6 +49,6 @@ void Screen::updateBatteryMeter() {
 
     double batteryLevel = (double)(fmin(fmax(batteryAverage.average() * BATTERY_VOLTAGE_MULTIPILER, MIN_BATTERY_VOLTAGE), MAX_BATTERY_VOLTAGE) - MIN_BATTERY_VOLTAGE) / (double)(MAX_BATTERY_VOLTAGE - MIN_BATTERY_VOLTAGE);
 
-    tft.fillRect(tft.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_INSET, BATTERY_METER_Y + BATTERY_METER_INSET, (BATTERY_METER_WIDTH - 2 * BATTERY_METER_INSET) * batteryLevel, BATTERY_METER_HEIGHT - 2 * BATTERY_METER_INSET, batteryLevel < 0.2 ? RED : GREEN);
-    tft.fillRect(tft.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_INSET + (BATTERY_METER_WIDTH - 2 * BATTERY_METER_INSET) * batteryLevel, 9, (BATTERY_METER_WIDTH - 2 * BATTERY_METER_INSET) * (1.0 - batteryLevel), BATTERY_METER_HEIGHT - 2 * BATTERY_METER_INSET, BLACK);
+    TFT.fillRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_INSET, BATTERY_METER_Y + BATTERY_METER_INSET, (BATTERY_METER_WIDTH - 2 * BATTERY_METER_INSET) * batteryLevel, BATTERY_METER_HEIGHT - 2 * BATTERY_METER_INSET, batteryLevel < 0.2 ? RED : GREEN);
+    TFT.fillRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_INSET + (BATTERY_METER_WIDTH - 2 * BATTERY_METER_INSET) * batteryLevel, BATTERY_METER_Y + BATTERY_METER_INSET, (BATTERY_METER_WIDTH - 2 * BATTERY_METER_INSET) * (1.0 - batteryLevel), BATTERY_METER_HEIGHT - 2 * BATTERY_METER_INSET, BLACK);
 }

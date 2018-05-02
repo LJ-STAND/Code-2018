@@ -113,7 +113,7 @@ public:
     void setRotation(uint8_t r);
     void invertDisplay(boolean i);
     uint16_t color565(uint8_t r, uint8_t g, uint8_t b);
-    uint8_t readcommand8(uint8_t reg); 
+    uint8_t readcommand8(uint8_t reg);
     uint32_t readID(void);
     uint8_t tabcolor;
     uint8_t read8(void);
@@ -123,5 +123,7 @@ public:
     void writecommand(uint8_t c);
     void writedata(uint8_t d);
 };
+
+extern Adafruit_ILI9341_8bit TFT;
 
 #endif

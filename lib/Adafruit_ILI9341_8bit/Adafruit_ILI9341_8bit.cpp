@@ -1,4 +1,4 @@
-#include <Adafruit_ILI9341_8bit.h>
+#include "Adafruit_ILI9341_8bit.h"
 
 void RD_STROBE() {
     RD_ACTIVE;
@@ -431,3 +431,5 @@ uint32_t Adafruit_ILI9341_8bit::readID(void) {
     CS_IDLE;
     return r;
 }
+
+Adafruit_ILI9341_8bit TFT = Adafruit_ILI9341_8bit();

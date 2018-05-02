@@ -31,6 +31,10 @@ double midAngleBetween(double angleCounterClockwise, double angleClockwise) {
     return mod(angleCounterClockwise + angleBetween(angleCounterClockwise, angleClockwise) / 2.0, 360);
 }
 
+double distanceBetween(double x1, double x2, double y1, double y2) {
+    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+}
+
 int sign(int value) {
     return value >= 0 ? 1 : -1;
 }

@@ -72,18 +72,18 @@ void setup(void) {
     pinMode(DEBUG_LED_ATTACKER, OUTPUT);
     pinMode(DEBUG_LED_DEFENDER, OUTPUT);
 
-    digitalWrite(DEBUG_LED_RED, HIGH);
-    digitalWrite(DEBUG_LED_GREEN, HIGH);
-    digitalWrite(DEBUG_LED_BLUE, HIGH);
-    digitalWrite(DEBUG_LED_ORANGE, HIGH);
-    digitalWrite(DEBUG_LED_YELLOW, HIGH);
-    digitalWrite(DEBUG_LED_WHITE, HIGH);
+    // digitalWrite(DEBUG_LED_RED, HIGH);
+    // digitalWrite(DEBUG_LED_GREEN, HIGH);
+    // digitalWrite(DEBUG_LED_BLUE, HIGH);
+    // digitalWrite(DEBUG_LED_ORANGE, HIGH);
+    // digitalWrite(DEBUG_LED_YELLOW, HIGH);
+    // digitalWrite(DEBUG_LED_WHITE, HIGH);
+    //
+    // digitalWrite(DEBUG_LED_ATTACKER, HIGH);
+    // digitalWrite(DEBUG_LED_DEFENDER, HIGH);
 
-    digitalWrite(DEBUG_LED_ATTACKER, HIGH);
-    digitalWrite(DEBUG_LED_DEFENDER, HIGH);
-
-    leds.begin();
-    leds.setBrightness(50);
+    // leds.begin();
+    // leds.setBrightness(50);
 
     Serial.begin(9600);
     Serial5.begin(9600);
@@ -95,21 +95,21 @@ bool on = false;
 bool canPress = true;
 
 void loop() {
-    if (millis() - delayTimerLastReading >= 80) {
-        for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
-            leds.setPixelColor(i, HSBToRGB((float)((i + loopCounter) % RGB_LED_COUNT) / (float)RGB_LED_COUNT * 360, 1.0, 1.0));
-        }
-
-        leds.show();
-
-        delayTimerLastReading = millis();
-
-        if (loopCounter < RGB_LED_COUNT - 1) {
-            loopCounter++;
-        } else {
-            loopCounter = 0;
-        }
-    }
+    // if (millis() - delayTimerLastReading >= 80) {
+    //     for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
+    //         leds.setPixelColor(i, HSBToRGB((float)((i + loopCounter) % RGB_LED_COUNT) / (float)RGB_LED_COUNT * 360, 1.0, 1.0));
+    //     }
+    //
+    //     leds.show();
+    //
+    //     delayTimerLastReading = millis();
+    //
+    //     if (loopCounter < RGB_LED_COUNT - 1) {
+    //         loopCounter++;
+    //     } else {
+    //         loopCounter = 0;
+    //     }
+    // }
 
     screen.updateBatteryMeter();
 }

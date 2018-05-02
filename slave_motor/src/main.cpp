@@ -17,6 +17,22 @@ T3SPI spi;
 Timer ledTimer = Timer(LED_BLINK_TIME_SLAVE_MOTOR);
 bool ledOn;
 
+void encoderLeftInterrupt() {
+    motors.motorLeft.updateEncoderCounts();
+}
+
+void encoderRightInterrupt() {
+    motors.motorRight.updateEncoderCounts();
+}
+
+void encoderBackLeftInterrupt() {
+    motors.motorBackLeft.updateEncoderCounts();
+}
+
+void encoderBackRightInterrupt() {
+    motors.motorBackRight.updateEncoderCounts();
+}
+
 void setup() {
     motors.init();
 
@@ -28,10 +44,22 @@ void setup() {
     Serial.begin(9600);
 
     pinMode(LED_BUILTIN, OUTPUT);
+
+    attachInterrupt(ENCODER_L_A, encoderLeftInterrupt, CHANGE);
+    attachInterrupt(ENCODER_L_B, encoderLeftInterrupt, CHANGE);
+    attachInterrupt(ENCODER_R_A, encoderRightInterrupt, CHANGE);
+    attachInterrupt(ENCODER_R_B, encoderRightInterrupt, CHANGE);
+    attachInterrupt(ENCODER_BL_A, encoderBackLeftInterrupt, CHANGE);
+    attachInterrupt(ENCODER_BL_B, encoderBackLeftInterrupt, CHANGE);
+    attachInterrupt(ENCODER_BR_A, encoderBackRightInterrupt, CHANGE);
+    attachInterrupt(ENCODER_BR_B, encoderBackRightInterrupt, CHANGE);
 }
 
 void loop() {
-    motors.move(angle, rotation, speed);
+    // motors.move(angle, rotation, speed);
+    // motors.update();
+
+    motors.move(0, 0, 100);
     motors.update();
 
     if (ledTimer.timeHasPassed()) {
