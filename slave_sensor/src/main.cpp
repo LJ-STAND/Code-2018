@@ -26,15 +26,15 @@ void setup() {
 }
 
 void loop() {
-    lightSensors.read();
-    lightSensors.calculateClusters();
-    lightSensors.calculateLine();
-
     tsops.updateOnce();
 
     if (tsops.tsopCounter > TSOP_LOOP_COUNT) {
         tsops.finishRead();
         tsops.unlock();
+
+        lightSensors.read();
+        lightSensors.calculateClusters();
+        lightSensors.calculateLine();
     }
 }
 
@@ -53,6 +53,14 @@ void spi0_isr() {
 
     case SlaveCommand::ballStrengthCommand:
         dataOut = (uint16_t)tsops.getAngle();
+        break;
+
+    case SlaveCommand::lineSizeCommand:
+        dataOut = (uint16_t)lightSensors.getLineSize();
+        break;
+
+    case SlaveCommand::lineAngleCommand:
+        dataOut = (uint16_t)lightSensors.getLineAngle();
         break;
 
     default:
