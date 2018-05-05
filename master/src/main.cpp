@@ -8,15 +8,16 @@
 #include <SPI.h>
 #include <Timer.h>
 #include <PID.h>
+#include <BallData.h>
+#include <LineData.h>
+#include <MoveData.h>
 
 SlaveSensor slaveSensor;
 SlaveMotor slaveMotor;
 
-int ballAngle, ballStrength;
-
-uint16_t motorAngle;
-int8_t motorRotation = 0;
-int8_t motorSpeed = 0;
+LineData lineData(0, 0, true);
+BallData ballData;
+MoveData moveData;
 
 T3SPI spi;
 
@@ -44,45 +45,157 @@ void setup() {
 	pinMode(LED_BUILTIN, OUTPUT);
 }
 
-void calculateOrbit() {
-    motorSpeed = ballAngle == 400 ? 0 : ORBIT_SPEED;
+void updateLine(double angle, double size) {
+    bool noLine = angle == NO_LINE_ANGLE || size == 3;
 
-    if (angleIsInside(360 - ORBIT_SMALL_ANGLE, ORBIT_SMALL_ANGLE, ballAngle)) {
-        motorAngle = (int)round(ballAngle < 180 ? (ballAngle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) : (360 - (360 - ballAngle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER));
-    } else if (angleIsInside(360 - ORBIT_BIG_ANGLE, ORBIT_BIG_ANGLE, ballAngle)) {
-        if (ballAngle < 180) {
-            double nearFactor = (double)(ballAngle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
-            motorAngle = (int)round(90 * nearFactor + ballAngle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + ballAngle * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor);
-        } else {
-            double nearFactor = (double)(360 - ballAngle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
-            motorAngle = (int)round(360 - (90 * nearFactor + (360 - ballAngle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + (360 - ballAngle) * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor));
+    angle = noLine ? 0 : doubleMod(angle + imu.getHeading(), 360);
+
+    if (lineData.onField) {
+        if (!noLine) {
+            lineData.angle = angle;
+            lineData.size = size;
+
+            lineData.onField = false;
         }
     } else {
-        if (ballStrength > ORBIT_SHORT_STRENGTH) {
-            motorAngle = ballAngle + (ballAngle < 180 ? 90 : -90);
-        } else if (ballStrength > ORBIT_BIG_STRENGTH) {
-            double strengthFactor = (double)(ballStrength - ORBIT_BIG_STRENGTH) / (double)(ORBIT_SHORT_STRENGTH - ORBIT_BIG_STRENGTH);
-            double angleFactor = strengthFactor * 90;
-            motorAngle = ballAngle + (ballAngle < 180 ? angleFactor : -angleFactor);
+        if (lineData.size == 3) {
+            if (!noLine) {
+                lineData.angle = doubleMod(angle + 180, 360);
+                lineData.size = 2 - size;
+            }
         } else {
-            motorAngle = ballAngle;
+            if (noLine) {
+                if (lineData.size <= 1) {
+                    lineData.onField = true;
+                    lineData.size = 0;
+                    lineData.angle = 0;
+                } else {
+                    lineData.size = 3;
+                }
+            } else {
+                if (smallestAngleBetween(lineData.angle, angle) <= 90) {
+                    lineData.angle = angle;
+                    lineData.size = size;
+                } else {
+                    lineData.angle = doubleMod(angle + 180, 360);
+                    lineData.size = 2 - size;
+                }
+            }
         }
     }
 }
 
-void loop() {
-    ballAngle = slaveSensor.getBallAngle();
-    ballStrength = slaveSensor.getBallStrength();
+bool isOutsideLine(double angle) {
+    if (lineData.onField) {
+        return false;
+    }
 
-	calculateOrbit();
+    if (mod(lineData.angle, 90) > LINE_CORNER_ANGLE_THRESHOLD && mod(lineData.angle, 90) < 90 - LINE_CORNER_ANGLE_THRESHOLD) {
+        return (angleIsInside(doubleMod(lineData.angle - 135 - LINE_ANGLE_BUFFER_CORNER, 360), doubleMod(lineData.angle + 135 + LINE_ANGLE_BUFFER_CORNER, 360), mod(angle + imu.getHeading(), 360)));
+    } else {
+        return (angleIsInside(doubleMod(lineData.angle - 90 - LINE_ANGLE_BUFFER, 360), doubleMod(lineData.angle + 90 + LINE_ANGLE_BUFFER, 360), mod(angle + imu.getHeading(), 360)));
+    }
+}
+
+void calculateLineAvoid() {
+    if (!lineData.onField) {
+        if (lineData.size > LINE_BIG_SIZE) {
+            moveData.angle = mod(lineData.angle + 180 - imu.getHeading(), 360);
+            moveData.speed = lineData.size == 3 ? OVER_LINE_SPEED : min(lineData.size / 2.0 * LINE_SPEED * 5, LINE_SPEED);
+        } else if (lineData.size > LINE_SMALL_SIZE) {
+            if (isOutsideLine(moveData.angle)) {
+                moveData.angle = 0;
+                moveData.speed = 0;
+            }
+        }
+    }
+}
+
+void calculateOrbit() {
+    moveData.speed = ballData.angle == 400 ? 0 : ORBIT_SPEED;
+
+    if (angleIsInside(360 - ORBIT_SMALL_ANGLE, ORBIT_SMALL_ANGLE, ballData.angle)) {
+        moveData.angle = (int)round(ballData.angle < 180 ? (ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) : (360 - (360 - ballData.angle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER));
+    } else if (angleIsInside(360 - ORBIT_BIG_ANGLE, ORBIT_BIG_ANGLE, ballData.angle)) {
+        if (ballData.angle < 180) {
+            double nearFactor = (double)(ballData.angle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
+            moveData.angle = (int)round(90 * nearFactor + ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + ballData.angle * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor);
+        } else {
+            double nearFactor = (double)(360 - ballData.angle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
+            moveData.angle = (int)round(360 - (90 * nearFactor + (360 - ballData.angle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + (360 - ballData.angle) * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor));
+        }
+    } else {
+        if (ballData.strength > ORBIT_SHORT_STRENGTH) {
+            moveData.angle = ballData.angle + (ballData.angle < 180 ? 90 : -90);
+        } else if (ballData.strength > ORBIT_BIG_STRENGTH) {
+            double strengthFactor = (double)(ballData.strength - ORBIT_BIG_STRENGTH) / (double)(ORBIT_SHORT_STRENGTH - ORBIT_BIG_STRENGTH);
+            double angleFactor = strengthFactor * 90;
+            moveData.angle = ballData.angle + (ballData.angle < 180 ? angleFactor : -angleFactor);
+        } else {
+            moveData.angle = ballData.angle;
+        }
+    }
+}
+
+void calculateMovement() {
+    // if (currentPlayMode() == PlayMode::attack) {
+    //     if (xbee.otherBallIsOut) {
+    //         attackingBackwards = false;
+    //         centre(CENTRE_GOAL_DISTANCE_CLOSE);
+    //     } else {
+    //         if (attackingBackwards) {
+    //             ballData.angle = mod(ballData.angle + 180, 360);
+    //
+    //             calculateOrbit();
+    //             moveData.angle = mod(moveData.angle + 180, 360);
+    //
+    //             if (!ballData.visible) {
+    //                 attackingBackwards = false;
+    //             } else {
+    //                 if (smallestAngleBetween(imu.heading, 0) < 90) {
+    //                     attackingBackwards = false;
+    //                 } else if (!lineData.onField && smallestAngleBetween(lineData.angle, ballData.angle) < 90) {
+    //                     attackingBackwards = false;
+    //                 } else if (goalData.status != GoalStatus::invisible) {
+    //                     if (switchingStrengthAverage.average() < ATTACK_BACKWARDS_MAX_STRENGTH && (goalData.distance < DEFEND_LEFT_GOAL_DISTANCE)) {
+    //                         attackingBackwards = false;
+    //                     }
+    //                 } else {
+    //                     if (switchingStrengthAverage.average() < ATTACK_BACKWARDS_MAX_STRENGTH) {
+    //                         attackingBackwards = false;
+    //                     }
+    //                 }
+    //             }
+    //         } else {
+    //             if (ballData.visible) {
+    //                 calculateOrbit();
+    //             } else {
+    //                 centre(CENTRE_GOAL_DISTANCE);
+    //             }
+    //         }
+    //     }
+    // } else {
+    //     calculateDefense();
+    // }
+
+    // calculateOrbit();
+
+    #if AVOID_LINE
+        calculateLineAvoid();
+    #endif
+
+    moveData.rotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
+}
+
+void loop() {
+    ballData = slaveSensor.getBallData();
+    updateLine(slaveSensor.getLineAngle(), slaveSensor.getLineSize());
 
     imu.update();
 
-    motorRotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
+    calculateMovement();
 
-    slaveMotor.setMotorAngle(motorAngle);
-    slaveMotor.setMotorRotation(motorRotation);
-    slaveMotor.setMotorSpeed(motorSpeed);
+    slaveMotor.setMotor(moveData);
 
     if (ledTimer.timeHasPassed()) {
         digitalWrite(LED_BUILTIN, ledOn);
