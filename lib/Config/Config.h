@@ -15,6 +15,18 @@
 #define NO_LINE_ANGLE 400
 #define NO_LINE_SIZE 3
 
+#define LINE_CORNER_ANGLE_THRESHOLD 30
+#define LINE_ANGLE_BUFFER -10
+#define LINE_ANGLE_BUFFER_CORNER -10
+
+#define LINE_SMALL_SIZE 0.4
+#define LINE_BIG_SIZE 0.7
+
+#define LINE_SPEED 100
+#define OVER_LINE_SPEED 100
+
+#define AVOID_LINE true
+
 // --- Motors --- //
 
 #define MOTOR_PID_KP 0.5

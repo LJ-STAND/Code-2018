@@ -121,6 +121,24 @@ void LightSensorArray::fillInSensors() {
 }
 
 void LightSensorArray::calculateLine() {
+
+    // for (int i=0; i < 4; i++) {
+    //     Serial.print(starts[i]);
+    //     Serial.print(" ");
+    // }
+    // for (int i=0; i < 4; i++) {
+    //     Serial.print(ends[i]);
+    //     Serial.print(" ");
+    // }
+    // Serial.println(numClusters);
+    // Serial.println();
+    // for (int i=0; i < LS_NUM; i++) {
+    //     // Serial.print(data[i]);
+    //     Serial.print(readSensor(i));
+    //     Serial.print(" ");
+    // }
+    // Serial.println();
+
     if (numClusters == 0) {
         angle = NO_LINE_ANGLE;
         size = NO_LINE_SIZE;

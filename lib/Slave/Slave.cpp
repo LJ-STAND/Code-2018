@@ -30,6 +30,12 @@ void SlaveMotor::setMotorSpeed(uint16_t speed) {
     transaction(SlaveCommand::motorSpeedCommand, speed);
 }
 
+void SlaveMotor::setMotor(MoveData moveData) {
+    setMotorAngle(moveData.angle);
+    setMotorRotation(moveData.rotation);
+    setMotorSpeed(moveData.speed);
+}
+
 void SlaveSensor::init() {
     Slave::init(MASTER_CS_SENSOR);
 }
@@ -48,4 +54,11 @@ uint16_t SlaveSensor::getLineAngle() {
 
 uint16_t SlaveSensor::getLineSize() {
     return transaction(SlaveCommand::lineSizeCommand);
+}
+
+BallData SlaveSensor::getBallData() {
+    int angle = getBallAngle();
+    int strength = getBallStrength();
+
+    return BallData(angle, strength, angle != TSOP_NO_BALL);
 }
