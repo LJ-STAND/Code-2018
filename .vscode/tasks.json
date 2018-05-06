@@ -1,0 +1,39 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Master",
+            "type": "shell",
+            "command": "cd master; pio run -t upload",
+            "problemMatcher": [
+                "$platformio"
+            ]
+        },
+        {
+            "label": "Debug",
+            "type": "shell",
+            "command": "cd slave_debug; pio run -t upload",
+            "problemMatcher": [
+                "$platformio"
+            ]
+        },
+        {
+            "label": "Motor",
+            "type": "shell",
+            "command": "cd slave_motor; pio run -t upload",
+            "problemMatcher": [
+                "$platformio"
+            ]
+        },
+        {
+            "label": "Sensor",
+            "type": "shell",
+            "command": "cd slave_sensor; pio run -t upload",
+            "problemMatcher": [
+                "$platformio"
+            ]
+        }
+    ]
+}
