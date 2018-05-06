@@ -32,10 +32,8 @@ bool ledOn;
 void setup() {
     Serial.begin(9600);
 
-	spi = T3SPI();
-    spi.begin_MASTER(ALT_SCK, MOSI, MISO, CS1, CS_ActiveLOW);
-    spi.setCTAR(CTAR_0, 16, SPI_MODE0, LSB_FIRST, SPI_CLOCK_DIV32);
-	spi.enableCS(CS0, CS_ActiveLOW);
+    spi.begin_MASTER(MASTER_SCK, MASTER_MOSI, MASTER_MISO, MASTER_CS_SENSOR, CS_ActiveLOW);
+    spi.setCTAR(CTAR_0, 16, SPI_MODE0, LSB_FIRST, SPI_CLOCK_DIV16);
 
     slaveSensor.init();
     slaveMotor.init();
@@ -193,17 +191,9 @@ void loop() {
 
     imu.update();
 
-<<<<<<< HEAD
-    motorRotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
-    
-    slaveMotor.setMotorAngle(motorAngle);
-    slaveMotor.setMotorRotation(motorRotation);
-    slaveMotor.setMotorSpeed(motorSpeed);
-=======
     calculateMovement();
 
     slaveMotor.setMotor(moveData);
->>>>>>> 9b641b5e62dae518859a47f4270a9c2a7c275c17
 
     if (ledTimer.timeHasPassed()) {
         digitalWrite(LED_BUILTIN, ledOn);

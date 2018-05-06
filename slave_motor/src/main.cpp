@@ -17,38 +17,26 @@ T3SPI spi;
 Timer ledTimer = Timer(LED_BLINK_TIME_SLAVE_MOTOR);
 bool ledOn;
 
-void encoderAInterrupt() {
-    Serial.println("A");
-}
-
-void encoderBInterrupt() {
-    Serial.println("B");
-}
-
 void encoderLeftInterrupt() {
     motors.motorLeft.updateEncoderCounts();
-    Serial.println("left");
 }
 
 void encoderRightInterrupt() {
     motors.motorRight.updateEncoderCounts();
-    Serial.println("right");
 }
 
 void encoderBackLeftInterrupt() {
     motors.motorBackLeft.updateEncoderCounts();
-    Serial.println("backleft");
 }
 
 void encoderBackRightInterrupt() {
     motors.motorBackRight.updateEncoderCounts();
-    Serial.println("backright");
 }
 
 void setup() {
     motors.init();
 
-    spi.begin_SLAVE(SLAVE_MOTOR_SCLK, SLAVE_MOTOR_MOSI, SLAVE_MOTOR_MISO, SLAVE_MOTOR_CS);
+    spi.begin_SLAVE(SLAVE_MOTOR_SCK, SLAVE_MOTOR_MOSI, SLAVE_MOTOR_MISO, SLAVE_MOTOR_CS);
     spi.setCTAR_SLAVE(16, SPI_MODE0);
 
     NVIC_ENABLE_IRQ(IRQ_SPI0);
@@ -72,7 +60,7 @@ void loop() {
     // motors.update();
 
     motors.move(0, 0, 100);
-    motors.update();
+    motors.motorLeft.update();
 
     if (ledTimer.timeHasPassed()) {
         digitalWrite(LED_BUILTIN, ledOn);

@@ -5,7 +5,7 @@
 #include <Pins.h>
 #include <Config.h>
 #include <BallData.h>
-#include <Movedata.h>
+#include <MoveData.h>
 
 enum SlaveCommand: uint8_t {
     motorAngleCommand,
@@ -43,7 +43,7 @@ public:
     uint16_t getBallAngle();
     uint16_t getBallStrength();
     uint16_t getLineAngle();
-    uint16_t getLineSize();
+    double getLineSize();
     BallData getBallData();
 };
 

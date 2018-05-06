@@ -100,9 +100,26 @@ void LightSensorArray::calculateClusters(bool doneFillInSensors) {
     }
 
     int tempNumClusters = (int)(starts[0] != LS_ES_DEFAULT) + (int)(starts[1] != LS_ES_DEFAULT) + (int)(starts[2] != LS_ES_DEFAULT) + (int)(starts[3] != LS_ES_DEFAULT);
+
     if (tempNumClusters != index) {
         // If the final cluster didn't end, index will be one less than tempNumClusters.
-        starts[0] = starts[index];
+        if (starts[0] == 0) {
+            starts[0] = starts[index];
+        } else {
+            ends[index] = LS_NUM - 1;
+            index++;
+
+            if (index > 3) {
+                if (!doneFillInSensors) {
+                    fillInSensors();
+                } else {
+                    resetStartEnds();
+                    numClusters = 0;
+                }
+
+                return;
+            }
+        }
     }
 
     numClusters = index;
@@ -121,24 +138,6 @@ void LightSensorArray::fillInSensors() {
 }
 
 void LightSensorArray::calculateLine() {
-
-    // for (int i=0; i < 4; i++) {
-    //     Serial.print(starts[i]);
-    //     Serial.print(" ");
-    // }
-    // for (int i=0; i < 4; i++) {
-    //     Serial.print(ends[i]);
-    //     Serial.print(" ");
-    // }
-    // Serial.println(numClusters);
-    // Serial.println();
-    // for (int i=0; i < LS_NUM; i++) {
-    //     // Serial.print(data[i]);
-    //     Serial.print(readSensor(i));
-    //     Serial.print(" ");
-    // }
-    // Serial.println();
-
     if (numClusters == 0) {
         angle = NO_LINE_ANGLE;
         size = NO_LINE_SIZE;

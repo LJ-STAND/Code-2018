@@ -4,50 +4,36 @@
 #include <Config.h>
 #include <Slave.h>
 #include <LightSensorArray.h>
+#include <Timer.h>
 
 T3SPI spi;
+
+volatile uint16_t dataIn[1];
+volatile uint16_t dataOut[1];
 
 TSOPArray tsops;
 LightSensorArray lightSensors;
 
+Timer ledTimer(LED_BLINK_TIME_SLAVE_SENSOR);
+bool ledOn;
+
 void setup() {
     Serial.begin(9600);
 
-    spi.begin_SLAVE(SLAVE_SENSOR_SCLK, SLAVE_SENSOR_MOSI, SLAVE_SENSOR_MISO, SLAVE_SENSOR_CS);
+    spi.begin_SLAVE(SLAVE_SENSOR_SCK, SLAVE_SENSOR_MOSI, SLAVE_SENSOR_MISO, SLAVE_SENSOR_CS);
     spi.setCTAR_SLAVE(16, SPI_MODE0);
 
     NVIC_ENABLE_IRQ(IRQ_SPI0);
 
     tsops.init();
-    lightSensors.init();
 
-    delay(5000);
+    lightSensors.init();
     lightSensors.calibrate();
+
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
-<<<<<<< HEAD
-
-    lightSensors.read();
-    // for (int i = 0; i < LS_NUM; i++) {
-    //     Serial.print(lightSensors.data[i]);
-    //     Serial.print(" ");
-    // }
-    // Serial.println();
-
-
-    lightSensors.calculateClusters();
-    lightSensors.calculateLine();
-
-    // Serial.println(lightSensors.getLineAngle());
-    //
-    // tsops.updateOnce();
-    //
-    // if (tsops.tsopCounter > TSOP_LOOP_COUNT) {
-    //     tsops.finishRead();
-    //     tsops.unlock();
-    // }
-=======
     tsops.updateOnce();
 
     if (tsops.tsopCounter > TSOP_LOOP_COUNT) {
@@ -58,41 +44,38 @@ void loop() {
         lightSensors.calculateClusters();
         lightSensors.calculateLine();
     }
->>>>>>> 9b641b5e62dae518859a47f4270a9c2a7c275c17
+
+    if (ledTimer.timeHasPassed()) {
+        digitalWrite(LED_BUILTIN, ledOn);
+        ledOn = !ledOn;
+    }
 }
 
 void spi0_isr() {
-    uint16_t dataIn = SPI0_POPR;
+    spi.rxtx16(dataIn, dataOut, 1);
 
-    uint8_t command = (dataIn >> 10);
-    uint16_t data = dataIn & 0x3FF;
-
-    uint16_t dataOut = 0;
+    uint8_t command = (dataIn[0] >> 10);
+    uint16_t data = dataIn[0] & 0x3FF;
 
     switch (command) {
     case SlaveCommand::ballAngleCommand:
-        dataOut = (uint16_t)tsops.getAngle();
+        dataOut[0] = (uint16_t)tsops.getAngle();
         break;
 
     case SlaveCommand::ballStrengthCommand:
-        dataOut = (uint16_t)tsops.getStrength();
-        break;
-
-    case SlaveCommand::lineSizeCommand:
-        dataOut = (uint16_t)lightSensors.getLineSize();
+        dataOut[0] = (uint16_t)tsops.getStrength();
         break;
 
     case SlaveCommand::lineAngleCommand:
-        dataOut = (uint16_t)lightSensors.getLineAngle();
+        dataOut[0] = (uint16_t)lightSensors.getLineAngle();
+        break;
+
+    case SlaveCommand::lineSizeCommand:
+        dataOut[0] = (uint16_t)(lightSensors.getLineSize() * 100.0);
         break;
 
     default:
-        dataOut = 0;
+        dataOut[0] = 0;
         break;
     }
-
-    Serial.println(dataOut);
-
-    SPI0_PUSHR_SLAVE = dataOut;
-    SPI0_SR |= SPI_SR_RFDF;
 }

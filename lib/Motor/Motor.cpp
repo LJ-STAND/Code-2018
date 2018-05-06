@@ -24,7 +24,7 @@ void Motor::init() {
 }
 
 void Motor::update() {
-    if (count > 0) {
+    if ((micros() - lastTime) > ENCODER_UPDATE_TIME) {
         updateEncoderRPM();
     }
 
@@ -63,8 +63,8 @@ void Motor::frequency(int frequency) {
 
 void Motor::updateEncoderRPM() {
     unsigned long currentTime = micros();
-    rpm = ((double)count / 24.0) / (((double)(currentTime - lastTime) / 10000000.0) * 60);
-    // Serial.println(rpm);
+    rpm = ((double)count / 24.0) / (((double)(currentTime - lastTime) / 1000000.0 / 60.0));
+    Serial.println(rpm);
     lastTime = currentTime;
     count = 0;
 }

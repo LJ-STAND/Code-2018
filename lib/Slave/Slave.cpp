@@ -9,7 +9,10 @@ void Slave::init(int csPin) {
 uint16_t Slave::transaction(SlaveCommand command, uint16_t data) {
     dataOut[0] = (command << 10) | (data & 0x3FF);
 
-    spi.txrx16(dataOut, dataIn, 1, CTAR_0, cs);
+    for (int i = 0; i < 3; i++) {
+        spi.txrx16(dataOut, dataIn, 1, CTAR_0, cs);
+    }
+
 
     return dataIn[0];
 }
@@ -52,8 +55,8 @@ uint16_t SlaveSensor::getLineAngle() {
     return transaction(SlaveCommand::lineAngleCommand);
 }
 
-uint16_t SlaveSensor::getLineSize() {
-    return transaction(SlaveCommand::lineSizeCommand);
+double SlaveSensor::getLineSize() {
+    return (double)transaction(SlaveCommand::lineSizeCommand) / 100.0;
 }
 
 BallData SlaveSensor::getBallData() {
