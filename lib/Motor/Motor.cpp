@@ -24,13 +24,13 @@ void Motor::init() {
 }
 
 void Motor::update() {
-    if (lastTime > ENCODER_UPDATE_TIME || count > 0) {
+    if (count > 0) {
         updateEncoderRPM();
     }
 
-    Serial.println(rpm);
+    // pwm = constrain(abs(pwm) + rpmPID.update(rpm, abs(rpmSetpoint)), 0, MAX_PWM) * sign(rpmSetpoint);
 
-    pwm = constrain(abs(pwm) + rpmPID.update(rpm, abs(rpmSetpoint)), 0, MAX_PWM) * sign(rpmSetpoint);
+    pwm = 20000;
 
     if (pwm > 0) {
         analogWrite(pwmPin, constrain(pwm, 0, MAX_PWM));
@@ -63,7 +63,8 @@ void Motor::frequency(int frequency) {
 
 void Motor::updateEncoderRPM() {
     unsigned long currentTime = micros();
-    rpm = (count / 24) / ((currentTime - lastTime) / (1000000 * 60));
+    rpm = ((double)count / 24.0) / (((double)(currentTime - lastTime) / 10000000.0) * 60);
+    // Serial.println(rpm);
     lastTime = currentTime;
     count = 0;
 }

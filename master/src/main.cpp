@@ -74,18 +74,23 @@ void loop() {
     ballAngle = slaveSensor.getBallAngle();
     ballStrength = slaveSensor.getBallStrength();
 
-	calculateOrbit();
+    // Serial.println("ballAngle " + String(ballAngle));
+    // Serial.println("ballStrength " + String(ballStrength));
+    // delay(1000);
+    // ballStrength = slaveSensor.getBallStrength();
 
-    imu.update();
-
-    motorRotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
-
-    slaveMotor.setMotorAngle(motorAngle);
-    slaveMotor.setMotorRotation(motorRotation);
-    slaveMotor.setMotorSpeed(motorSpeed);
-
-    if (ledTimer.timeHasPassed()) {
-        digitalWrite(LED_BUILTIN, ledOn);
-        ledOn = !ledOn;
-    }
+	// calculateOrbit();
+    //
+    // imu.update();
+    //
+    // motorRotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
+    //
+    // slaveMotor.setMotorAngle(motorAngle);
+    // slaveMotor.setMotorRotation(motorRotation);
+    // slaveMotor.setMotorSpeed(motorSpeed);
+    //
+    // if (ledTimer.timeHasPassed()) {
+    //     digitalWrite(LED_BUILTIN, ledOn);
+    //     ledOn = !ledOn;
+    // }
 }

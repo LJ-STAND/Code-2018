@@ -26,16 +26,26 @@ void setup() {
 }
 
 void loop() {
+
     lightSensors.read();
+    // for (int i = 0; i < LS_NUM; i++) {
+    //     Serial.print(lightSensors.data[i]);
+    //     Serial.print(" ");
+    // }
+    // Serial.println();
+
+
     lightSensors.calculateClusters();
     lightSensors.calculateLine();
 
-    tsops.updateOnce();
-
-    if (tsops.tsopCounter > TSOP_LOOP_COUNT) {
-        tsops.finishRead();
-        tsops.unlock();
-    }
+    // Serial.println(lightSensors.getLineAngle());
+    //
+    // tsops.updateOnce();
+    //
+    // if (tsops.tsopCounter > TSOP_LOOP_COUNT) {
+    //     tsops.finishRead();
+    //     tsops.unlock();
+    // }
 }
 
 void spi0_isr() {
@@ -48,17 +58,19 @@ void spi0_isr() {
 
     switch (command) {
     case SlaveCommand::ballAngleCommand:
-        dataOut = (uint16_t)tsops.getStrength();
+        dataOut = (uint16_t)tsops.getAngle();
         break;
 
     case SlaveCommand::ballStrengthCommand:
-        dataOut = (uint16_t)tsops.getAngle();
+        dataOut = (uint16_t)tsops.getStrength();
         break;
 
     default:
         dataOut = 0;
         break;
     }
+
+    Serial.println(dataOut);
 
     SPI0_PUSHR_SLAVE = dataOut;
     SPI0_SR |= SPI_SR_RFDF;

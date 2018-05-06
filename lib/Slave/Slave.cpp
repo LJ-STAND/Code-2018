@@ -10,7 +10,6 @@ uint16_t Slave::transaction(SlaveCommand command, uint16_t data) {
     dataOut[0] = (command << 10) | (data & 0x3FF);
 
     spi.txrx16(dataOut, dataIn, 1, CTAR_0, cs);
-    spi.txrx16(dataOut, dataIn, 1, CTAR_0, cs);
 
     return dataIn[0];
 }

@@ -17,20 +17,32 @@ T3SPI spi;
 Timer ledTimer = Timer(LED_BLINK_TIME_SLAVE_MOTOR);
 bool ledOn;
 
+void encoderAInterrupt() {
+    Serial.println("A");
+}
+
+void encoderBInterrupt() {
+    Serial.println("B");
+}
+
 void encoderLeftInterrupt() {
     motors.motorLeft.updateEncoderCounts();
+    Serial.println("left");
 }
 
 void encoderRightInterrupt() {
     motors.motorRight.updateEncoderCounts();
+    Serial.println("right");
 }
 
 void encoderBackLeftInterrupt() {
     motors.motorBackLeft.updateEncoderCounts();
+    Serial.println("backleft");
 }
 
 void encoderBackRightInterrupt() {
     motors.motorBackRight.updateEncoderCounts();
+    Serial.println("backright");
 }
 
 void setup() {

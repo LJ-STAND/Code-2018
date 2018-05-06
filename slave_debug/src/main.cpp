@@ -79,8 +79,8 @@ void setup(void) {
     // digitalWrite(DEBUG_LED_YELLOW, HIGH);
     // digitalWrite(DEBUG_LED_WHITE, HIGH);
     //
-    // digitalWrite(DEBUG_LED_ATTACKER, HIGH);
-    // digitalWrite(DEBUG_LED_DEFENDER, HIGH);
+    digitalWrite(DEBUG_LED_ATTACKER, LOW);
+    digitalWrite(DEBUG_LED_DEFENDER, LOW);
 
     // leds.begin();
     // leds.setBrightness(50);
