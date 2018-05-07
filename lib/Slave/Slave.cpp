@@ -76,11 +76,15 @@ void SlaveDebug::init() {
 }
 
 void SlaveDebug::sendLightSensorData(int data) {
-    uint16_t first16Bit = data & 0xFFFF;
-    uint16_t second16Bit = data >> 16;
-
-    transaction(SlaveCommand::lsFirst16BitCommmand, first16Bit);
-    transaction(SlaveCommand::lsSecond16BitCommand, second16Bit);
+    uint8_t firstByte = data & 0xFF;
+    uint8_t secondByte = (data >> 8) & 0xFF;
+    uint8_t thirdByte = (data >> 16) & 0xFF;
+    uint8_t fourthByte = (data >> 24) & 0xFF;
+    
+    transaction(SlaveCommand::lsFirstByteCommand, firstByte);
+    transaction(SlaveCommand::lsSecondByteCommand, secondByte);
+    transaction(SlaveCommand::lsThirdByteCommand, thirdByte);
+    transaction(SlaveCommand::lsFourthByteCommand, fourthByte);
 }
 
 void SlaveDebug::sendPlayMode(bool isAttacker) {

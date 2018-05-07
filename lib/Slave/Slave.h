@@ -17,6 +17,10 @@ enum SlaveCommand: uint8_t {
     lineSizeCommand,
     lsFirst16BitCommmand,
     lsSecond16BitCommand,
+    lsFirstByteCommand,
+    lsSecondByteCommand,
+    lsThirdByteCommand,
+    lsFourthByteCommand,
     playModeCommand
 };
 

@@ -8,6 +8,7 @@
 #include <SPI.h>
 #include <LED.h>
 #include <Slave.h>
+#include <DebugController.h>
 
 T3SPI spi;
 volatile uint16_t dataIn[1];
@@ -16,8 +17,15 @@ volatile uint16_t dataOut[1];
 volatile int ballAngle;
 volatile int ballStrength;
 
+uint8_t lsFirstByte;
+uint8_t lsSecondByte;
+uint8_t lsThirdByte;
+uint8_t lsFourthByte;
+
 LED leds;
 Screen screen;
+
+DebugController debug;
 
 void setup(void) {
 
@@ -54,10 +62,20 @@ void spi0_isr() {
     uint16_t data = dataIn[0] & 0x3FF;
 
     switch (command) {
-    case SlaveCommand::lsFirst16BitCommmand:
+    case SlaveCommand::lsFirstByteCommmand:
+        lsFirstByte = data;
         break;
 
-    case SlaveCommand::lsSecond16BitCommand:
+    case SlaveCommand::lsSecondByteCommand:
+        lsSecondByte = data;
+        break;
+
+    case SlaveCommand::lsThirdByteCommand:
+        lsThirdByte = data;
+        break;
+
+    case SlaveCommand:: lsFourthByteCommand:
+        lsFourthByte = data;
         break;
 
     case SlaveCommand::playModeCommand:
@@ -68,5 +86,6 @@ void spi0_isr() {
         break;
     case SlaveCommand::ballStrengthCommand:
         ballStrength = data;
+        break;
     }
 }
