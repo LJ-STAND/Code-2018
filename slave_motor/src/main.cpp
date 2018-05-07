@@ -13,27 +13,14 @@ volatile uint16_t angle;
 volatile int8_t rotation;
 
 T3SPI spi;
-volatile uint16_t dataIn[0];
-volatile uint16_t dataOut[0];
+
+volatile uint16_t dataIn[1];
+volatile uint16_t dataOut[1];
 
 Timer ledTimer = Timer(LED_BLINK_TIME_SLAVE_MOTOR);
 bool ledOn;
 
-void encoderLeftInterrupt() {
-    motors.motorLeft.updateEncoderCounts();
-}
-
-void encoderRightInterrupt() {
-    motors.motorRight.updateEncoderCounts();
-}
-
-void encoderBackLeftInterrupt() {
-    motors.motorBackLeft.updateEncoderCounts();
-}
-
-void encoderBackRightInterrupt() {
-    motors.motorBackRight.updateEncoderCounts();
-}
+int rpm = 0;
 
 void setup() {
     motors.init();
@@ -43,26 +30,14 @@ void setup() {
 
     NVIC_ENABLE_IRQ(IRQ_SPI0);
 
-    Serial.begin(9600);
-
     pinMode(LED_BUILTIN, OUTPUT);
 
-    attachInterrupt(ENCODER_L_A, encoderLeftInterrupt, CHANGE);
-    attachInterrupt(ENCODER_L_B, encoderLeftInterrupt, CHANGE);
-    attachInterrupt(ENCODER_R_A, encoderRightInterrupt, CHANGE);
-    attachInterrupt(ENCODER_R_B, encoderRightInterrupt, CHANGE);
-    attachInterrupt(ENCODER_BL_A, encoderBackLeftInterrupt, CHANGE);
-    attachInterrupt(ENCODER_BL_B, encoderBackLeftInterrupt, CHANGE);
-    attachInterrupt(ENCODER_BR_A, encoderBackRightInterrupt, CHANGE);
-    attachInterrupt(ENCODER_BR_B, encoderBackRightInterrupt, CHANGE);
+    Serial.begin(9600);
 }
 
 void loop() {
-    // motors.move(angle, rotation, speed);
-    // motors.update();
-
-    motors.move(0, 0, 100);
-    motors.motorLeft.update();
+    motors.move(angle, rotation, speed);
+    motors.update();
 
     if (ledTimer.timeHasPassed()) {
         digitalWrite(LED_BUILTIN, ledOn);
@@ -73,8 +48,8 @@ void loop() {
 void spi0_isr() {
     spi.rxtx16(dataIn, dataOut, 1);
 
-    uint8_t command = (dataIn >> 10);
-    uint16_t data = dataIn & 0x3FF;
+    uint8_t command = (dataIn[0] >> 10);
+    uint16_t data = dataIn[0] & 0x3FF;
 
     switch (command) {
     case SlaveCommand::motorAngleCommand:

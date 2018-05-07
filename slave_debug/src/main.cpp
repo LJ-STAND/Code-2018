@@ -8,19 +8,22 @@
 #include <SPI.h>
 #include <LED.h>
 #include <Slave.h>
+#include <Timer.h>
 
 T3SPI spi;
 volatile uint16_t dataIn[1];
 volatile uint16_t dataOut[1];
 
-volatile int ballAngle;
+volatile int ballAngle = 400;
 volatile int ballStrength;
 
 LED leds;
 Screen screen;
 
-void setup(void) {
+Timer ledTimer(LED_BLINK_TIME_SLAVE_DEBUG);
+bool ledOn;
 
+void setup(void) {
     Serial.begin(9600);
     Serial5.begin(9600);
 
@@ -32,6 +35,8 @@ void setup(void) {
     NVIC_ENABLE_IRQ(IRQ_SPI0);
 
     leds.init();
+
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 
 bool on = false;
@@ -45,6 +50,11 @@ void loop() {
     }
 
     screen.updateBatteryMeter();
+
+    if (ledTimer.timeHasPassed()) {
+        digitalWrite(LED_BUILTIN, ledOn);
+        ledOn = !ledOn;
+    }
 }
 
 void spi0_isr() {

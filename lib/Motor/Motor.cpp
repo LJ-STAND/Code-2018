@@ -1,11 +1,13 @@
 #include "Motor.h"
 
-Motor::Motor(int pwm, int inA, int inB, int enA, int enB) {
+Motor::Motor(int pwm, int inA, int inB, int enA, int enB, int encA, int encB) {
     pwmPin = pwm;
     inAPin = inA;
     inBPin = inB;
     enAPin = enA;
     enBPin = enB;
+    encAPin = encA;
+    encBPin = encB;
 }
 
 void Motor::init() {
@@ -14,23 +16,32 @@ void Motor::init() {
     pinMode(inBPin, OUTPUT);
     pinMode(enAPin, OUTPUT);
     pinMode(enBPin, OUTPUT);
+    pinMode(encAPin, INPUT);
+    pinMode(encBPin, INPUT);
 
     digitalWrite(enAPin, HIGH);
     digitalWrite(enBPin, HIGH);
 
     frequency(915.527);
 
-    lastTime = micros();
+    lastTimeA = micros();
+    lastTimeB = micros();
+
+    lastPIDTime = micros();
 }
 
 void Motor::update() {
-    if ((micros() - lastTime) > ENCODER_UPDATE_TIME) {
-        updateEncoderRPM();
+    updateEncoderRPM();
+
+    if (rpmSetpoint == 0) {
+        pwm = 0;
+    } else {
+        unsigned long currentTime = micros();
+        if (currentTime - lastPIDTime > (1.0 / (((double)abs(rpmSetpoint) / 60.0) * 24.0)) * 1000000.0) {
+            pwm = constrain(abs(pwm) + rpmPID.update(rpm, abs(rpmSetpoint)), 0, MAX_PWM) * sign(rpmSetpoint);
+            lastPIDTime = currentTime;
+        }
     }
-
-    // pwm = constrain(abs(pwm) + rpmPID.update(rpm, abs(rpmSetpoint)), 0, MAX_PWM) * sign(rpmSetpoint);
-
-    pwm = 20000;
 
     if (pwm > 0) {
         analogWrite(pwmPin, constrain(pwm, 0, MAX_PWM));
@@ -62,15 +73,22 @@ void Motor::frequency(int frequency) {
 }
 
 void Motor::updateEncoderRPM() {
-    unsigned long currentTime = micros();
-    rpm = ((double)count / 24.0) / (((double)(currentTime - lastTime) / 1000000.0 / 60.0));
-    Serial.println(rpm);
-    lastTime = currentTime;
-    count = 0;
-}
+    uint8_t valueA = digitalRead(encAPin);
+    uint8_t valueB = digitalRead(encBPin);
 
-void Motor::updateEncoderCounts() {
-    count++;
+    unsigned long currentTime = micros();
+
+    if (valueA != previousValueA) {
+        rpm = 1.0 / (12.0 * ((double)(currentTime - lastTimeA) / 1000000.0 / 60.0));
+        lastTimeA = currentTime;
+        previousValueA = valueA;
+    } else if (valueB != previousValueB) {
+        rpm = 1.0 / (12.0 * ((double)(currentTime - lastTimeB) / 1000000.0 / 60.0));
+        lastTimeB = currentTime;
+        previousValueB = valueB;
+    } else if (currentTime - lastTimeA > ENCODER_UPDATE_TIME || currentTime - lastTimeB > ENCODER_UPDATE_TIME || rpmSetpoint == 0) {
+        rpm = 0;
+    }
 }
 
 double Motor::getRPM() {

@@ -10,7 +10,7 @@
 class Motor {
 public:
     Motor() {}
-    Motor(int pwm, int inA, int inB, int enA, int enB);
+    Motor(int pwm, int inA, int inB, int enA, int enB, int encA, int encB);
 
     void init();
     void move(int value);
@@ -19,7 +19,6 @@ public:
     void brake();
     double getRPM();
     void updateEncoderRPM();
-    void updateEncoderCounts();
 
 private:
     int pwmPin;
@@ -27,11 +26,18 @@ private:
     int inBPin;
     int enAPin;
     int enBPin;
+    int encAPin;
+    int encBPin;
 
-    volatile uint8_t count;
-    unsigned long lastTime = 0;
+    uint8_t previousValueA = 0;
+    uint8_t previousValueB = 0;
+
+    unsigned long lastTimeA = 0;
+    unsigned long lastTimeB = 0;
 
     PID rpmPID = PID(MOTOR_PID_KP, MOTOR_PID_KI, MOTOR_PID_KD);
+
+    unsigned long lastPIDTime = 0;
 
     int pwm = 0;
     double rpm = 0.0;

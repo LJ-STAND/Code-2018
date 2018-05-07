@@ -20,7 +20,7 @@ private:
     double absMax;
 
     double integral = 0;
-    double lastInput = 0;
+    double lastError = 0;
 };
 
 #endif

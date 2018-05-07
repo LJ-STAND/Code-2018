@@ -32,6 +32,7 @@ bool ledOn;
 
 void setup() {
     Serial.begin(9600);
+    Serial5.begin(9600);
 
     spi.begin_MASTER(MASTER_SCK, MASTER_MOSI, MASTER_MISO, MASTER_CS_SENSOR, CS_ActiveLOW);
     spi.setCTAR(CTAR_0, 16, SPI_MODE0, LSB_FIRST, SPI_CLOCK_DIV16);
@@ -181,7 +182,7 @@ void calculateMovement() {
     // calculateOrbit();
 
     #if AVOID_LINE
-        calculateLineAvoid();
+        // calculateLineAvoid();
     #endif
 
     moveData.rotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
@@ -197,7 +198,7 @@ void loop() {
     imu.update();
 
     calculateMovement();
-
+    
     slaveMotor.setMotor(moveData);
 
     if (ledTimer.timeHasPassed()) {
