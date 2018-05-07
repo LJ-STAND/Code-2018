@@ -34,6 +34,14 @@
             "problemMatcher": [
                 "$platformio"
             ]
+        },
+        {
+            "label": "Reset Bluetooth",
+            "type": "shell",
+            "command": "cd bluetooth_reset; pio run -t upload",
+            "problemMatcher": [
+                "$platformio"
+            ]
         }
     ]
 }
