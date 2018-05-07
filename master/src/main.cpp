@@ -179,11 +179,8 @@ void calculateMovement() {
     //     calculateDefense();
     // }
 
-    // calculateOrbit();
-
-    #if AVOID_LINE
-        // calculateLineAvoid();
-    #endif
+    calculateOrbit();
+    calculateLineAvoid();
 
     moveData.rotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
 }
@@ -198,7 +195,7 @@ void loop() {
     imu.update();
 
     calculateMovement();
-    
+
     slaveMotor.setMotor(moveData);
 
     if (ledTimer.timeHasPassed()) {

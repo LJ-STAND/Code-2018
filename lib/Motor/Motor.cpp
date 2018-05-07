@@ -22,7 +22,7 @@ void Motor::init() {
     digitalWrite(enAPin, HIGH);
     digitalWrite(enBPin, HIGH);
 
-    frequency(915.527);
+    frequency(19000);
 
     lastTimeA = micros();
     lastTimeB = micros();

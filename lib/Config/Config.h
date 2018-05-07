@@ -22,8 +22,8 @@
 #define LINE_SMALL_SIZE 0.4
 #define LINE_BIG_SIZE 0.7
 
-#define LINE_SPEED 100
-#define OVER_LINE_SPEED 100
+#define LINE_SPEED 40
+#define OVER_LINE_SPEED 60
 
 #define AVOID_LINE true
 
