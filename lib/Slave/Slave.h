@@ -14,7 +14,10 @@ enum SlaveCommand: uint8_t {
     ballAngleCommand,
     ballStrengthCommand,
     lineAngleCommand,
-    lineSizeCommand
+    lineSizeCommand,
+    lsFirst16BitCommmand,
+    lsSecond16BitCommand,
+    playModeCommand
 };
 
 class Slave {
@@ -42,9 +45,20 @@ public:
     void init();
     uint16_t getBallAngle();
     uint16_t getBallStrength();
+    BallData getBallData();
+
     uint16_t getLineAngle();
     double getLineSize();
-    BallData getBallData();
+    int getLightSensorData();
+};
+
+class SlaveDebug: public Slave {
+public:
+    void init();
+    void sendLightSensorData(int data);
+    void sendPlayMode(bool isAttacker);
+    void sendBallAngle(uint16_t angle);
+    void sendBallStrength(uint16_t strength);
 };
 
 #endif // SLAVE_H

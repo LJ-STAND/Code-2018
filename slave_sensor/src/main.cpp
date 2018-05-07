@@ -74,6 +74,24 @@ void spi0_isr() {
         dataOut[0] = (uint16_t)(lightSensors.getLineSize() * 100.0);
         break;
 
+    case SlaveCommand::lsFirst16BitCommmand:
+        dataOut[0] = 0;
+
+        for (uint8_t i = 0; i < 16; i++) {
+            dataOut[0] |= lightSensors.data[i] << i;
+        }
+
+        break;
+
+    case SlaveCommand::lsSecond16BitCommand:
+        dataOut[0] = 0;
+
+        for (uint8_t i = 0; i < 16; i++) {
+            dataOut[0] |= lightSensors.data[i + 16] << i;
+        }
+
+        break;
+
     default:
         dataOut[0] = 0;
         break;

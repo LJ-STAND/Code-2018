@@ -13,6 +13,8 @@ volatile uint16_t angle;
 volatile int8_t rotation;
 
 T3SPI spi;
+volatile uint16_t dataIn[0];
+volatile uint16_t dataOut[0];
 
 Timer ledTimer = Timer(LED_BLINK_TIME_SLAVE_MOTOR);
 bool ledOn;
@@ -69,12 +71,10 @@ void loop() {
 }
 
 void spi0_isr() {
-    uint16_t dataIn = SPI0_POPR;
+    spi.rxtx16(dataIn, dataOut, 1);
 
     uint8_t command = (dataIn >> 10);
     uint16_t data = dataIn & 0x3FF;
-
-    uint16_t dataOut = 0;
 
     switch (command) {
     case SlaveCommand::motorAngleCommand:
@@ -89,7 +89,4 @@ void spi0_isr() {
         speed = (int8_t)data;
         break;
     }
-
-    SPI0_PUSHR_SLAVE = dataOut;
-    SPI0_SR |= SPI_SR_RFDF;
 }

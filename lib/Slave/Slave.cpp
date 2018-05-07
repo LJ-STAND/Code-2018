@@ -9,10 +9,9 @@ void Slave::init(int csPin) {
 uint16_t Slave::transaction(SlaveCommand command, uint16_t data) {
     dataOut[0] = (command << 10) | (data & 0x3FF);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 4; i++) {
         spi.txrx16(dataOut, dataIn, 1, CTAR_0, cs);
     }
-
 
     return dataIn[0];
 }
@@ -64,4 +63,34 @@ BallData SlaveSensor::getBallData() {
     int strength = getBallStrength();
 
     return BallData(angle, strength, angle != TSOP_NO_BALL);
+}
+
+int SlaveSensor::getLightSensorData() {
+    uint16_t first16Bit = transaction(SlaveCommand::lsFirst16BitCommmand);
+    uint16_t second16Bit = transaction(SlaveCommand::lsFirst16BitCommmand);
+    return first16Bit | (second16Bit << 16);
+}
+
+void SlaveDebug::init() {
+    Slave::init(MASTER_CS_DEBUG);
+}
+
+void SlaveDebug::sendLightSensorData(int data) {
+    uint16_t first16Bit = data & 0xFFFF;
+    uint16_t second16Bit = data >> 16;
+
+    transaction(SlaveCommand::lsFirst16BitCommmand, first16Bit);
+    transaction(SlaveCommand::lsSecond16BitCommand, second16Bit);
+}
+
+void SlaveDebug::sendPlayMode(bool isAttacker) {
+    transaction(SlaveCommand::playModeCommand, isAttacker);
+}
+
+void SlaveDebug::sendBallAngle(uint16_t angle) {
+    transaction(SlaveCommand::ballAngleCommand, angle);
+}
+
+void SlaveDebug::sendBallStrength(uint16_t strength) {
+    transaction(SlaveCommand::ballStrengthCommand, strength);
 }

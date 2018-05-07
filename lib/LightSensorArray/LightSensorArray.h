@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include <Pins.h>
-#include <Bits.h>
 #include <Common.h>
 #include <Config.h>
 
@@ -26,9 +25,6 @@ public:
 
     double getLineAngle();
     double getLineSize();
-
-    uint16_t getFirst16Bit();
-    uint16_t getSecond16Bit();
 
     bool data[LS_NUM];
     bool filledInData[LS_NUM];

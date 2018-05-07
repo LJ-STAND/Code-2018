@@ -14,6 +14,7 @@
 
 SlaveSensor slaveSensor;
 SlaveMotor slaveMotor;
+SlaveDebug slaveDebug;
 
 LineData lineData(0, 0, true);
 BallData ballData;
@@ -37,6 +38,7 @@ void setup() {
 
     slaveSensor.init();
     slaveMotor.init();
+    slaveDebug.init();
 
     imu.init();
 
@@ -188,6 +190,9 @@ void calculateMovement() {
 void loop() {
     ballData = slaveSensor.getBallData();
     updateLine(slaveSensor.getLineAngle(), slaveSensor.getLineSize());
+
+    slaveDebug.sendBallAngle(ballData.angle);
+    slaveDebug.sendBallStrength(ballData.strength);
 
     imu.update();
 
