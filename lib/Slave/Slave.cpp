@@ -38,6 +38,10 @@ void SlaveMotor::setMotor(MoveData moveData) {
     setMotorSpeed(moveData.speed);
 }
 
+void SlaveMotor::brake() {
+    setMotor(MoveData());
+}
+
 void SlaveSensor::init() {
     Slave::init(MASTER_CS_SENSOR);
 }
@@ -93,4 +97,20 @@ void SlaveDebug::sendBallAngle(uint16_t angle) {
 
 void SlaveDebug::sendBallStrength(uint16_t strength) {
     transaction(SlaveCommand::ballStrengthCommand, strength);
+}
+
+DebugSettings SlaveDebug::getDebugSettings() {
+    return DebugSettings(transaction(SlaveCommand::debugSettingsCommand));
+}
+
+void SlaveDebug::sendIMUIsCalibrated() {
+    transaction(SlaveCommand::IMUIsCalibratedCommand);
+}
+
+void SlaveDebug::sendHeadingIsReset() {
+    transaction(SlaveCommand::headingIsResetCommand);
+}
+
+void SlaveDebug::sendHeading(uint16_t heading) {
+    transaction(SlaveCommand::headingCommand, heading);
 }

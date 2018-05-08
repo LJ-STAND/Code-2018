@@ -10,6 +10,8 @@ void IMU::init() {
     writeRegister(SMPLRT_DIV_REGISTER, 0);
 
     setGyroRange(GYRO_RANGE_1000DPS);
+
+    calibration = (int16_t)(EEPROM.read(eepromAddress) | EEPROM.read(eepromAddress + 1) << 8);
 }
 
 void IMU::calibrate() {
@@ -19,6 +21,9 @@ void IMU::calibrate() {
     }
 
     calibration /= IMU_CALIBRATION_COUNT;
+
+    EEPROM.write(eepromAddress, calibration & 0xFF);
+    EEPROM.write(eepromAddress + 1, (calibration >> 8) & 0xFF);
 }
 
 void IMU::setGyroRange(uint8_t range) {
@@ -79,24 +84,23 @@ int16_t IMU::readRawGyroZ() {
 }
 
 double IMU::readGyroZ() {
-    double rawValue = (double)readRawGyroZ() - calibration;
-
-    return rawValue * gyroScale;
+    return (double)(readRawGyroZ() - calibration) * gyroScale;
 }
 
 void IMUFusion::init() {
     SPI2.begin();
 
     imu1.init();
-    imu1.calibrate();
-
     imu2.init();
-    imu2.calibrate();
-
     imu3.init();
-    imu3.calibrate();
 
     previousTime = micros();
+}
+
+void IMUFusion::calibrate() {
+    imu1.calibrate();
+    imu2.calibrate();
+    imu3.calibrate();
 }
 
 void IMUFusion::update() {
@@ -129,4 +133,8 @@ void IMUFusion::update() {
 
 double IMUFusion::getHeading() {
     return heading;
+}
+
+void IMUFusion::resetHeading() {
+    heading = 0;
 }

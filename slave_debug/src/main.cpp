@@ -43,13 +43,17 @@ bool on = false;
 bool canPress = true;
 
 void loop() {
-    if (ballAngle != 400) {
-        leds.displayAngle(ballAngle, 300);
+    if (screen.settings.IMUNeedsCalibrating) {
+        leds.rainbow();
     } else {
-        leds.rgbColor(leds.rgb.Color(100, 0, 0));
+        if (ballAngle != 400) {
+            leds.displayAngle(ballAngle, 300);
+        } else {
+            leds.rgbColor(leds.rgb.Color(100, 0, 0));
+        }
     }
 
-    screen.updateBatteryMeter();
+    screen.update();
 
     if (ledTimer.timeHasPassed()) {
         digitalWrite(LED_BUILTIN, ledOn);
@@ -73,10 +77,29 @@ void spi0_isr() {
     case SlaveCommand::playModeCommand:
         leds.displayPlayMode((bool)data);
         break;
+
     case SlaveCommand::ballAngleCommand:
         ballAngle = data;
         break;
+
     case SlaveCommand::ballStrengthCommand:
         ballStrength = data;
+        break;
+
+    case SlaveCommand::debugSettingsCommand:
+        dataOut[0] = screen.settings.numberValue();
+        break;
+
+    case SlaveCommand::headingIsResetCommand:
+        screen.settings.headingNeedsResetting = false;
+        break;
+
+    case SlaveCommand::IMUIsCalibratedCommand:
+        screen.settings.IMUNeedsCalibrating = false;
+        screen.clearMessage();
+        break;
+
+    case SlaveCommand::headingCommand:
+        screen.heading = data;
     }
 }

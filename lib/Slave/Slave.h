@@ -6,6 +6,7 @@
 #include <Config.h>
 #include <BallData.h>
 #include <MoveData.h>
+#include <DebugSettings.h>
 
 enum SlaveCommand: uint8_t {
     motorAngleCommand,
@@ -17,7 +18,11 @@ enum SlaveCommand: uint8_t {
     lineSizeCommand,
     lsFirst16BitCommmand,
     lsSecond16BitCommand,
-    playModeCommand
+    playModeCommand,
+    debugSettingsCommand,
+    headingIsResetCommand,
+    IMUIsCalibratedCommand,
+    headingCommand
 };
 
 class Slave {
@@ -38,6 +43,7 @@ public:
     void setMotorRotation(uint16_t rotation);
     void setMotorSpeed(uint16_t speed);
     void setMotor(MoveData moveData);
+    void brake();
 };
 
 class SlaveSensor: public Slave {
@@ -59,6 +65,10 @@ public:
     void sendPlayMode(bool isAttacker);
     void sendBallAngle(uint16_t angle);
     void sendBallStrength(uint16_t strength);
+    void sendHeadingIsReset();
+    void sendIMUIsCalibrated();
+    void sendHeading(uint16_t heading);
+    DebugSettings getDebugSettings();
 };
 
 #endif // SLAVE_H

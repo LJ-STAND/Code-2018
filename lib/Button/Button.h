@@ -2,6 +2,7 @@
 #define BUTTON_H
 
 #include <Adafruit_ILI9341_8bit.h>
+#include <TouchScreen.h>
 #include <Config.h>
 #include <Common.h>
 
@@ -10,13 +11,20 @@ public:
     Button() {}
     Button(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
-    void draw();
+    virtual void draw() {}
+    void checkDraw();
+    void setNeedsDraw(bool highlightOnly = false);
 
     bool isTouched(uint16_t tx, uint16_t ty, bool touchDown);
+    void setEnabled(bool isEnabled);
+    bool getEnabled();
 
 protected:
     uint16_t x, y, w, h;
     bool highlighted;
+    bool enabled;
+    bool needsDrawing = true;
+    bool needsHighlightOnly = false;
 };
 
 class CircleButton : public Button {
@@ -37,15 +45,23 @@ public:
     EngineStartButton(uint16_t cx, uint16_t cy);
 
     void draw();
-
-    bool enabled;
 };
 
-// class HomeButton : public CircleButton {
-// public:
-//     HomeButton() {}
-//     HomeButton(uint16_t cx, uint16_t cy);
-// };
+class HomeButton : public CircleButton {
+public:
+    HomeButton() {}
+    HomeButton(uint16_t cx, uint16_t cy);
+
+    void draw();
+};
+
+class BackButton : public Button {
+public:
+    BackButton() {}
+    BackButton(uint16_t x, uint16_t y);
+
+    void draw();
+};
 
 class TextButton : public CircleButton {
 public:
@@ -59,6 +75,14 @@ protected:
     uint8_t textSize;
 
     uint16_t textWidth, textHeight;
+};
+
+class CheckBox : public Button {
+public:
+    CheckBox() {}
+    CheckBox(uint16_t x, uint16_t y);
+
+    void draw();
 };
 
 #endif // BUTTON_H

@@ -19,7 +19,7 @@
 // 3+ uses insert sort to get the median value.
 // We found 2 is precise yet not too slow so we suggest sticking with it!
 
-#define NUMSAMPLES 2
+#define NUMSAMPLES 4
 
 TSPoint::TSPoint(void) {
   x = y = 0;
@@ -43,12 +43,12 @@ bool TSPoint::operator!=(TSPoint p1) {
 static void insert_sort(int array[], uint8_t size) {
   uint8_t j;
   int save;
-  
+
   for (int i = 1; i < size; i++) {
     save = array[i];
     for (j = i; j >= 1 && save < array[j - 1]; j--)
       array[j] = array[j - 1];
-    array[j] = save; 
+    array[j] = save;
   }
 }
 #endif
@@ -109,7 +109,7 @@ TSPoint TouchScreen::getPoint(void) {
    digitalWrite(_yp, HIGH);
 #endif
 
-  
+
 #ifdef __arm__
    delayMicroseconds(20); // Fast ARM chips need to allow voltages to settle
 #endif
@@ -144,14 +144,14 @@ TSPoint TouchScreen::getPoint(void) {
    *ym_port |= ym_pin;
 #else
    digitalWrite(_xp, LOW);
-   digitalWrite(_ym, HIGH); 
+   digitalWrite(_ym, HIGH);
 #endif
-  
-   int z1 = analogRead(_xm); 
+
+   int z1 = analogRead(_xm);
    int z2 = analogRead(_yp);
 
    if (_rxplate != 0) {
-     // now read the x 
+     // now read the x
      float rtouch;
      rtouch = z2;
      rtouch /= z1;
@@ -159,7 +159,7 @@ TSPoint TouchScreen::getPoint(void) {
      rtouch *= x;
      rtouch *= _rxplate;
      rtouch /= 1024;
-     
+
      z = rtouch;
    } else {
      z = (1023-(z2-z1));
@@ -185,7 +185,7 @@ TouchScreen::TouchScreen(uint8_t xp, uint8_t yp, uint8_t xm, uint8_t ym,
   yp_port =  portOutputRegister(digitalPinToPort(_yp));
   xm_port =  portOutputRegister(digitalPinToPort(_xm));
   ym_port =  portOutputRegister(digitalPinToPort(_ym));
-  
+
   xp_pin = digitalPinToBitMask(_xp);
   yp_pin = digitalPinToBitMask(_yp);
   xm_pin = digitalPinToBitMask(_xm);
@@ -200,12 +200,12 @@ int TouchScreen::readTouchX(void) {
    pinMode(_ym, INPUT);
    digitalWrite(_yp, LOW);
    digitalWrite(_ym, LOW);
-   
+
    pinMode(_xp, OUTPUT);
    digitalWrite(_xp, HIGH);
    pinMode(_xm, OUTPUT);
    digitalWrite(_xm, LOW);
-   
+
    return (1023-analogRead(_yp));
 }
 
@@ -215,12 +215,12 @@ int TouchScreen::readTouchY(void) {
    pinMode(_xm, INPUT);
    digitalWrite(_xp, LOW);
    digitalWrite(_xm, LOW);
-   
+
    pinMode(_yp, OUTPUT);
    digitalWrite(_yp, HIGH);
    pinMode(_ym, OUTPUT);
    digitalWrite(_ym, LOW);
-   
+
    return (1023-analogRead(_xm));
 }
 
@@ -229,22 +229,22 @@ uint16_t TouchScreen::pressure(void) {
   // Set X+ to ground
   pinMode(_xp, OUTPUT);
   digitalWrite(_xp, LOW);
-  
+
   // Set Y- to VCC
   pinMode(_ym, OUTPUT);
-  digitalWrite(_ym, HIGH); 
-  
+  digitalWrite(_ym, HIGH);
+
   // Hi-Z X- and Y+
   digitalWrite(_xm, LOW);
   pinMode(_xm, INPUT);
   digitalWrite(_yp, LOW);
   pinMode(_yp, INPUT);
-  
-  int z1 = analogRead(_xm); 
+
+  int z1 = analogRead(_xm);
   int z2 = analogRead(_yp);
 
   if (_rxplate != 0) {
-    // now read the x 
+    // now read the x
     float rtouch;
     rtouch = z2;
     rtouch /= z1;
@@ -252,7 +252,7 @@ uint16_t TouchScreen::pressure(void) {
     rtouch *= readTouchX();
     rtouch *= _rxplate;
     rtouch /= 1024;
-    
+
     return rtouch;
   } else {
     return (1023-(z2-z1));
