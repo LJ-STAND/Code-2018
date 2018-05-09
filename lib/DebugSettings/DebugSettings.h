@@ -6,6 +6,8 @@ typedef struct DebugSettings {
     bool headingNeedsResetting;
     bool IMUNeedsCalibrating;
 
+    // bool playModeSwitching;
+
     DebugSettings() {
         engineStarted = false;
         headingNeedsResetting = false;

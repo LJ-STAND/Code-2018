@@ -4,10 +4,10 @@ void Screen::init() {
     TFT.begin();
 
     TFT.setRotation(SCREEN_ROTATION);
-    TFT.fillScreen(BLACK);
-
+    TFT.fillScreen(BACKGROUND_COLOR);
 
     TFT.setTextSize(TITLE_FONT_SIZE);
+    TFT.setTextColor(FOREGROUND_COLOR);
 
     uint16_t width, height;
     int16_t tempX, tempY;
@@ -17,28 +17,32 @@ void Screen::init() {
     TFT.setCursor(TFT.width() / 2 - width / 2, TITLE_Y);
     TFT.print("LJ STAND");
 
-    TFT.drawRoundRect(TFT.width() - BATTERY_METER_RIGHT_X, BATTERY_METER_Y, BATTERY_METER_WIDTH, BATTERY_METER_HEIGHT, BATTERY_METER_ROUNDED_RADIUS, WHITE);
-    TFT.fillRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_WIDTH, BATTERY_METER_Y + (BATTERY_METER_HEIGHT - BATTERY_METER_END_HEIGHT) / 2, BATTERY_METER_END_WIDTH - 1, BATTERY_METER_END_HEIGHT, WHITE);
-    TFT.fillRoundRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_WIDTH, BATTERY_METER_Y + (BATTERY_METER_HEIGHT - BATTERY_METER_END_HEIGHT) / 2, BATTERY_METER_END_WIDTH, BATTERY_METER_END_HEIGHT, BATTERY_METER_END_ROUNDED_RADIUS, WHITE);
+    TFT.drawRoundRect(TFT.width() - BATTERY_METER_RIGHT_X, BATTERY_METER_Y, BATTERY_METER_WIDTH, BATTERY_METER_HEIGHT, BATTERY_METER_ROUNDED_RADIUS, FOREGROUND_COLOR);
+    TFT.fillRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_WIDTH, BATTERY_METER_Y + (BATTERY_METER_HEIGHT - BATTERY_METER_END_HEIGHT) / 2, BATTERY_METER_END_WIDTH - 1, BATTERY_METER_END_HEIGHT, FOREGROUND_COLOR);
+    TFT.fillRoundRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_WIDTH, BATTERY_METER_Y + (BATTERY_METER_HEIGHT - BATTERY_METER_END_HEIGHT) / 2, BATTERY_METER_END_WIDTH, BATTERY_METER_END_HEIGHT, BATTERY_METER_END_ROUNDED_RADIUS, FOREGROUND_COLOR);
 
-    TFT.drawLine(0, LINE_Y, TFT.width(), LINE_Y, WHITE);
+    TFT.drawLine(0, LINE_Y, TFT.width(), LINE_Y, FOREGROUND_COLOR);
 
     engineStartButton = EngineStartButton(TFT.width() / 2, LINE_Y + (TFT.height() - LINE_Y) / 2);
     debugButton = TextButton(TFT.width() - 50, LINE_Y + 50, 30, "Debug", 1);
     settingsButton = TextButton(TFT.width() - 50, TFT.height() - 50, 30, "Settings", 1);
-    headingResetButton = TextButton(50, LINE_Y + 50, 30, "Reset Heading", 1);
-    IMUCalibrateButton = TextButton(50, TFT.height() - 50, 30, "Calibrate IMU", 1);
-    homeButton = HomeButton(15, 12);
+    headingResetButton = TextButton(50, LINE_Y + 50, 30, "Reset\nHeading", 1);
+    IMUCalibrateButton = TextButton(50, TFT.height() - 50, 30, "Calibrate\nIMU", 1);
+    homeButton = HomeButton(HOME_BUTTON_X, HOME_BUTTON_Y);
 
-    testCheckBox = CheckBox(30, LINE_Y + 30);
+    headingLabel = Label(10, LINE_Y + 10, 150, 20, "Heading: 0", 2);
+    headingDial = Dial(TFT.width() / 2, TFT.height() / 2, 50, 360, 0, 0);
+
+    playModeSwitchingLabel = Label(10, LINE_Y + 20, 200, 20, "Play mode switching", 2);
+    playModeSwitchingCheckBox = CheckBox(TFT.width() - CHECK_BOX_OUTER_SIZE - 10, LINE_Y + 10);
 }
 
 void Screen::clearAll() {
-    TFT.fillScreen(BLACK);
+    TFT.fillScreen(BACKGROUND_COLOR);
 }
 
 void Screen::clear() {
-    TFT.fillRect(0, LINE_Y + 1, TFT.width(), TFT.height() - LINE_Y, BLACK);
+    TFT.fillRect(0, LINE_Y + 1, TFT.width(), TFT.height() - LINE_Y, BACKGROUND_COLOR);
 }
 
 void Screen::checkTouch() {
@@ -84,8 +88,8 @@ void Screen::checkTouch() {
             break;
 
         case ScreenType::settingScreenType:
-            if (testCheckBox.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                testCheckBox.setEnabled(!testCheckBox.getEnabled());
+            if (playModeSwitchingCheckBox.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                playModeSwitchingCheckBox.setEnabled(!playModeSwitchingCheckBox.getEnabled());
             }
 
             break;
@@ -114,16 +118,21 @@ void Screen::update() {
 
         case ScreenType::debugScreenType:
             if (updateTextTimer.timeHasPassed()) {
-                TFT.fillRect(10, LINE_Y + 10, 40, 20, BLACK);
-                TFT.setCursor(10, LINE_Y + 10);
-                TFT.setTextSize(2);
-                TFT.print(heading);
+                char headingString[50];
+                sprintf(headingString, "Heading: %d", heading);
+
+                headingLabel.setText(headingString);
+                headingDial.setValue(heading);
             }
+
+            headingLabel.checkDraw();
+            headingDial.checkDraw();
 
             break;
 
         case ScreenType::settingScreenType:
-            testCheckBox.checkDraw();
+            playModeSwitchingLabel.checkDraw();
+            playModeSwitchingCheckBox.checkDraw();
 
             break;
         }
@@ -146,11 +155,20 @@ void Screen::redrawScreen() {
         settingsButton.setNeedsDraw();
         IMUCalibrateButton.setNeedsDraw();
         headingResetButton.setNeedsDraw();
+        headingDial.setNeedsDraw();
+
+        break;
+
+    case ScreenType::debugScreenType:
+        headingLabel.setNeedsDraw();
 
         break;
 
     case ScreenType::settingScreenType:
-        testCheckBox.setNeedsDraw();
+        playModeSwitchingLabel.setNeedsDraw();
+        playModeSwitchingCheckBox.setNeedsDraw();
+
+        break;
     }
 }
 
@@ -168,7 +186,7 @@ void Screen::updateBatteryMeter() {
     double batteryLevel = (double)(fmin(fmax(batteryAverage.average() * BATTERY_VOLTAGE_MULTIPILER, MIN_BATTERY_VOLTAGE), MAX_BATTERY_VOLTAGE) - MIN_BATTERY_VOLTAGE) / (double)(MAX_BATTERY_VOLTAGE - MIN_BATTERY_VOLTAGE);
 
     TFT.fillRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_INSET, BATTERY_METER_Y + BATTERY_METER_INSET, (BATTERY_METER_WIDTH - 2 * BATTERY_METER_INSET) * batteryLevel, BATTERY_METER_HEIGHT - 2 * BATTERY_METER_INSET, batteryLevel < 0.2 ? RED : GREEN);
-    TFT.fillRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_INSET + (BATTERY_METER_WIDTH - 2 * BATTERY_METER_INSET) * batteryLevel, BATTERY_METER_Y + BATTERY_METER_INSET, (BATTERY_METER_WIDTH - 2 * BATTERY_METER_INSET) * (1.0 - batteryLevel), BATTERY_METER_HEIGHT - 2 * BATTERY_METER_INSET, BLACK);
+    TFT.fillRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_INSET + (BATTERY_METER_WIDTH - 2 * BATTERY_METER_INSET) * batteryLevel, BATTERY_METER_Y + BATTERY_METER_INSET, (BATTERY_METER_WIDTH - 2 * BATTERY_METER_INSET) * (1.0 - batteryLevel), BATTERY_METER_HEIGHT - 2 * BATTERY_METER_INSET, BACKGROUND_COLOR);
 }
 
 void Screen::displayMessage(char *message) {
@@ -183,8 +201,8 @@ void Screen::displayMessage(char *message) {
 
     TFT.setCursor(TFT.width() / 2 - width / 2, TFT.height() / 2 - height / 2);
 
-    TFT.fillRect(TFT.width() / 2 - (width + MESSAGE_BOX_PADDING) / 2, TFT.height() / 2 - (height + MESSAGE_BOX_PADDING) / 2, width + MESSAGE_BOX_PADDING, height + MESSAGE_BOX_PADDING, BLACK);
-    TFT.drawRect(TFT.width() / 2 - (width + MESSAGE_BOX_PADDING) / 2, TFT.height() / 2 - (height + MESSAGE_BOX_PADDING) / 2, width + MESSAGE_BOX_PADDING, height + MESSAGE_BOX_PADDING, WHITE);
+    TFT.fillRect(TFT.width() / 2 - (width + MESSAGE_BOX_PADDING) / 2, TFT.height() / 2 - (height + MESSAGE_BOX_PADDING) / 2, width + MESSAGE_BOX_PADDING, height + MESSAGE_BOX_PADDING, BACKGROUND_COLOR);
+    TFT.drawRect(TFT.width() / 2 - (width + MESSAGE_BOX_PADDING) / 2, TFT.height() / 2 - (height + MESSAGE_BOX_PADDING) / 2, width + MESSAGE_BOX_PADDING, height + MESSAGE_BOX_PADDING, FOREGROUND_COLOR);
 
     TFT.print(message);
 }

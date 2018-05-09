@@ -1,30 +1,75 @@
-#ifndef BUTTON_H
-#define BUTTON_H
+#ifndef SCREEN_UI_H
+#define SCREEN_UI_H
 
 #include <Adafruit_ILI9341_8bit.h>
 #include <TouchScreen.h>
 #include <Config.h>
 #include <Common.h>
+#include <Fonts/Org_01.h>
 
-class Button {
+class View {
+public:
+    View() {}
+    View(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+
+    virtual void draw() {}
+    void checkDraw();
+    virtual void setNeedsDraw();
+
+    uint16_t x, y, w, h;
+
+protected:
+    bool needsDrawing = true;
+};
+
+class Dial : public View {
+public:
+    Dial() {}
+    Dial(uint16_t cx, uint16_t cy, uint16_t r, int maxValue, double minAngle, double maxAngle);
+
+    void draw();
+    void setValue(int newValue);
+    int getValue();
+
+protected:
+    double minAngle, maxAngle;
+    int maxValue;
+    int value;
+    int oldValue;
+
+    uint16_t cx, cy, r;
+};
+
+class Button : public View {
 public:
     Button() {}
     Button(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
-    virtual void draw() {}
-    void checkDraw();
     void setNeedsDraw(bool highlightOnly = false);
 
     bool isTouched(uint16_t tx, uint16_t ty, bool touchDown);
+    virtual bool inButton(uint16_t tx, uint16_t ty);
+
     void setEnabled(bool isEnabled);
     bool getEnabled();
 
 protected:
-    uint16_t x, y, w, h;
-    bool highlighted;
-    bool enabled;
-    bool needsDrawing = true;
+    bool highlighted = false;
+    bool enabled = false;
     bool needsHighlightOnly = false;
+};
+
+class Label : public View {
+public:
+    Label() {}
+    Label(uint16_t x, uint16_t y, uint16_t w, uint16_t h, char *str, uint8_t textSize);
+
+    void draw();
+    void setText(char *newStr);
+
+protected:
+    char *str;
+    uint8_t textSize;
 };
 
 class CircleButton : public Button {
@@ -32,11 +77,10 @@ public:
     CircleButton() {}
     CircleButton(uint16_t cx, uint16_t cy, uint16_t r);
 
-    bool isTouched(uint16_t tx, uint16_t ty, bool touchDown);
+    bool inButton(uint16_t tx, uint16_t ty);
 
 protected:
-    uint16_t cx, cy;
-    uint16_t r;
+    uint16_t cx, cy, r;
 };
 
 class EngineStartButton : public CircleButton {

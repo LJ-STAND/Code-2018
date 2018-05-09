@@ -18,6 +18,7 @@ volatile uint16_t dataIn[1];
 volatile uint16_t dataOut[1];
 
 Timer ledTimer = Timer(LED_BLINK_TIME_SLAVE_MOTOR);
+
 bool ledOn;
 
 int rpm = 0;

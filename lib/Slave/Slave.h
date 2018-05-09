@@ -22,7 +22,11 @@ enum SlaveCommand: uint8_t {
     debugSettingsCommand,
     headingIsResetCommand,
     IMUIsCalibratedCommand,
-    headingCommand
+    headingCommand,
+    motorLeftRPMCommand,
+    motorRightRPMCommand,
+    motorBackLeftRPMCommand,
+    motorBackRightRPMCommand
 };
 
 class Slave {
@@ -43,6 +47,10 @@ public:
     void setMotorRotation(uint16_t rotation);
     void setMotorSpeed(uint16_t speed);
     void setMotor(MoveData moveData);
+    int getLeftRPM();
+    int getRightRPM();
+    int getBackLeftRPM();
+    int getBackRightRPM();
     void brake();
 };
 
@@ -68,6 +76,10 @@ public:
     void sendHeadingIsReset();
     void sendIMUIsCalibrated();
     void sendHeading(uint16_t heading);
+    void sendLeftRPM(uint16_t rpm);
+    void sendRightRPM(uint16_t rpm);
+    void sendBackLeftRPM(uint16_t rpm);
+    void sendBackRightRPM(uint16_t rpm);
     DebugSettings getDebugSettings();
 };
 

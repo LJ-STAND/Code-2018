@@ -4,7 +4,7 @@
 #include <Adafruit_ILI9341_8bit.h>
 #include <TouchScreen.h>
 #include <MovingAverage.h>
-#include <Button.h>
+#include <ScreenUI.h>
 #include <Config.h>
 #include <Pins.h>
 #include <DebugSettings.h>
@@ -37,6 +37,10 @@ public:
     DebugSettings settings;
 
     int heading;
+    int leftRPM;
+    int rightRPM;
+    int backLeftRPM;
+    int backRightRPM;
 
 private:
     TouchScreen ts = TouchScreen(SCREEN_XP, SCREEN_YP, SCREEN_XM, SCREEN_YM, TS_RESISTANCE);
@@ -56,7 +60,14 @@ private:
     TextButton headingResetButton;
     HomeButton homeButton;
 
-    CheckBox testCheckBox;
+    Label playModeSwitchingLabel;
+    CheckBox playModeSwitchingCheckBox;
+
+    Label gameModeLabel;
+
+    Label headingLabel;
+
+    Dial headingDial;
 
     Timer updateTextTimer = Timer(SCREEN_UPDATE_TEXT_TIME);
 };

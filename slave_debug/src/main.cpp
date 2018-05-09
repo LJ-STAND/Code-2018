@@ -101,5 +101,22 @@ void spi0_isr() {
 
     case SlaveCommand::headingCommand:
         screen.heading = data;
+        break;
+
+    case SlaveCommand::motorLeftRPMCommand:
+        screen.leftRPM = data * 2;
+        break;
+
+    case SlaveCommand::motorRightRPMCommand:
+        screen.rightRPM = data * 2;
+        break;
+
+    case SlaveCommand::motorBackLeftRPMCommand:
+        screen.backLeftRPM = data * 2;
+        break;
+
+    case SlaveCommand::motorBackRightRPMCommand:
+        screen.backRightRPM = data * 2;
+        break;
     }
 }

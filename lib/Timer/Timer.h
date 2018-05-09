@@ -10,6 +10,8 @@ public:
     bool timeHasPassed();
     bool timeHasPassedNoUpdate();
 
+    void resetTime();
+
 private:
     unsigned long timerDuration;
     unsigned long lastUpdate;
