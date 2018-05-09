@@ -9,6 +9,7 @@
 #include <LED.h>
 #include <Slave.h>
 #include <Timer.h>
+#include <DebugController.h>
 
 T3SPI spi;
 volatile uint16_t dataIn[1];
@@ -23,11 +24,15 @@ Screen screen;
 Timer ledTimer(LED_BLINK_TIME_SLAVE_DEBUG);
 bool ledOn;
 
+DebugController debug;
+
 void setup(void) {
     Serial.begin(9600);
     Serial5.begin(9600);
 
     screen.init();
+
+    debug.init();
 
     spi.begin_SLAVE(SLAVE_DEBUG_SCK, SLAVE_DEBUG_MOSI, SLAVE_DEBUG_MISO, SLAVE_DEBUG_CS);
     spi.setCTAR_SLAVE(16, SPI_MODE0);
@@ -48,6 +53,8 @@ void loop() {
     } else {
         if (ballAngle != 400) {
             leds.displayAngle(ballAngle, 300);
+            debug.appSendBallAngle(ballAngle);
+            delay(100);
         } else {
             leds.rgbColor(leds.rgb.Color(100, 0, 0));
         }

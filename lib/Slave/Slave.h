@@ -8,7 +8,8 @@
 #include <MoveData.h>
 #include <DebugSettings.h>
 
-enum SlaveCommand: uint8_t {
+enum SlaveCommand : uint8_t
+{
     motorAngleCommand,
     motorRotationCommand,
     motorSpeedCommand,
@@ -26,7 +27,11 @@ enum SlaveCommand: uint8_t {
     motorLeftRPMCommand,
     motorRightRPMCommand,
     motorBackLeftRPMCommand,
-    motorBackRightRPMCommand
+    motorBackRightRPMCommand,
+    lsFirstByteCommand,
+    lsSecondByteCommand,
+    lsThirdByteCommand,
+    lsFourthByteCommand
 };
 
 class Slave {
