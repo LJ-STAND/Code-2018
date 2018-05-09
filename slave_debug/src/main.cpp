@@ -8,27 +8,22 @@
 #include <SPI.h>
 #include <LED.h>
 #include <Slave.h>
-#include <DebugController.h>
+#include <Timer.h>
 
 T3SPI spi;
 volatile uint16_t dataIn[1];
 volatile uint16_t dataOut[1];
 
-volatile int ballAngle;
+volatile int ballAngle = 400;
 volatile int ballStrength;
-
-uint8_t lsFirstByte;
-uint8_t lsSecondByte;
-uint8_t lsThirdByte;
-uint8_t lsFourthByte;
 
 LED leds;
 Screen screen;
 
-DebugController debug;
+Timer ledTimer(LED_BLINK_TIME_SLAVE_DEBUG);
+bool ledOn;
 
 void setup(void) {
-
     Serial.begin(9600);
     Serial5.begin(9600);
 
@@ -41,22 +36,29 @@ void setup(void) {
 
     leds.init();
 
-    // debug.appSendTSOPs(ballAngle, ballStrength);
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 
 bool on = false;
 bool canPress = true;
 
 void loop() {
-    if (ballAngle != 400) {
-        leds.displayAngle(ballAngle, 300);
-        debug.appSendTSOPs(ballAngle);
-        delay(100);
+    if (screen.settings.IMUNeedsCalibrating) {
+        leds.rainbow();
     } else {
-        leds.rgbColor(leds.rgb.Color(100, 0, 0));
+        if (ballAngle != 400) {
+            leds.displayAngle(ballAngle, 300);
+        } else {
+            leds.rgbColor(leds.rgb.Color(100, 0, 0));
+        }
     }
 
-    screen.updateBatteryMeter();
+    screen.update();
+
+    if (ledTimer.timeHasPassed()) {
+        digitalWrite(LED_BUILTIN, ledOn);
+        ledOn = !ledOn;
+    }
 }
 
 void spi0_isr() {
@@ -66,30 +68,55 @@ void spi0_isr() {
     uint16_t data = dataIn[0] & 0x3FF;
 
     switch (command) {
-    case SlaveCommand::lsFirstByteCommand:
-        lsFirstByte = data;
+    case SlaveCommand::lsFirst16BitCommmand:
         break;
 
-    case SlaveCommand::lsSecondByteCommand:
-        lsSecondByte = data;
-        break;
-
-    case SlaveCommand::lsThirdByteCommand:
-        lsThirdByte = data;
-        break;
-
-    case SlaveCommand:: lsFourthByteCommand:
-        lsFourthByte = data;
+    case SlaveCommand::lsSecond16BitCommand:
         break;
 
     case SlaveCommand::playModeCommand:
         leds.displayPlayMode((bool)data);
         break;
+
     case SlaveCommand::ballAngleCommand:
         ballAngle = data;
         break;
+
     case SlaveCommand::ballStrengthCommand:
         ballStrength = data;
+        break;
+
+    case SlaveCommand::debugSettingsCommand:
+        dataOut[0] = screen.settings.numberValue();
+        break;
+
+    case SlaveCommand::headingIsResetCommand:
+        screen.settings.headingNeedsResetting = false;
+        break;
+
+    case SlaveCommand::IMUIsCalibratedCommand:
+        screen.settings.IMUNeedsCalibrating = false;
+        screen.clearMessage();
+        break;
+
+    case SlaveCommand::headingCommand:
+        screen.heading = data;
+        break;
+
+    case SlaveCommand::motorLeftRPMCommand:
+        screen.leftRPM = data * 2;
+        break;
+
+    case SlaveCommand::motorRightRPMCommand:
+        screen.rightRPM = data * 2;
+        break;
+
+    case SlaveCommand::motorBackLeftRPMCommand:
+        screen.backLeftRPM = data * 2;
+        break;
+
+    case SlaveCommand::motorBackRightRPMCommand:
+        screen.backRightRPM = data * 2;
         break;
     }
 }

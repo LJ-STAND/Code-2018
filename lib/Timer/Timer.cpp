@@ -20,3 +20,7 @@ bool Timer::timeHasPassed() {
 bool Timer::timeHasPassedNoUpdate() {
     return micros() - lastUpdate > timerDuration;
 }
+
+void Timer::resetTime() {
+    lastUpdate = micros();
+}

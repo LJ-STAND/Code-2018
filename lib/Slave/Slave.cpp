@@ -38,6 +38,26 @@ void SlaveMotor::setMotor(MoveData moveData) {
     setMotorSpeed(moveData.speed);
 }
 
+void SlaveMotor::brake() {
+    setMotor(MoveData());
+}
+
+int SlaveMotor::getLeftRPM() {
+    return transaction(SlaveCommand::motorLeftRPMCommand);
+}
+
+int SlaveMotor::getRightRPM() {
+    return transaction(SlaveCommand::motorRightRPMCommand);
+}
+
+int SlaveMotor::getBackLeftRPM() {
+    return transaction(SlaveCommand::motorBackLeftRPMCommand);
+}
+
+int SlaveMotor::getBackRightRPM() {
+    return transaction(SlaveCommand::motorBackRightRPMCommand);
+}
+
 void SlaveSensor::init() {
     Slave::init(MASTER_CS_SENSOR);
 }
@@ -97,4 +117,36 @@ void SlaveDebug::sendBallAngle(uint16_t angle) {
 
 void SlaveDebug::sendBallStrength(uint16_t strength) {
     transaction(SlaveCommand::ballStrengthCommand, strength);
+}
+
+DebugSettings SlaveDebug::getDebugSettings() {
+    return DebugSettings(transaction(SlaveCommand::debugSettingsCommand));
+}
+
+void SlaveDebug::sendIMUIsCalibrated() {
+    transaction(SlaveCommand::IMUIsCalibratedCommand);
+}
+
+void SlaveDebug::sendHeadingIsReset() {
+    transaction(SlaveCommand::headingIsResetCommand);
+}
+
+void SlaveDebug::sendHeading(uint16_t heading) {
+    transaction(SlaveCommand::headingCommand, heading);
+}
+
+void SlaveDebug::sendLeftRPM(uint16_t rpm) {
+    transaction(SlaveCommand::motorLeftRPMCommand, rpm / 2);
+}
+
+void SlaveDebug::sendRightRPM(uint16_t rpm) {
+    transaction(SlaveCommand::motorRightRPMCommand, rpm / 2);
+}
+
+void SlaveDebug::sendBackLeftRPM(uint16_t rpm) {
+    transaction(SlaveCommand::motorBackLeftRPMCommand, rpm / 2);
+}
+
+void SlaveDebug::sendBackRightRPM(uint16_t rpm) {
+    transaction(SlaveCommand::motorBackRightRPMCommand, rpm / 2);
 }

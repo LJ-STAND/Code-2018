@@ -21,7 +21,7 @@ double PID::update(double input, double setpoint, double modulus) {
     integral += elapsedTime * error;
 
     if (modulus != 0.0) {
-        double difference = (input - lastInput);
+        double difference = (error - lastError);
 
         if (difference < -modulus) {
             difference += modulus;
@@ -29,12 +29,12 @@ double PID::update(double input, double setpoint, double modulus) {
             difference -= modulus;
         }
 
-        derivative = difference / elapsedTime;
+        derivative = -difference / elapsedTime;
     } else {
-        derivative = (input - lastInput) / elapsedTime;
+        derivative = -(error - lastError) / elapsedTime;
     }
 
-    lastInput = input;
+    lastError = error;
 
     double correction = kp * error + ki * integral - kd * derivative;
 

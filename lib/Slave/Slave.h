@@ -6,6 +6,7 @@
 #include <Config.h>
 #include <BallData.h>
 #include <MoveData.h>
+#include <DebugSettings.h>
 
 enum SlaveCommand: uint8_t {
     motorAngleCommand,
@@ -17,11 +18,15 @@ enum SlaveCommand: uint8_t {
     lineSizeCommand,
     lsFirst16BitCommmand,
     lsSecond16BitCommand,
-    lsFirstByteCommand,
-    lsSecondByteCommand,
-    lsThirdByteCommand,
-    lsFourthByteCommand,
-    playModeCommand
+    playModeCommand,
+    debugSettingsCommand,
+    headingIsResetCommand,
+    IMUIsCalibratedCommand,
+    headingCommand,
+    motorLeftRPMCommand,
+    motorRightRPMCommand,
+    motorBackLeftRPMCommand,
+    motorBackRightRPMCommand
 };
 
 class Slave {
@@ -42,6 +47,11 @@ public:
     void setMotorRotation(uint16_t rotation);
     void setMotorSpeed(uint16_t speed);
     void setMotor(MoveData moveData);
+    int getLeftRPM();
+    int getRightRPM();
+    int getBackLeftRPM();
+    int getBackRightRPM();
+    void brake();
 };
 
 class SlaveSensor: public Slave {
@@ -63,6 +73,14 @@ public:
     void sendPlayMode(bool isAttacker);
     void sendBallAngle(uint16_t angle);
     void sendBallStrength(uint16_t strength);
+    void sendHeadingIsReset();
+    void sendIMUIsCalibrated();
+    void sendHeading(uint16_t heading);
+    void sendLeftRPM(uint16_t rpm);
+    void sendRightRPM(uint16_t rpm);
+    void sendBackLeftRPM(uint16_t rpm);
+    void sendBackRightRPM(uint16_t rpm);
+    DebugSettings getDebugSettings();
 };
 
 #endif // SLAVE_H

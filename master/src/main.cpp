@@ -16,6 +16,8 @@ SlaveSensor slaveSensor;
 SlaveMotor slaveMotor;
 SlaveDebug slaveDebug;
 
+DebugSettings settings;
+
 LineData lineData(0, 0, true);
 BallData ballData;
 MoveData moveData;
@@ -23,6 +25,8 @@ MoveData moveData;
 T3SPI spi;
 
 Timer ledTimer(LED_BLINK_TIME_MASTER);
+
+Timer slaveDebugUpdateTimer(SLAVE_DEBUG_UPDATE_TIME);
 
 IMUFusion imu;
 
@@ -32,6 +36,7 @@ bool ledOn;
 
 void setup() {
     Serial.begin(9600);
+    Serial5.begin(9600);
 
     spi.begin_MASTER(MASTER_SCK, MASTER_MOSI, MASTER_MISO, MASTER_CS_SENSOR, CS_ActiveLOW);
     spi.setCTAR(CTAR_0, 16, SPI_MODE0, LSB_FIRST, SPI_CLOCK_DIV16);
@@ -178,27 +183,49 @@ void calculateMovement() {
     //     calculateDefense();
     // }
 
-    // calculateOrbit();
-
-    #if AVOID_LINE
-        calculateLineAvoid();
-    #endif
+    calculateOrbit();
+    calculateLineAvoid();
 
     moveData.rotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
+}
+
+void updateDebug() {
+    slaveDebug.sendBallAngle(ballData.angle);
+    slaveDebug.sendBallStrength(ballData.strength);
+    slaveDebug.sendHeading(imu.getHeading());
+
+    settings = slaveDebug.getDebugSettings();
+
+    if (settings.headingNeedsResetting) {
+        imu.resetHeading();
+        slaveDebug.sendHeadingIsReset();
+    }
+
+    if (settings.IMUNeedsCalibrating) {
+        imu.calibrate();
+        slaveDebug.sendIMUIsCalibrated();
+    }
+
+    settings = slaveDebug.getDebugSettings();
 }
 
 void loop() {
     ballData = slaveSensor.getBallData();
     updateLine(slaveSensor.getLineAngle(), slaveSensor.getLineSize());
 
-    slaveDebug.sendBallAngle(ballData.angle);
-    slaveDebug.sendBallStrength(ballData.strength);
-
     imu.update();
 
-    calculateMovement();
+    if (settings.engineStarted) {
+        calculateMovement();
 
-    slaveMotor.setMotor(moveData);
+        slaveMotor.setMotor(moveData);
+    } else {
+        slaveMotor.brake();
+    }
+
+    if (slaveDebugUpdateTimer.timeHasPassed()) {
+        updateDebug();
+    }
 
     if (ledTimer.timeHasPassed()) {
         digitalWrite(LED_BUILTIN, ledOn);
