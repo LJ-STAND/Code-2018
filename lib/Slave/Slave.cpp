@@ -80,7 +80,7 @@ void SlaveDebug::sendLightSensorData(int data) {
     uint8_t secondByte = (data >> 8) & 0xFF;
     uint8_t thirdByte = (data >> 16) & 0xFF;
     uint8_t fourthByte = (data >> 24) & 0xFF;
-    
+
     transaction(SlaveCommand::lsFirstByteCommand, firstByte);
     transaction(SlaveCommand::lsSecondByteCommand, secondByte);
     transaction(SlaveCommand::lsThirdByteCommand, thirdByte);

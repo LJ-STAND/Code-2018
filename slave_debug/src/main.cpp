@@ -40,6 +40,8 @@ void setup(void) {
     NVIC_ENABLE_IRQ(IRQ_SPI0);
 
     leds.init();
+
+    // debug.appSendTSOPs(ballAngle, ballStrength);
 }
 
 bool on = false;
@@ -48,6 +50,8 @@ bool canPress = true;
 void loop() {
     if (ballAngle != 400) {
         leds.displayAngle(ballAngle, 300);
+        debug.appSendTSOPs(ballAngle);
+        delay(100);
     } else {
         leds.rgbColor(leds.rgb.Color(100, 0, 0));
     }
@@ -62,7 +66,7 @@ void spi0_isr() {
     uint16_t data = dataIn[0] & 0x3FF;
 
     switch (command) {
-    case SlaveCommand::lsFirstByteCommmand:
+    case SlaveCommand::lsFirstByteCommand:
         lsFirstByte = data;
         break;
 
