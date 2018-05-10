@@ -53,14 +53,15 @@ void loop() {
     } else {
         if (ballAngle != 400) {
             leds.displayAngle(ballAngle, 300);
-            debug.appSendBallAngle(ballAngle);
-            delay(100);
         } else {
             leds.rgbColor(leds.rgb.Color(100, 0, 0));
         }
     }
 
     screen.update();
+
+    debug.appSendBallAngle(ballAngle);
+    debug.appSendBallStrength(ballStrength);
 
     if (ledTimer.timeHasPassed()) {
         digitalWrite(LED_BUILTIN, ledOn);

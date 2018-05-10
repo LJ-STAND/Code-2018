@@ -6,6 +6,10 @@ void DebugController::appSendBallAngle(int angle) {
     Bluetooth::send(angle, BluetoothDataType::ball);
 }
 
+void DebugController::appSendBallStrength(int strength) {
+    Bluetooth::send(strength, BluetoothDataType::ballStr);
+}
+
 // void DebugController::appSendTSOPs(double angle) {
 //     Bluetooth::send(angle, BluetoothDataType::tsop);
 // }

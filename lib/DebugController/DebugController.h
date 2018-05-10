@@ -13,6 +13,7 @@ public:
     DebugController() {}
     void init();
     void appSendBallAngle(int angle);
+    void appSendBallStrength(int strength);
     // void appSendCompass(double angle);
     // void appSendTSOPs(double angle);
     // void appSendOrbitAngle(double angle);

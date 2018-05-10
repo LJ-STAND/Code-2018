@@ -29,7 +29,7 @@ public:
 
                 return (BluetoothData) {static_cast<BluetoothDataType>(type), value, data};
             } else {
-                return (BluetoothData) {BluetoothDataType::raw, 0, data};
+                return (BluetoothData) {BluetoothDataType::noData, 0, data};
             }
         }
 
