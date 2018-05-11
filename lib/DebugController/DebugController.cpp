@@ -22,6 +22,14 @@ void DebugController::appSendString(String string) {
     Bluetooth::send(string);
 }
 
+void DebugController::appSendLineSize(int size) {
+    Bluetooth::send(size, BluetoothDataType::lineSize);
+}
+
+void DebugController::appSendLineAngle(int angle) {
+    Bluetooth::send(angle, BluetoothDataType::lineAngle);
+}
+
 // void DebugController::appSendLightSensors(uint16_t first16Bit, uint16_t second16Bit) {
 //     Bluetooth::send(String(first16Bit | (second16Bit << 16)), BluetoothDataType::lightSensor);
 // }

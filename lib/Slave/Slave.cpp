@@ -150,3 +150,8 @@ void SlaveDebug::sendBackLeftRPM(uint16_t rpm) {
 void SlaveDebug::sendBackRightRPM(uint16_t rpm) {
     transaction(SlaveCommand::motorBackRightRPMCommand, rpm / 2);
 }
+
+void SlaveDebug::sendLineData(uint16_t angle, uint16_t size) {
+    transaction(SlaveCommand::lineAngleCommand, angle);
+    transaction(SlaveCommand::lineSizeCommand, size);
+}

@@ -16,6 +16,8 @@ public:
     void appSendBallStrength(int strength);
     void appSendString(String string);
     void appSendHeading(int heading);
+    void appSendLineAngle(int angle);
+    void appSendLineSize(int size);
     // void appSendCompass(double angle);
     // void appSendTSOPs(double angle);
     // void appSendOrbitAngle(double angle);

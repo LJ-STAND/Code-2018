@@ -85,6 +85,7 @@ public:
     void sendRightRPM(uint16_t rpm);
     void sendBackLeftRPM(uint16_t rpm);
     void sendBackRightRPM(uint16_t rpm);
+    void sendLineData(uint16_t angle, uint16_t size);
     DebugSettings getDebugSettings();
 };
 

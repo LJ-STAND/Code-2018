@@ -193,6 +193,7 @@ void updateDebug() {
     slaveDebug.sendBallAngle(ballData.angle);
     slaveDebug.sendBallStrength(ballData.strength);
     slaveDebug.sendHeading(imu.getHeading());
+    slaveDebug.sendLineData((uint16_t)lineData.angle, (uint16_t)lineData.size);
 
     settings = slaveDebug.getDebugSettings();
 

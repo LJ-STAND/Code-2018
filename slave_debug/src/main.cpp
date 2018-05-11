@@ -126,5 +126,13 @@ void spi0_isr() {
     case SlaveCommand::motorBackRightRPMCommand:
         screen.backRightRPM = data * 2;
         break;
+
+    case SlaveCommand::lineAngleCommand:
+        debug.appSendLineAngle((int)data * 100);
+        break;
+
+    case SlaveCommand::lineSizeCommand:
+        debug.appSendLineSize((int)data * 100);
+        break;
     }
 }
