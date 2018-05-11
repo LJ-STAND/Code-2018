@@ -10,13 +10,17 @@ void DebugController::appSendBallStrength(int strength) {
     Bluetooth::send(strength, BluetoothDataType::ballStr);
 }
 
+void DebugController::appSendHeading(int heading) {
+    Bluetooth::send(heading, BluetoothDataType::heading);
+}
+
 // void DebugController::appSendTSOPs(double angle) {
 //     Bluetooth::send(angle, BluetoothDataType::tsop);
 // }
 
-// void DebugController::appSendString(String string) {
-//     Bluetooth::send(string);
-// }
+void DebugController::appSendString(String string) {
+    Bluetooth::send(string);
+}
 
 // void DebugController::appSendLightSensors(uint16_t first16Bit, uint16_t second16Bit) {
 //     Bluetooth::send(String(first16Bit | (second16Bit << 16)), BluetoothDataType::lightSensor);

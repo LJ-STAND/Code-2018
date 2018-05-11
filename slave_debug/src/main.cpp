@@ -60,9 +60,6 @@ void loop() {
 
     screen.update();
 
-    debug.appSendBallAngle(ballAngle);
-    debug.appSendBallStrength(ballStrength);
-
     if (ledTimer.timeHasPassed()) {
         digitalWrite(LED_BUILTIN, ledOn);
         ledOn = !ledOn;
@@ -88,10 +85,12 @@ void spi0_isr() {
 
     case SlaveCommand::ballAngleCommand:
         ballAngle = data;
+        debug.appSendBallAngle(data);
         break;
 
     case SlaveCommand::ballStrengthCommand:
         ballStrength = data;
+        debug.appSendBallStrength(data);
         break;
 
     case SlaveCommand::debugSettingsCommand:
@@ -109,6 +108,7 @@ void spi0_isr() {
 
     case SlaveCommand::headingCommand:
         screen.heading = data;
+        debug.appSendHeading(data);
         break;
 
     case SlaveCommand::motorLeftRPMCommand:

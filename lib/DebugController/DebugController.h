@@ -14,6 +14,8 @@ public:
     void init();
     void appSendBallAngle(int angle);
     void appSendBallStrength(int strength);
+    void appSendString(String string);
+    void appSendHeading(int heading);
     // void appSendCompass(double angle);
     // void appSendTSOPs(double angle);
     // void appSendOrbitAngle(double angle);

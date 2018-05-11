@@ -42,6 +42,14 @@
             "problemMatcher": [
                 "$platformio"
             ]
+        },
+        {
+            "label": "Serial",
+            "type": "shell",
+            "command": "pio device monitor",
+            "problemMatcher": [
+                "$platformio"
+            ]
         }
     ]
 }
