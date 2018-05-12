@@ -9,7 +9,7 @@ void TSOPArray::init() {
     pinMode(TSOP_PWR_3, OUTPUT);
     pinMode(TSOP_PWR_4, OUTPUT);
 
-    for (int i = 0; i < TSOP_NUM; i++) {
+    for (uint8_t i = 0; i < TSOP_NUM; i++) {
         pinMode(TSOPPins[i], INPUT);
     }
 
@@ -35,7 +35,7 @@ void TSOPArray::init() {
 
 void TSOPArray::updateOnce() {
     // Read each TSOP once
-    for (int i = 0; i < TSOP_NUM; i++) {
+    for (uint8_t i = 0; i < TSOP_NUM; i++) {
         tempValues[i] += digitalRead(TSOPPins[i]) ^ 1;
     }
 
@@ -67,7 +67,7 @@ void TSOPArray::unlock() {
 void TSOPArray::finishRead() {
     // Complete a reading of the TSOPs after a certain amount of individual readings, TSOP values are now stored in the values array until the next complete read
     tsopCounter = 0;
-    for (int i = 0; i < TSOP_NUM; i++) {
+    for (uint8_t i = 0; i < TSOP_NUM; i++) {
         #if DEBUG_TSOP
             Serial.print(tempValues[i]);
             if (i != TSOP_NUM - 1) {
@@ -93,7 +93,7 @@ void TSOPArray::finishRead() {
 
 void TSOPArray::sortFilterValues() {
     // Remove noise
-    for (int i = 0; i < TSOP_NUM; i++) {
+    for (uint8_t i = 0; i < TSOP_NUM; i++) {
         #if TSOP_FILTER_NOISE
             if (values[i] < TSOP_MIN_IGNORE || values[i] > TSOP_MAX_IGNORE) {
                 tempFilteredValues[i] = 0;
@@ -106,22 +106,21 @@ void TSOPArray::sortFilterValues() {
     }
 
     // A rather efficient way to filter data by scoring each data by the TSOP by it's adjacent TSOPs
-    for (int i = 0; i < TSOP_NUM; i++) {
+    for (uint8_t i = 0; i < TSOP_NUM; i++) {
         #if TSOP_FILTER_SURROUNDING
-            int temp = TSOP_K1 * tempFilteredValues[i] + TSOP_K2 * (tempFilteredValues[mod(i + 1, TSOP_NUM)] + tempFilteredValues[mod(i - 1, TSOP_NUM)]) + TSOP_K3 * (tempFilteredValues[mod(i + 2, TSOP_NUM)] + tempFilteredValues[mod(i - 2, TSOP_NUM)]);
+            uint16_t temp = TSOP_K1 * tempFilteredValues[i] + TSOP_K2 * (tempFilteredValues[mod(i + 1, TSOP_NUM)] + tempFilteredValues[mod(i - 1, TSOP_NUM)]) + TSOP_K3 * (tempFilteredValues[mod(i + 2, TSOP_NUM)] + tempFilteredValues[mod(i - 2, TSOP_NUM)]);
+            // TSOP_K1 + 2 * TSOP_K2 + 2 * TSOP_K3 = 16 so we must divide the value by 16
+            filteredValues[i] = temp >> 4;
         #else
-            int temp = tempFilteredValues[i] << 4;
+            filteredValues[i] = tempFilteredValues[i];
         #endif
-
-        // TSOP_K1 + 2 * TSOP_K2 + 2 * TSOP_K3 = 16 so we must divide the value by 16
-        filteredValues[i] = temp >> 4;
     }
 
     /* Sort the TSOP values from greatest to least in sortedFilteredValues
      * and sort the TSOP indexes from greatest to least strength in indexes
      */
-    for (int i = 0; i < TSOP_NUM; i++) {
-        for (int j = 0; j < TSOP_NUM; j++) {
+    for (uint8_t i = 0; i < TSOP_NUM; i++) {
+        for (uint8_t j = 0; j < TSOP_NUM; j++) {
             if (filteredValues[i] > sortedFilteredValues[j]) {
                 // We've found our place!
                 // Shift elements from index j down
@@ -141,7 +140,7 @@ void TSOPArray::sortFilterValues() {
 
 void TSOPArray::calculateAngleSimple() {
     if (sortedFilteredValues[0] <= TSOP_MIN_IGNORE) {
-        simpleAngle = -1;
+        simpleAngle = TSOP_NO_BALL;
     } else {
         simpleAngle = indexes[0] * 360 / TSOP_NUM;
     }
@@ -151,7 +150,7 @@ void TSOPArray::calculateStrengthSimple() {
     simpleStrength = sortedFilteredValues[0];
 }
 
-void TSOPArray::calculateAngle(int n) {
+void TSOPArray::calculateAngle(uint8_t n) {
     // Cartesian addition of best n TSOPs
     // int x = 0;
     // int y = 0;
@@ -179,10 +178,10 @@ void TSOPArray::calculateAngle(int n) {
      * TSOP_FIRST_TSOP_WEIGHT and second is weighted TSOP_SECOND_TSOP_WEIGHT.
      * Rest are unweighted
      */
-    int best = indexes[0];
-    int relIndexes[TSOP_NUM] = {0}; // indexes relative to best TSOP
+    uint8_t best = indexes[0];
+    int8_t relIndexes[TSOP_NUM] = {0}; // indexes relative to best TSOP
 
-    for (int i = 0; i < TSOP_NUM; i++) {
+    for (uint8_t i = 0; i < TSOP_NUM; i++) {
         relIndexes[i] = indexes[i] - best;
         if (relIndexes[i] < (1 - TSOP_NUM / 2)) {
             relIndexes[i] += TSOP_NUM;
@@ -193,8 +192,8 @@ void TSOPArray::calculateAngle(int n) {
         }
     }
 
-    int relIndexTotal = TSOP_SECOND_TSOP_WEIGHT * relIndexes[1];
-    for (int i = 2; i < n; i++){
+    int8_t relIndexTotal = TSOP_SECOND_TSOP_WEIGHT * relIndexes[1];
+    for (uint8_t i = 2; i < n; i++){
         relIndexTotal += relIndexes[i];
     }
 
@@ -206,32 +205,31 @@ void TSOPArray::calculateAngle(int n) {
 
 
     if (sortedFilteredValues[0] <= TSOP_MIN_IGNORE) {
-        angle = -1;
+        angle = TSOP_NO_BALL;
     } else {
         angle = index * 360.0 / (double) TSOP_NUM;
     }
 
 }
 
-void TSOPArray::calculateStrength(int n) {
+void TSOPArray::calculateStrength(uint8_t n) {
     // Return average of strongest n TSOPs
-    // could also have a limit, that is, only TSOPs > limit are averaged (team pi used 50)
-    int strengthTotal = 0;
-    for (int i = 0; i < n; i++) {
+    uint16_t strengthTotal = 0;
+    for (uint8_t i = 0; i < n; i++) {
         strengthTotal += sortedFilteredValues[i];
     }
 
     strength = (double) strengthTotal / n;
 }
 
-int TSOPArray::getAngle() {
-    return angle == -1 ? TSOP_NO_BALL : angle;
+uint16_t TSOPArray::getAngle() {
+    return angle;
 }
 
-int TSOPArray::getStrength() {
+uint16_t TSOPArray::getStrength() {
     return strength;
 }
 
-int TSOPArray::getSimpleStrength() {
+uint16_t TSOPArray::getSimpleStrength() {
     return simpleStrength;
 }

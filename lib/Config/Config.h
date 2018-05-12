@@ -62,13 +62,13 @@
 #define TSOP_SECOND_TSOP_WEIGHT 2
 
 #define TSOP_FILTER_NOISE false
-#define TSOP_FILTER_SURROUNDING true
+#define TSOP_FILTER_SURROUNDING false
 
 #define TSOP_NO_BALL 400
 
 #define TSOP_HAS_BALL_STRENGTH 130
 
-#define DEBUG_TSOP false
+#define DEBUG_TSOP true
 
 // --- IMU --- //
 
