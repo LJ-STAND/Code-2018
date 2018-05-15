@@ -153,5 +153,6 @@ void SlaveDebug::sendBackRightRPM(uint16_t rpm) {
 
 void SlaveDebug::sendLineData(uint16_t angle, uint16_t size) {
     transaction(SlaveCommand::lineAngleCommand, angle);
+    delay(10);
     transaction(SlaveCommand::lineSizeCommand, size);
 }

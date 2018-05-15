@@ -18,6 +18,10 @@ volatile uint16_t dataOut[1];
 volatile int ballAngle = 400;
 volatile int ballStrength;
 
+volatile int lineAng = 0;
+volatile int lineSiz = 0;
+volatile int compassHeading = 0;
+
 LED leds;
 Screen screen;
 
@@ -64,6 +68,12 @@ void loop() {
         digitalWrite(LED_BUILTIN, ledOn);
         ledOn = !ledOn;
     }
+
+    debug.appSendBallAngle(ballAngle);
+    debug.appSendBallStrength(ballStrength);
+    debug.appSendHeading(heading);
+    debug.appSendLineAngle(lineAngle);
+    debug.appSendLineSize(lineSize);
 }
 
 void spi0_isr() {
@@ -85,12 +95,10 @@ void spi0_isr() {
 
     case SlaveCommand::ballAngleCommand:
         ballAngle = data;
-        debug.appSendBallAngle(data);
         break;
 
     case SlaveCommand::ballStrengthCommand:
         ballStrength = data;
-        debug.appSendBallStrength(data);
         break;
 
     case SlaveCommand::debugSettingsCommand:
@@ -108,7 +116,7 @@ void spi0_isr() {
 
     case SlaveCommand::headingCommand:
         screen.heading = data;
-        debug.appSendHeading(data);
+        compassHeading = data;
         break;
 
     case SlaveCommand::motorLeftRPMCommand:
@@ -128,11 +136,11 @@ void spi0_isr() {
         break;
 
     case SlaveCommand::lineAngleCommand:
-        debug.appSendLineAngle((int)data * 100);
+        lineAng = (int)data * 100;
         break;
 
     case SlaveCommand::lineSizeCommand:
-        debug.appSendLineSize((int)data * 100);
+        lineSiz = (int)data * 100;
         break;
     }
 }

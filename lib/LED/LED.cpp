@@ -61,37 +61,37 @@ uint32_t LED::HSBToRGB(float hue, float saturation, float brightness) {
 }
 
 void LED::rainbow() {
-    if (millis() - delayTimerLastReading >= RAINBOW_TIME) {
-        for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
-            rgb.setPixelColor(i, HSBToRGB((float)((i + loopCounter) % RGB_LED_COUNT) / (float)RGB_LED_COUNT * 360, 1.0, 1.0));
-        }
+    // if (millis() - delayTimerLastReading >= RAINBOW_TIME) {
+    //     for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
+    //         rgb.setPixelColor(i, HSBToRGB((float)((i + loopCounter) % RGB_LED_COUNT) / (float)RGB_LED_COUNT * 360, 1.0, 1.0));
+    //     }
 
-        rgb.show();
+    //     rgb.show();
 
-        delayTimerLastReading = millis();
+    //     delayTimerLastReading = millis();
 
-        if (loopCounter < RGB_LED_COUNT - 1) {
-            loopCounter++;
-        } else {
-            loopCounter = 0;
-        }
-    }
+    //     if (loopCounter < RGB_LED_COUNT - 1) {
+    //         loopCounter++;
+    //     } else {
+    //         loopCounter = 0;
+    //     }
+    // }
 }
 
 void LED::displayAngle(uint16_t angle, double hue) {
-    for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
-        rgb.setPixelColor(i, HSBToRGB(hue, 1.0, 1.0 - ((double)min(smallestAngleBetween(angle, i * 360 / RGB_LED_COUNT), 60) / 60.0)));
-    }
+    // for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
+    //     rgb.setPixelColor(i, HSBToRGB(hue, 1.0, 1.0 - ((double)min(smallestAngleBetween(angle, i * 360 / RGB_LED_COUNT), 60) / 60.0)));
+    // }
 
-    rgb.show();
+    // rgb.show();
 }
 
 void LED::rgbColor(uint32_t color) {
-    for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
-        rgb.setPixelColor(i, color);
-    }
+    // for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
+    //     rgb.setPixelColor(i, color);
+    // }
 
-    rgb.show();
+    // rgb.show();
 }
 
 void LED::displayPlayMode(bool isAttacker) {
