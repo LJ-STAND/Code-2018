@@ -43,6 +43,7 @@
 // --- IR Sensors --- //
 
 #define TSOP_NUM 24
+#define TSOP_NUM_MULTIPLIER 15 // 360 / TSOP_NUM
 
 #define TSOP_LOOP_COUNT 255
 
@@ -62,7 +63,7 @@
 #define TSOP_SECOND_TSOP_WEIGHT 2
 
 #define TSOP_FILTER_NOISE false
-#define TSOP_FILTER_SURROUNDING true
+#define TSOP_FILTER_SURROUNDING false
 
 #define TSOP_NO_BALL 400
 
