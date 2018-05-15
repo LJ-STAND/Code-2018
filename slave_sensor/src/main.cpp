@@ -39,6 +39,7 @@ void loop() {
     if (tsops.tsopCounter > TSOP_LOOP_COUNT) {
         tsops.finishRead();
         tsops.unlock();
+        Serial.println(tsops.getStrength());
 
         lightSensors.read();
         lightSensors.calculateClusters();

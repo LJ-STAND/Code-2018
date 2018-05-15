@@ -43,6 +43,7 @@
 // --- IR Sensors --- //
 
 #define TSOP_NUM 24
+#define TSOP_NUM_MULTIPLIER 15 // 360 / TSOP_NUM
 
 #define TSOP_LOOP_COUNT 255
 
@@ -68,7 +69,7 @@
 
 #define TSOP_HAS_BALL_STRENGTH 130
 
-#define DEBUG_TSOP true
+#define DEBUG_TSOP false
 
 // --- IMU --- //
 

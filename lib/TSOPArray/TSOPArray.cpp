@@ -15,20 +15,14 @@ void TSOPArray::init() {
 
     // Set up scaled sin/cos tables
 
-    // double temp;
-    // double temp_angle;
-    //
-    // for (int i = 0; i < TSOP_NUM; i++){
-    //     // remember, angle = -bearing + 90 = -bearing + PI/2
-    //     // angle = i * 2 * PI / TSOP_COUNT
-    //     temp_angle = 1.5707963f - 6.283185307f * i / TSOP_NUM;
-    //
-    //     temp = cos(temp_angle) * 4095.0f;
-    //     scaledCos[i] = temp;
-    //
-    //     temp = sin(temp_angle) * 4095.0f;
-    //     scaledSin[i] = temp;
-    // }
+    double temp_angle;
+
+    for (int i = 0; i < TSOP_NUM; i++){
+        temp_angle = degreesToRadians(i * TSOP_NUM_MULTIPLIER);
+
+        scaledCos[i] = cos(temp_angle);
+        scaledSin[i] = sin(temp_angle);
+    }
 
     on();
 }
@@ -88,7 +82,7 @@ void TSOPArray::finishRead() {
     calculateAngleSimple();
     calculateAngle(TSOP_BEST_TSOP_NO_ANGLE);
     calculateStrengthSimple();
-    calculateStrength(TSOP_BEST_TSOP_NO_STRENGTH);
+    // calculateStrength(TSOP_BEST_TSOP_NO_STRENGTH);
 }
 
 void TSOPArray::sortFilterValues() {
@@ -142,7 +136,7 @@ void TSOPArray::calculateAngleSimple() {
     if (sortedFilteredValues[0] <= TSOP_MIN_IGNORE) {
         simpleAngle = TSOP_NO_BALL;
     } else {
-        simpleAngle = indexes[0] * 360 / TSOP_NUM;
+        simpleAngle = indexes[0] * TSOP_NUM_MULTIPLIER;
     }
 }
 
@@ -152,63 +146,59 @@ void TSOPArray::calculateStrengthSimple() {
 
 void TSOPArray::calculateAngle(uint8_t n) {
     // Cartesian addition of best n TSOPs
-    // int x = 0;
-    // int y = 0;
-    // for (int i = 0; i < n; i++){
-    //     // convert vector to cartesian (remember that each bitshift << is *2)
-    //     x += sortedFilteredValues[i] * scaledCos[indexes[i]] >> 12;
-    //     y += sortedFilteredValues[i] * scaledSin[indexes[i]] >> 12;
-    // }
-    // if (x == 0 && y == 0){
-    //     // When vectors sum to (0, 0), we're in trouble. We've got some dodgy data
-    //     angle = 0;
-    // }
-    // else{
-    //     angle = 90 - (57.3 * atan2(y, x));
-    // }
-    //
-    // if (angle < 0){
-    //     angle += 360;
-    // }
-    // if (angle < 0){
-    //     angle += 360;
-    // }
+    uint16_t x = 0;
+    uint16_t y = 0;
+    for (uint16_t i = 0; i < n; i++){
+        // convert vector to cartesian (remember that each bitshift << is *2)
+        x += sortedFilteredValues[i] * scaledCos[indexes[i]];
+        y += sortedFilteredValues[i] * scaledSin[indexes[i]];
+    }
+    if (x == 0 && y == 0){
+        // When vectors sum to (0, 0), we're in trouble. We've got some dodgy data
+        angle = 0;
+    }
+    else{
+        angle = radiansToDegrees(atan2(y, x));
+    }
+
+    angle = mod(angle, 360);
+    // strength = sqrt(x*x + y*y);
 
     /* Averages the indexes of the best n TSOPs. Best TSOP is weighted
      * TSOP_FIRST_TSOP_WEIGHT and second is weighted TSOP_SECOND_TSOP_WEIGHT.
      * Rest are unweighted
      */
-    uint8_t best = indexes[0];
-    int8_t relIndexes[TSOP_NUM] = {0}; // indexes relative to best TSOP
-
-    for (uint8_t i = 0; i < TSOP_NUM; i++) {
-        relIndexes[i] = indexes[i] - best;
-        if (relIndexes[i] < (1 - TSOP_NUM / 2)) {
-            relIndexes[i] += TSOP_NUM;
-        }
-
-        if (relIndexes[i] > (TSOP_NUM / 2)) {
-            relIndexes[i] -= TSOP_NUM;
-        }
-    }
-
-    int8_t relIndexTotal = TSOP_SECOND_TSOP_WEIGHT * relIndexes[1];
-    for (uint8_t i = 2; i < n; i++){
-        relIndexTotal += relIndexes[i];
-    }
-
-    double relIndexAverage = (double) relIndexTotal / (double)(n + TSOP_FIRST_TSOP_WEIGHT + TSOP_SECOND_TSOP_WEIGHT - 2);
-
-    double index = best + relIndexAverage;
-
-    index = doubleMod(index, (double) TSOP_NUM);
-
-
-    if (sortedFilteredValues[0] <= TSOP_MIN_IGNORE) {
-        angle = TSOP_NO_BALL;
-    } else {
-        angle = index * 360.0 / (double) TSOP_NUM;
-    }
+    // uint8_t best = indexes[0];
+    // int8_t relIndexes[TSOP_NUM] = {0}; // indexes relative to best TSOP
+    //
+    // for (uint8_t i = 0; i < TSOP_NUM; i++) {
+    //     relIndexes[i] = indexes[i] - best;
+    //     if (relIndexes[i] < (1 - TSOP_NUM / 2)) {
+    //         relIndexes[i] += TSOP_NUM;
+    //     }
+    //
+    //     if (relIndexes[i] > (TSOP_NUM / 2)) {
+    //         relIndexes[i] -= TSOP_NUM;
+    //     }
+    // }
+    //
+    // int8_t relIndexTotal = TSOP_SECOND_TSOP_WEIGHT * relIndexes[1];
+    // for (uint8_t i = 2; i < n; i++){
+    //     relIndexTotal += relIndexes[i];
+    // }
+    //
+    // double relIndexAverage = (double) relIndexTotal / (double)(n + TSOP_FIRST_TSOP_WEIGHT + TSOP_SECOND_TSOP_WEIGHT - 2);
+    //
+    // double index = best + relIndexAverage;
+    //
+    // index = doubleMod(index, (double) TSOP_NUM);
+    //
+    //
+    // if (sortedFilteredValues[0] <= TSOP_MIN_IGNORE) {
+    //     angle = TSOP_NO_BALL;
+    // } else {
+    //     angle = index * 360.0 / (double) TSOP_NUM;
+    // }
 
 }
 
