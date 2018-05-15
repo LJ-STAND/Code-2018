@@ -64,5 +64,21 @@ void spi0_isr() {
     case SlaveCommand::motorSpeedCommand:
         speed = (int8_t)data;
         break;
+
+    case SlaveCommand::motorLeftRPMCommand:
+        dataOut[0] = motors.motorLeft.getRPM();
+        break;
+
+    case SlaveCommand::motorRightRPMCommand:
+        dataOut[0] = motors.motorRight.getRPM();
+        break;
+
+    case SlaveCommand::motorBackLeftRPMCommand:
+        dataOut[0] = motors.motorBackLeft.getRPM();
+        break;
+
+    case SlaveCommand::motorBackRightRPMCommand:
+        dataOut[0] = motors.motorBackRight.getRPM();
+        break;
     }
 }

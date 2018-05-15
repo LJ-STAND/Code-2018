@@ -66,7 +66,7 @@ uint16_t SlaveSensor::getBallAngle() {
     return transaction(SlaveCommand::ballAngleCommand);
 }
 
-uint16_t SlaveSensor::getBallStrength() {
+uint8_t SlaveSensor::getBallStrength() {
     return transaction(SlaveCommand::ballStrengthCommand);
 }
 
@@ -79,8 +79,8 @@ double SlaveSensor::getLineSize() {
 }
 
 BallData SlaveSensor::getBallData() {
-    int angle = getBallAngle();
-    int strength = getBallStrength();
+    uint16_t angle = getBallAngle();
+    uint8_t strength = getBallStrength();
 
     return BallData(angle, strength, angle != TSOP_NO_BALL);
 }
@@ -89,6 +89,10 @@ int SlaveSensor::getLightSensorData() {
     uint16_t first16Bit = transaction(SlaveCommand::lsFirst16BitCommmand);
     uint16_t second16Bit = transaction(SlaveCommand::lsFirst16BitCommmand);
     return first16Bit | (second16Bit << 16);
+}
+
+void SlaveSensor::sendCalibrateLightSensors() {
+    transaction(SlaveCommand::calibrateLightSensorsCommand);
 }
 
 void SlaveDebug::init() {
@@ -111,7 +115,7 @@ void SlaveDebug::sendBallAngle(uint16_t angle) {
     transaction(SlaveCommand::ballAngleCommand, angle);
 }
 
-void SlaveDebug::sendBallStrength(uint16_t strength) {
+void SlaveDebug::sendBallStrength(uint8_t strength) {
     transaction(SlaveCommand::ballStrengthCommand, strength);
 }
 
@@ -119,12 +123,8 @@ DebugSettings SlaveDebug::getDebugSettings() {
     return DebugSettings(transaction(SlaveCommand::debugSettingsCommand));
 }
 
-void SlaveDebug::sendIMUIsCalibrated() {
-    transaction(SlaveCommand::IMUIsCalibratedCommand);
-}
-
-void SlaveDebug::sendHeadingIsReset() {
-    transaction(SlaveCommand::headingIsResetCommand);
+void SlaveDebug::sendIMUIsReset() {
+    transaction(SlaveCommand::IMUIsResetCommand);
 }
 
 void SlaveDebug::sendHeading(uint16_t heading) {
@@ -145,4 +145,8 @@ void SlaveDebug::sendBackLeftRPM(uint16_t rpm) {
 
 void SlaveDebug::sendBackRightRPM(uint16_t rpm) {
     transaction(SlaveCommand::motorBackRightRPMCommand, rpm / 2);
+}
+
+void SlaveDebug::sendLightSensorsAreReset() {
+    transaction(SlaveCommand::lightSensorsAreResetCommand);
 }

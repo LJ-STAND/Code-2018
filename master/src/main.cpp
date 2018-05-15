@@ -11,10 +11,19 @@
 #include <BallData.h>
 #include <LineData.h>
 #include <MoveData.h>
+#include <Camera.h>
+#include <Bluetooth.h>
+
+T3SPI spi;
 
 SlaveSensor slaveSensor;
 SlaveMotor slaveMotor;
 SlaveDebug slaveDebug;
+
+Bluetooth bluetooth;
+
+IMUFusion imu;
+Camera camera;
 
 DebugSettings settings;
 
@@ -22,13 +31,8 @@ LineData lineData(0, 0, true);
 BallData ballData;
 MoveData moveData;
 
-T3SPI spi;
-
 Timer ledTimer(LED_BLINK_TIME_MASTER);
-
 Timer slaveDebugUpdateTimer(SLAVE_DEBUG_UPDATE_TIME);
-
-IMUFusion imu;
 
 PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
 
@@ -36,7 +40,8 @@ bool ledOn;
 
 void setup() {
     Serial.begin(9600);
-    Serial5.begin(9600);
+
+    bluetooth.init();
 
     spi.begin_MASTER(MASTER_SCK, MASTER_MOSI, MASTER_MISO, MASTER_CS_SENSOR, CS_ActiveLOW);
     spi.setCTAR(CTAR_0, 16, SPI_MODE0, LSB_FIRST, SPI_CLOCK_DIV16);
@@ -46,6 +51,7 @@ void setup() {
     slaveDebug.init();
 
     imu.init();
+    camera.init();
 
 	pinMode(LED_BUILTIN, OUTPUT);
 }
@@ -142,6 +148,10 @@ void calculateOrbit() {
     }
 }
 
+void updateCamera() {
+
+}
+
 void calculateMovement() {
     // if (currentPlayMode() == PlayMode::attack) {
     //     if (xbee.otherBallIsOut) {
@@ -184,7 +194,7 @@ void calculateMovement() {
     // }
 
     calculateOrbit();
-    calculateLineAvoid();
+    // calculateLineAvoid();
 
     moveData.rotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
 }
@@ -193,17 +203,26 @@ void updateDebug() {
     slaveDebug.sendBallAngle(ballData.angle);
     slaveDebug.sendBallStrength(ballData.strength);
     slaveDebug.sendHeading(imu.getHeading());
+    slaveDebug.sendLeftRPM(slaveMotor.getLeftRPM());
+    slaveDebug.sendRightRPM(slaveMotor.getRightRPM());
+    slaveDebug.sendBackLeftRPM(slaveMotor.getBackLeftRPM());
+    slaveDebug.sendBackRightRPM(slaveMotor.getBackRightRPM());
 
     settings = slaveDebug.getDebugSettings();
 
-    if (settings.headingNeedsResetting) {
+    if (settings.IMUNeedsResetting) {
+        imu.calibrate();
         imu.resetHeading();
-        slaveDebug.sendHeadingIsReset();
+        slaveDebug.sendIMUIsReset();
+        delay(100);
     }
 
-    if (settings.IMUNeedsCalibrating) {
-        imu.calibrate();
-        slaveDebug.sendIMUIsCalibrated();
+    if (settings.lightSensorsNeedResetting) {
+        slaveSensor.sendCalibrateLightSensors();
+        lineData = LineData();
+        delay(500);
+        slaveDebug.sendLightSensorsAreReset();
+        delay(500);
     }
 
     settings = slaveDebug.getDebugSettings();
@@ -211,9 +230,12 @@ void updateDebug() {
 
 void loop() {
     ballData = slaveSensor.getBallData();
+
+    Serial.println(ballData.angle);
     updateLine(slaveSensor.getLineAngle(), slaveSensor.getLineSize());
 
     imu.update();
+    camera.update();
 
     if (settings.engineStarted) {
         calculateMovement();

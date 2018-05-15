@@ -23,18 +23,28 @@ void Screen::init() {
 
     TFT.drawLine(0, LINE_Y, TFT.width(), LINE_Y, FOREGROUND_COLOR);
 
-    engineStartButton = EngineStartButton(TFT.width() / 2, LINE_Y + (TFT.height() - LINE_Y) / 2);
-    debugButton = TextButton(TFT.width() - 50, LINE_Y + 50, 30, "Debug", 1);
-    settingsButton = TextButton(TFT.width() - 50, TFT.height() - 50, 30, "Settings", 1);
-    headingResetButton = TextButton(50, LINE_Y + 50, 30, "Reset\nHeading", 1);
-    IMUCalibrateButton = TextButton(50, TFT.height() - 50, 30, "Calibrate\nIMU", 1);
     homeButton = HomeButton(HOME_BUTTON_X, HOME_BUTTON_Y);
+
+    // Main Screen
+
+    engineStartButton = EngineStartButton(TFT.width() / 2, LINE_Y + (TFT.height() - LINE_Y) / 2);
+    debugButton = TextButton(TFT.width() - MAIN_SCREEN_BUTTON_INSET, LINE_Y + MAIN_SCREEN_BUTTON_INSET, MAIN_SCREEN_BUTTON_RADIUS, "Debug", 1);
+    settingsButton = TextButton(TFT.width() - MAIN_SCREEN_BUTTON_INSET, TFT.height() - MAIN_SCREEN_BUTTON_INSET, MAIN_SCREEN_BUTTON_RADIUS, "Settings", 1);
+    IMUResetButton = TextButton(MAIN_SCREEN_BUTTON_INSET, TFT.height() - MAIN_SCREEN_BUTTON_INSET, MAIN_SCREEN_BUTTON_RADIUS, "Reset IMU", 1);
+    lightSensorsResetButton = TextButton(MAIN_SCREEN_BUTTON_INSET, LINE_Y + MAIN_SCREEN_BUTTON_INSET, MAIN_SCREEN_BUTTON_RADIUS, "Reset LS", 1);
+
+    // Debug Screen
 
     headingLabel = Label(10, LINE_Y + 10, 150, 20, "Heading: 0", 2);
     headingDial = Dial(TFT.width() / 2, TFT.height() / 2, 50, 360, 0, 0);
 
-    playModeSwitchingLabel = Label(10, LINE_Y + 20, 200, 20, "Play mode switching", 2);
-    playModeSwitchingCheckBox = CheckBox(TFT.width() - CHECK_BOX_OUTER_SIZE - 10, LINE_Y + 10);
+    // Settings Screen
+
+    playModeSwitchingLabel = Label(SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET + SETTINGS_SCREEN_LABEL_Y_OFFSET, 200, 20, "Play mode switching", 2);
+    playModeSwitchingCheckBox = CheckBox(TFT.width() - CHECK_BOX_OUTER_SIZE - SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET);
+
+    defaultPlayModeLabel = Label(SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET * 2 + CHECK_BOX_OUTER_SIZE + SETTINGS_SCREEN_LABEL_Y_OFFSET, 200, 20, "Default play mode", 2);
+    defaultPlayModeSwitch = Switch(TFT.width() - SWITCH_WIDTH - SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET * 2 + CHECK_BOX_OUTER_SIZE, WHITE, "A", WHITE, "D");
 }
 
 void Screen::clearAll() {
@@ -72,14 +82,16 @@ void Screen::checkTouch() {
                 changeScreen(ScreenType::settingScreenType);
             }
 
-            if (headingResetButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                settings.headingNeedsResetting = true;
+            if (IMUResetButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                settings.IMUNeedsResetting = true;
+                settings.engineStarted = false;
+                displayMessage("Resetting IMU...");
             }
 
-            if (IMUCalibrateButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                settings.IMUNeedsCalibrating = true;
+            if (lightSensorsResetButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                settings.lightSensorsNeedResetting = true;
                 settings.engineStarted = false;
-                displayMessage("Calibrating IMU...");
+                displayMessage("Resetting LS...");
             }
 
             break;
@@ -90,6 +102,10 @@ void Screen::checkTouch() {
         case ScreenType::settingScreenType:
             if (playModeSwitchingCheckBox.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
                 playModeSwitchingCheckBox.setEnabled(!playModeSwitchingCheckBox.getEnabled());
+            }
+
+            if (defaultPlayModeSwitch.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                defaultPlayModeSwitch.setEnabled(!defaultPlayModeSwitch.getEnabled());
             }
 
             break;
@@ -111,8 +127,8 @@ void Screen::update() {
             engineStartButton.checkDraw();
             debugButton.checkDraw();
             settingsButton.checkDraw();
-            IMUCalibrateButton.checkDraw();
-            headingResetButton.checkDraw();
+            IMUResetButton.checkDraw();
+            lightSensorsResetButton.checkDraw();
 
             break;
 
@@ -134,6 +150,9 @@ void Screen::update() {
             playModeSwitchingLabel.checkDraw();
             playModeSwitchingCheckBox.checkDraw();
 
+            defaultPlayModeLabel.checkDraw();
+            defaultPlayModeSwitch.checkDraw();
+
             break;
         }
 
@@ -153,8 +172,8 @@ void Screen::redrawScreen() {
         engineStartButton.setNeedsDraw();
         debugButton.setNeedsDraw();
         settingsButton.setNeedsDraw();
-        IMUCalibrateButton.setNeedsDraw();
-        headingResetButton.setNeedsDraw();
+        IMUResetButton.setNeedsDraw();
+        lightSensorsResetButton.setNeedsDraw();
         headingDial.setNeedsDraw();
 
         break;
@@ -167,6 +186,9 @@ void Screen::redrawScreen() {
     case ScreenType::settingScreenType:
         playModeSwitchingLabel.setNeedsDraw();
         playModeSwitchingCheckBox.setNeedsDraw();
+
+        defaultPlayModeLabel.setNeedsDraw();
+        defaultPlayModeSwitch.setNeedsDraw();
 
         break;
     }

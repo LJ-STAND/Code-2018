@@ -14,8 +14,8 @@ T3SPI spi;
 volatile uint16_t dataIn[1];
 volatile uint16_t dataOut[1];
 
-volatile int ballAngle = 400;
-volatile int ballStrength;
+volatile uint16_t ballAngle = TSOP_NO_BALL;
+volatile uint8_t ballStrength;
 
 LED leds;
 Screen screen;
@@ -39,11 +39,8 @@ void setup(void) {
     pinMode(LED_BUILTIN, OUTPUT);
 }
 
-bool on = false;
-bool canPress = true;
-
 void loop() {
-    if (screen.settings.IMUNeedsCalibrating) {
+    if (screen.settings.IMUNeedsResetting || screen.settings.lightSensorsNeedResetting) {
         leds.rainbow();
     } else {
         if (ballAngle != 400) {
@@ -90,13 +87,10 @@ void spi0_isr() {
         dataOut[0] = screen.settings.numberValue();
         break;
 
-    case SlaveCommand::headingIsResetCommand:
-        screen.settings.headingNeedsResetting = false;
-        break;
-
-    case SlaveCommand::IMUIsCalibratedCommand:
-        screen.settings.IMUNeedsCalibrating = false;
+    case SlaveCommand::IMUIsResetCommand:
+        screen.settings.IMUNeedsResetting = false;
         screen.clearMessage();
+        
         break;
 
     case SlaveCommand::headingCommand:
@@ -117,6 +111,12 @@ void spi0_isr() {
 
     case SlaveCommand::motorBackRightRPMCommand:
         screen.backRightRPM = data * 2;
+        break;
+
+    case SlaveCommand::lightSensorsAreResetCommand:
+        screen.settings.lightSensorsNeedResetting = false;
+        screen.clearMessage();
+
         break;
     }
 }

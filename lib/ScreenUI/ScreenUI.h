@@ -129,4 +129,18 @@ public:
     void draw();
 };
 
+class Switch : public Button {
+public:
+    Switch() {}
+    Switch(uint16_t x, uint16_t y, uint16_t onColor, char *onChar, uint16_t offColor, char *offChar);
+
+    void draw();
+
+protected:
+    uint16_t onColor;
+    char *onChar;
+    uint16_t offColor;
+    char *offChar;
+};
+
 #endif // BUTTON_H

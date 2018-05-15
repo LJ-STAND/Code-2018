@@ -20,13 +20,14 @@ enum SlaveCommand: uint8_t {
     lsSecond16BitCommand,
     playModeCommand,
     debugSettingsCommand,
-    headingIsResetCommand,
-    IMUIsCalibratedCommand,
+    IMUIsResetCommand,
     headingCommand,
     motorLeftRPMCommand,
     motorRightRPMCommand,
     motorBackLeftRPMCommand,
-    motorBackRightRPMCommand
+    motorBackRightRPMCommand,
+    lightSensorsAreResetCommand,
+    calibrateLightSensorsCommand
 };
 
 class Slave {
@@ -58,12 +59,13 @@ class SlaveSensor: public Slave {
 public:
     void init();
     uint16_t getBallAngle();
-    uint16_t getBallStrength();
+    uint8_t getBallStrength();
     BallData getBallData();
 
     uint16_t getLineAngle();
     double getLineSize();
     int getLightSensorData();
+    void sendCalibrateLightSensors();
 };
 
 class SlaveDebug: public Slave {
@@ -72,9 +74,9 @@ public:
     void sendLightSensorData(int data);
     void sendPlayMode(bool isAttacker);
     void sendBallAngle(uint16_t angle);
-    void sendBallStrength(uint16_t strength);
-    void sendHeadingIsReset();
-    void sendIMUIsCalibrated();
+    void sendBallStrength(uint8_t strength);
+    void sendIMUIsReset();
+    void sendLightSensorsAreReset();
     void sendHeading(uint16_t heading);
     void sendLeftRPM(uint16_t rpm);
     void sendRightRPM(uint16_t rpm);

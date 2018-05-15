@@ -152,10 +152,30 @@ void BackButton::draw() {
     TFT.drawLine(x, y + h / 2, x + w, y + h / 2, FOREGROUND_COLOR);
 }
 
+CheckBox::CheckBox(uint16_t x, uint16_t y) : Button(x, y, CHECK_BOX_OUTER_SIZE, CHECK_BOX_OUTER_SIZE) {}
+
 void CheckBox::draw() {
     TFT.drawRect(x, y, CHECK_BOX_OUTER_SIZE, CHECK_BOX_OUTER_SIZE, highlighted ? HIGHLIGHT_COLOR : FOREGROUND_COLOR);
     TFT.fillRect(x + (CHECK_BOX_OUTER_SIZE - CHECK_BOX_INNER_SIZE) / 2, y + (CHECK_BOX_OUTER_SIZE - CHECK_BOX_INNER_SIZE) / 2, CHECK_BOX_INNER_SIZE, CHECK_BOX_INNER_SIZE, enabled ? FOREGROUND_COLOR : BACKGROUND_COLOR);
-
 }
 
-CheckBox::CheckBox(uint16_t x, uint16_t y) : Button(x, y, CHECK_BOX_OUTER_SIZE, CHECK_BOX_OUTER_SIZE) {}
+Switch::Switch(uint16_t x, uint16_t y, uint16_t onColor, char *onChar, uint16_t offColor, char *offChar) : Button(x, y, SWITCH_WIDTH, SWITCH_HEIGHT), onColor(onColor), onChar(onChar), offColor(offColor), offChar(offChar) {}
+
+void Switch::draw() {
+    TFT.drawRect(x, y, SWITCH_WIDTH, SWITCH_HEIGHT, highlighted ? HIGHLIGHT_COLOR : FOREGROUND_COLOR);
+    TFT.fillRect(enabled ? x + SWITCH_TOGGLE_INSET : x + SWITCH_WIDTH / 2, y + SWITCH_TOGGLE_INSET, SWITCH_WIDTH / 2 - SWITCH_TOGGLE_INSET, SWITCH_HEIGHT - SWITCH_TOGGLE_INSET * 2, enabled ? onColor : offColor);
+    TFT.fillRect(!enabled ? x + SWITCH_TOGGLE_INSET : x + SWITCH_WIDTH / 2, y + SWITCH_TOGGLE_INSET, SWITCH_WIDTH / 2 - SWITCH_TOGGLE_INSET, SWITCH_HEIGHT - SWITCH_TOGGLE_INSET * 2, BLACK);
+    
+    uint16_t textWidth, textHeight;
+    int16_t textX, textY;
+
+    TFT.setTextSize(2);
+    TFT.getTextBounds(enabled ? onChar : offChar, 0, 0, &textX, &textY, &textWidth, &textHeight);
+
+    TFT.setCursor(enabled ? x + SWITCH_TOGGLE_INSET + ((SWITCH_WIDTH / 2 - SWITCH_TOGGLE_INSET) - textWidth) / 2 : x + SWITCH_WIDTH / 2 + ((SWITCH_WIDTH / 2 - SWITCH_TOGGLE_INSET) - textWidth) / 2, y + (SWITCH_HEIGHT - textHeight) / 2);
+    TFT.setTextColor(BACKGROUND_COLOR);
+    TFT.print(enabled ? onChar : offChar);
+}
+
+
+

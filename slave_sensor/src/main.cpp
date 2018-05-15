@@ -28,7 +28,6 @@ void setup() {
     tsops.init();
 
     lightSensors.init();
-    lightSensors.calibrate();
 
     pinMode(LED_BUILTIN, OUTPUT);
 }
@@ -89,6 +88,11 @@ void spi0_isr() {
         for (uint8_t i = 0; i < 16; i++) {
             dataOut[0] |= lightSensors.data[i + 16] << i;
         }
+
+        break;
+
+    case SlaveCommand::calibrateLightSensorsCommand:
+        lightSensors.calibrate();
 
         break;
 

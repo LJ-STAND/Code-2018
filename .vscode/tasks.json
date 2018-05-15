@@ -42,6 +42,20 @@
             "problemMatcher": [
                 "$platformio"
             ]
+        },
+        {
+            "label": "Camera",
+            "type": "shell",
+            "command": "cp camera/main.py /Volumes/NO NAME/main.py",
+            "problemMatcher": ""
+        },
+        {
+            "label": "Serial",
+            "type": "shell",
+            "command": "pio serialports monitor",
+            "problemMatcher": [
+                "$platformio"
+            ]
         }
     ]
 }

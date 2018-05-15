@@ -3,25 +3,29 @@
 
 typedef struct DebugSettings {
     bool engineStarted;
-    bool headingNeedsResetting;
-    bool IMUNeedsCalibrating;
-
-    // bool playModeSwitching;
+    bool IMUNeedsResetting;
+    bool playModeSwitching;
+    bool lightSensorsNeedResetting;
+    bool defaultPlayModeIsAttack;
 
     DebugSettings() {
         engineStarted = false;
-        headingNeedsResetting = false;
-        IMUNeedsCalibrating = false;
+        IMUNeedsResetting = false;
+        playModeSwitching = false;
+        lightSensorsNeedResetting = false;
+        defaultPlayModeIsAttack = true;
     }
 
     DebugSettings(uint16_t numberValue) {
         engineStarted = numberValue & 0x1;
-        headingNeedsResetting = (numberValue >> 1) & 0x1;
-        IMUNeedsCalibrating = (numberValue >> 2) & 0x1;
+        IMUNeedsResetting = (numberValue >> 1) & 0x1;
+        playModeSwitching = (numberValue >> 2) & 0x1;
+        lightSensorsNeedResetting = (numberValue >> 3) & 0x1;
+        defaultPlayModeIsAttack = (numberValue >> 4) & 0x1;
     }
 
     uint16_t numberValue() {
-        return engineStarted | (headingNeedsResetting << 1) | (IMUNeedsCalibrating << 2);
+        return engineStarted | (IMUNeedsResetting << 1) | (playModeSwitching << 2) | (lightSensorsNeedResetting << 3) | (defaultPlayModeIsAttack << 4);
     }
 } DebugSettings;
 

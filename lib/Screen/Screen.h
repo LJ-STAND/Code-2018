@@ -53,20 +53,31 @@ private:
 
     ScreenType screenType = ScreenType::mainScreenType;
 
+    HomeButton homeButton;
+
+    // Main Screen
+
     EngineStartButton engineStartButton;
+
     TextButton debugButton;
     TextButton settingsButton;
-    TextButton IMUCalibrateButton;
-    TextButton headingResetButton;
-    HomeButton homeButton;
+    TextButton IMUResetButton;
+    TextButton lightSensorsResetButton;
+
+    // Settings Screen
 
     Label playModeSwitchingLabel;
     CheckBox playModeSwitchingCheckBox;
 
+    Label defaultPlayModeLabel;
+    Switch defaultPlayModeSwitch;
+
     Label gameModeLabel;
+    CheckBox gameModeSwitchingCheckBox;
+
+    // Debug Screen
 
     Label headingLabel;
-
     Dial headingDial;
 
     Timer updateTextTimer = Timer(SCREEN_UPDATE_TEXT_TIME);

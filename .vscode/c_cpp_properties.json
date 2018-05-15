@@ -9,7 +9,8 @@
                 "/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.1.0/include",
                 "/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include",
                 "/usr/include",
-                "${workspaceFolder}/lib/**"
+                "${workspaceFolder}/lib/**",
+                "/Applications/Arduino.app/Contents/Java/hardware/**"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
@@ -81,5 +82,5 @@
             "cppStandard": "c++17"
         }
     ],
-    "version": 3
+    "version": 4
 }
