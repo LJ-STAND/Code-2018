@@ -15,7 +15,7 @@ void View::setNeedsDraw() {
     needsDrawing = true;
 }
 
-Dial::Dial(uint16_t cx, uint16_t cy, uint16_t r, int maxValue, double minAngle, double maxAngle) : View(cx - r, cy - r, r * 2, r * 2), cx(cx), cy(cy), r(r), maxValue(maxValue), minAngle(minAngle), maxAngle(maxAngle) {}
+Dial::Dial(uint16_t cx, uint16_t cy, uint16_t r, int maxValue) : View(cx - r, cy - r, r * 2, r * 2), cx(cx), cy(cy), r(r), maxValue(maxValue) {}
 
 void Dial::draw() {
     TFT.drawCircle(cx, cy, r, FOREGROUND_COLOR);
@@ -30,12 +30,37 @@ void Dial::draw() {
 }
 
 void Dial::setValue(int newValue) {
-    value = newValue;
-    setNeedsDraw();
+    if (value != newValue) {
+        value = newValue;
+        setNeedsDraw();
+    }
 }
 
 int Dial::getValue() {
     return value;
+}
+
+BallView::BallView(uint16_t x, uint16_t y, uint16_t w, uint16_t h) : View(x, y, w, h) {}
+
+void BallView::draw() {
+    TFT.drawCircle(x + w / 2, y + h / 2, 20, FOREGROUND_COLOR);
+
+    if (oldData.visible()) {
+        TFT.drawCircle(x + w / 2 + (oldData.strength / BALL_VIEW_MAX_STRENGTH) * min(w, h) * cos(degreesToRadians(ballData.angle - 90)), y + h / 2 + (oldData.strength / BALL_VIEW_MAX_STRENGTH) * min(w, h) * sin(degreesToRadians(oldData.angle - 90)), BALL_VIEW_BALL_RADIUS, FOREGROUND_COLOR);
+    }
+
+    if (ballData.visible()) {
+        TFT.drawCircle(x + w / 2 + (oldData.strength / BALL_VIEW_MAX_STRENGTH) * min(w, h) * cos(degreesToRadians(ballData.angle - 90)), y + h / 2 + (ballData.strength / BALL_VIEW_MAX_STRENGTH) * min(w, h) * sin(degreesToRadians(ballData.angle - 90)), BALL_VIEW_BALL_RADIUS, FOREGROUND_COLOR);
+    }
+
+    oldData = ballData;
+}
+
+void BallView::setBallData(BallData data) {
+    if (ballData != data) {
+        ballData = data;
+        setNeedsDraw();
+    }
 }
 
 void Button::setEnabled(bool isEnabled) {
@@ -73,6 +98,7 @@ Label::Label(uint16_t x, uint16_t y, uint16_t w, uint16_t h, char *str, uint8_t 
 
 void Label::draw() {
     TFT.fillRect(x, y, w, h, BACKGROUND_COLOR);
+    TFT.setTextColor(FOREGROUND_COLOR);
     TFT.setCursor(x, y);
     TFT.setTextSize(textSize);
     TFT.print(str);
@@ -149,7 +175,9 @@ void HomeButton::draw() {
 BackButton::BackButton(uint16_t x, uint16_t y) : Button(x, y, BACK_BUTTON_WIDTH, BACK_BUTTON_HEIGHT) {}
 
 void BackButton::draw() {
-    TFT.drawLine(x, y + h / 2, x + w, y + h / 2, FOREGROUND_COLOR);
+    TFT.drawLine(x, y + h / 2, x + w, y + h / 2, highlighted ? HIGHLIGHT_COLOR : FOREGROUND_COLOR);
+    TFT.drawLine(x, y + h / 2, x + w / 2, y, highlighted ? HIGHLIGHT_COLOR : FOREGROUND_COLOR);
+    TFT.drawLine(x, y + h / 2, x + w / 2, y + h, highlighted ? HIGHLIGHT_COLOR : FOREGROUND_COLOR);
 }
 
 CheckBox::CheckBox(uint16_t x, uint16_t y) : Button(x, y, CHECK_BOX_OUTER_SIZE, CHECK_BOX_OUTER_SIZE) {}
@@ -177,5 +205,38 @@ void Switch::draw() {
     TFT.print(enabled ? onChar : offChar);
 }
 
+Terminal::Terminal(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t textSize, uint16_t textColor) : View(x, y, w, h), textSize(textSize), textColor(textColor), cursorX(x), cursorY(y) {
+    needsDrawing = false;
+}
 
+void Terminal::clear() {
+    TFT.fillRect(x, y, w, h, BACKGROUND_COLOR);
+    cursorX = x;
+    cursorY = y;
+}
 
+size_t Terminal::write(uint8_t c) {
+    TFT.setTextColor(textColor);
+    TFT.setTextSize(textSize);
+    TFT.setCursor(cursorX, cursorY);
+    TFT.setMaxCursor(x + w, y + h);
+    TFT.setBaseCursor(x);
+    TFT.write(c);
+    cursorX = TFT.getCursorX();
+    cursorY = TFT.getCursorY();
+    TFT.setMaxCursor(TFT.width(), TFT.height());
+    TFT.setBaseCursor(0);
+    clearIfOverflow();
+
+    return 1;
+}
+
+void Terminal::clearIfOverflow() {
+    if (TFT.getCursorY() > y + h - textSize * 8) {
+        clear();
+    }
+}
+
+void Terminal::draw() {
+    clear();
+}

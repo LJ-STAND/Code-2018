@@ -76,7 +76,9 @@ WIDTH(w), HEIGHT(h)
     _width    = WIDTH;
     _height   = HEIGHT;
     rotation  = 0;
-    cursor_y  = cursor_x    = 0;
+    cursor_y  = cursor_x = cursor_base_x = 0;
+    cursor_max_x = _width;
+    cursor_max_y = _height;
     textsize  = 1;
     textcolor = textbgcolor = 0xFFFF;
     wrap      = true;
@@ -814,21 +816,24 @@ void Adafruit_GFX::write(uint8_t c) {
     if(!gfxFont) { // 'Classic' built-in font
 
         if(c == '\n') {                        // Newline?
-            cursor_x  = 0;                     // Reset x to zero,
+            cursor_x  = cursor_base_x;                     // Reset x to zero,
             cursor_y += textsize * 8;          // advance y one line
         } else if(c != '\r') {                 // Ignore carriage returns
-            if(wrap && ((cursor_x + textsize * 6) > _width)) { // Off right?
-                cursor_x  = 0;                 // Reset x to zero,
+            if(wrap && ((cursor_x + textsize * 6) > cursor_max_x)) { // Off right?
+                cursor_x  = cursor_base_x;                 // Reset x to zero,
                 cursor_y += textsize * 8;      // advance y one line
             }
-            drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor, textsize);
+            if (cursor_y + textsize * 8 <= cursor_max_y) {
+                drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor, textsize);
+            }
+            
             cursor_x += textsize * 6;          // Advance x one char
         }
 
     } else { // Custom font
 
         if(c == '\n') {
-            cursor_x  = 0;
+            cursor_x  = cursor_base_x;
             cursor_y += (int16_t)textsize *
                         (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
         } else if(c != '\r') {
@@ -840,12 +845,15 @@ void Adafruit_GFX::write(uint8_t c) {
                           h     = pgm_read_byte(&glyph->height);
                 if((w > 0) && (h > 0)) { // Is there an associated bitmap?
                     int16_t xo = (int8_t)pgm_read_byte(&glyph->xOffset); // sic
-                    if(wrap && ((cursor_x + textsize * (xo + w)) > _width)) {
-                        cursor_x  = 0;
+                    if(wrap && ((cursor_x + textsize * (xo + w)) > cursor_max_x)) {
+                        cursor_x  = cursor_base_x;
                         cursor_y += (int16_t)textsize *
                           (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
                     }
-                    drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor, textsize);
+
+                    if (cursor_y + textsize * 8 <= cursor_max_y) {
+                        drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor, textsize);
+                    }
                 }
                 cursor_x += (uint8_t)pgm_read_byte(&glyph->xAdvance) * (int16_t)textsize;
             }
@@ -860,6 +868,15 @@ void Adafruit_GFX::write(uint8_t c) {
 void Adafruit_GFX::setCursor(int16_t x, int16_t y) {
     cursor_x = x;
     cursor_y = y;
+}
+
+void Adafruit_GFX::setMaxCursor(int16_t x, int16_t y) {
+    cursor_max_x = x;
+    cursor_max_y = y;
+}
+
+void Adafruit_GFX::setBaseCursor(int16_t x) {
+    cursor_base_x = x;
 }
 
 int16_t Adafruit_GFX::getCursorX(void) const {

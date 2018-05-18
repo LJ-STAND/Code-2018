@@ -11,11 +11,8 @@
 #include <Timer.h>
 
 T3SPI spi;
-volatile uint16_t dataIn[1];
-volatile uint16_t dataOut[1];
 
-volatile uint16_t ballAngle = TSOP_NO_BALL;
-volatile uint8_t ballStrength;
+BallData ballData = BallData(TSOP_NO_BALL, 0);
 
 LED leds;
 Screen screen;
@@ -43,8 +40,8 @@ void loop() {
     if (screen.settings.IMUNeedsResetting || screen.settings.lightSensorsNeedResetting) {
         leds.rainbow();
     } else {
-        if (ballAngle != 400) {
-            leds.displayAngle(ballAngle, 300);
+        if (ballData.visible()) {
+            leds.displayAngle(ballData.angle, 300);
         } else {
             leds.rgbColor(leds.rgb.Color(100, 0, 0));
         }
@@ -59,10 +56,12 @@ void loop() {
 }
 
 void spi0_isr() {
-    spi.rxtx16(dataIn, dataOut, 1);
+    uint16_t dataIn = SPI0_POPR;
 
-    uint8_t command = (dataIn[0] >> 10);
-    uint16_t data = dataIn[0] & 0x3FF;
+    uint8_t command = (dataIn >> 10);
+    uint16_t data = dataIn & 0x3FF;
+
+    uint16_t sendData;
 
     switch (command) {
     case SlaveCommand::lsFirst16BitCommmand:
@@ -76,15 +75,17 @@ void spi0_isr() {
         break;
 
     case SlaveCommand::ballAngleCommand:
-        ballAngle = data;
+        ballData.angle = data;
+        screen.ballData = ballData;
         break;
 
     case SlaveCommand::ballStrengthCommand:
-        ballStrength = data;
+        ballData.strength = data;
+        screen.ballData = ballData;
         break;
 
     case SlaveCommand::debugSettingsCommand:
-        dataOut[0] = screen.settings.numberValue();
+        sendData = screen.settings.numberValue();
         break;
 
     case SlaveCommand::IMUIsResetCommand:
@@ -118,5 +119,13 @@ void spi0_isr() {
         screen.clearMessage();
 
         break;
+
+    case SlaveCommand::debugTerminalCommand:
+        screen.write(data);
+        
+        break;
     }
+
+    SPI0_PUSHR_SLAVE = (command << 10) | (sendData & 0x3FF);
+    SPI0_SR |= SPI_SR_RFDF;
 }

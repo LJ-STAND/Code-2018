@@ -146,22 +146,20 @@ void TSOPArray::calculateStrengthSimple() {
 
 void TSOPArray::calculateAngle(uint8_t n) {
     // Cartesian addition of best n TSOPs
-    uint16_t x = 0;
-    uint16_t y = 0;
-    for (uint16_t i = 0; i < n; i++){
-        // convert vector to cartesian (remember that each bitshift << is *2)
+    int16_t x = 0;
+    int16_t y = 0;
+    for (uint8_t i = 0; i < n; i++){
+        // convert vector to cartesian
         x += sortedFilteredValues[i] * scaledCos[indexes[i]];
         y += sortedFilteredValues[i] * scaledSin[indexes[i]];
     }
     if (x == 0 && y == 0){
         // When vectors sum to (0, 0), we're in trouble. We've got some dodgy data
-        angle = 0;
+        angle = TSOP_NO_BALL;
     }
     else{
-        angle = radiansToDegrees(atan2(y, x));
+        angle = mod(radiansToDegrees(atan2(y, x)), 360);
     }
-
-    angle = mod(angle, 360);
     // strength = sqrt(x*x + y*y);
 
     /* Averages the indexes of the best n TSOPs. Best TSOP is weighted

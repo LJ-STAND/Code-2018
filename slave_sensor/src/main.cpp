@@ -8,9 +8,6 @@
 
 T3SPI spi;
 
-volatile uint16_t dataIn[1];
-volatile uint16_t dataOut[1];
-
 TSOPArray tsops;
 LightSensorArray lightSensors;
 
@@ -38,7 +35,6 @@ void loop() {
     if (tsops.tsopCounter > TSOP_LOOP_COUNT) {
         tsops.finishRead();
         tsops.unlock();
-        Serial.println(tsops.getStrength());
 
         lightSensors.read();
         lightSensors.calculateClusters();
@@ -52,42 +48,45 @@ void loop() {
 }
 
 void spi0_isr() {
-    spi.rxtx16(dataIn, dataOut, 1);
+    uint16_t dataIn = SPI0_POPR;
 
-    uint8_t command = (dataIn[0] >> 10);
-    uint16_t data = dataIn[0] & 0x3FF;
+    uint8_t command = (dataIn >> 10);
+    uint16_t data = dataIn & 0x3FF;
+
+    uint16_t sendData;
 
     switch (command) {
     case SlaveCommand::ballAngleCommand:
-        dataOut[0] = (uint16_t)tsops.getAngle();
+        sendData = (uint16_t)tsops.getAngle();
         break;
 
     case SlaveCommand::ballStrengthCommand:
-        dataOut[0] = (uint16_t)tsops.getStrength();
+        sendData = (uint16_t)tsops.getStrength();
         break;
 
     case SlaveCommand::lineAngleCommand:
-        dataOut[0] = (uint16_t)lightSensors.getLineAngle();
+        sendData = (uint16_t)lightSensors.getLineAngle();
         break;
 
     case SlaveCommand::lineSizeCommand:
-        dataOut[0] = (uint16_t)(lightSensors.getLineSize() * 100.0);
+        sendData = 
+        (uint16_t)(lightSensors.getLineSize() * 100.0);
         break;
 
     case SlaveCommand::lsFirst16BitCommmand:
-        dataOut[0] = 0;
+        sendData = 0;
 
         for (uint8_t i = 0; i < 16; i++) {
-            dataOut[0] |= lightSensors.data[i] << i;
+            sendData |= lightSensors.data[i] << i;
         }
 
         break;
 
     case SlaveCommand::lsSecond16BitCommand:
-        dataOut[0] = 0;
+        sendData = 0;
 
         for (uint8_t i = 0; i < 16; i++) {
-            dataOut[0] |= lightSensors.data[i + 16] << i;
+            sendData |= lightSensors.data[i + 16] << i;
         }
 
         break;
@@ -98,7 +97,10 @@ void spi0_isr() {
         break;
 
     default:
-        dataOut[0] = 0;
+        sendData = 0;
         break;
     }
+
+    SPI0_PUSHR_SLAVE = (command << 10) | (sendData & 0x3FF);
+    SPI0_SR |= SPI_SR_RFDF;
 }

@@ -43,7 +43,7 @@ void setup() {
 
     bluetooth.init();
 
-    spi.begin_MASTER(MASTER_SCK, MASTER_MOSI, MASTER_MISO, MASTER_CS_SENSOR, CS_ActiveLOW);
+    spi.begin_MASTER(MASTER_SCK, MASTER_MOSI, MASTER_MISO, MASTER_CS_MOTOR, CS_ActiveLOW);
     spi.setCTAR(CTAR_0, 16, SPI_MODE0, LSB_FIRST, SPI_CLOCK_DIV16);
 
     slaveSensor.init();
@@ -123,7 +123,7 @@ void calculateLineAvoid() {
 }
 
 void calculateOrbit() {
-    moveData.speed = ballData.angle == 400 ? 0 : ORBIT_SPEED;
+    moveData.speed = ballData.visible() ? ORBIT_SPEED : 0;
 
     if (angleIsInside(360 - ORBIT_SMALL_ANGLE, ORBIT_SMALL_ANGLE, ballData.angle)) {
         moveData.angle = (int)round(ballData.angle < 180 ? (ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) : (360 - (360 - ballData.angle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER));
@@ -200,15 +200,11 @@ void calculateMovement() {
 }
 
 void updateDebug() {
-    slaveDebug.sendBallAngle(ballData.angle);
-    slaveDebug.sendBallStrength(ballData.strength);
+    slaveDebug.sendBallData(ballData);
     slaveDebug.sendHeading(imu.getHeading());
-    slaveDebug.sendLeftRPM(slaveMotor.getLeftRPM());
-    slaveDebug.sendRightRPM(slaveMotor.getRightRPM());
-    slaveDebug.sendBackLeftRPM(slaveMotor.getBackLeftRPM());
-    slaveDebug.sendBackRightRPM(slaveMotor.getBackRightRPM());
-
-    settings = slaveDebug.getDebugSettings();
+    
+    slaveDebug.updateDebugSettings();
+    settings = slaveDebug.debugSettings;
 
     if (settings.IMUNeedsResetting) {
         imu.calibrate();
@@ -225,14 +221,18 @@ void updateDebug() {
         delay(500);
     }
 
-    settings = slaveDebug.getDebugSettings();
+    slaveDebug.updateDebugSettings();
+    settings = slaveDebug.debugSettings;
 }
 
 void loop() {
-    ballData = slaveSensor.getBallData();
+    slaveSensor.updateBallData();
+    slaveSensor.updateLineAngle();
+    slaveSensor.updateLineSize();
+    
+    ballData = slaveSensor.ballData();
 
-    Serial.println(ballData.angle);
-    updateLine(slaveSensor.getLineAngle(), slaveSensor.getLineSize());
+    updateLine(slaveSensor.lineAngle, slaveSensor.lineSize);
 
     imu.update();
     camera.update();
@@ -252,5 +252,7 @@ void loop() {
     if (ledTimer.timeHasPassed()) {
         digitalWrite(LED_BUILTIN, ledOn);
         ledOn = !ledOn;
+
+        slaveDebug.print("meme ");
     }
 }

@@ -27,15 +27,18 @@ enum SlaveCommand: uint8_t {
     motorBackLeftRPMCommand,
     motorBackRightRPMCommand,
     lightSensorsAreResetCommand,
-    calibrateLightSensorsCommand
+    calibrateLightSensorsCommand,
+    debugTerminalCommand
 };
 
 class Slave {
 public:
     void init(int csPin);
-    uint16_t transaction(SlaveCommand command, uint16_t data = 0);
+    void transaction(SlaveCommand command, uint16_t data = 0, uint8_t numSend = 2);
 
 private:
+    virtual void handleReceive(uint8_t command, uint16_t data);
+
     volatile uint16_t dataIn[1];
     volatile uint16_t dataOut[1];
     int cs;
@@ -44,37 +47,52 @@ private:
 class SlaveMotor: public Slave {
 public:
     void init();
+    void handleReceive(uint8_t command, uint16_t data);
     void setMotorAngle(uint16_t angle);
     void setMotorRotation(uint16_t rotation);
     void setMotorSpeed(uint16_t speed);
     void setMotor(MoveData moveData);
-    int getLeftRPM();
-    int getRightRPM();
-    int getBackLeftRPM();
-    int getBackRightRPM();
     void brake();
+    void updateLeftRPM();
+    void updateRightRPM();
+    void updateBackLeftRPM();
+    void updateBackRightRPM();
+
+    int leftRPM;
+    int rightRPM;
+    int backLeftRPM;
+    int backRightRPM;
 };
 
 class SlaveSensor: public Slave {
 public:
     void init();
-    uint16_t getBallAngle();
-    uint8_t getBallStrength();
-    BallData getBallData();
+    void handleReceive(uint8_t command, uint16_t data);
+    void updateBallAngle();
+    void updateBallStrength();
+    void updateBallData();
 
-    uint16_t getLineAngle();
-    double getLineSize();
-    int getLightSensorData();
+    void updateLineAngle();
+    void updateLineSize();
+    void updateLightSensorData();
     void sendCalibrateLightSensors();
+
+    uint16_t ballAngle;
+    uint16_t ballStrength;
+    BallData ballData();
+
+    uint16_t lineAngle;
+    double lineSize;
+    int lightSensorData;
 };
 
-class SlaveDebug: public Slave {
+class SlaveDebug: public Slave, public Print {
 public:
     void init();
+    void handleReceive(uint8_t command, uint16_t data);
     void sendLightSensorData(int data);
     void sendPlayMode(bool isAttacker);
-    void sendBallAngle(uint16_t angle);
-    void sendBallStrength(uint8_t strength);
+    void sendBallData(BallData ballData);
     void sendIMUIsReset();
     void sendLightSensorsAreReset();
     void sendHeading(uint16_t heading);
@@ -82,7 +100,12 @@ public:
     void sendRightRPM(uint16_t rpm);
     void sendBackLeftRPM(uint16_t rpm);
     void sendBackRightRPM(uint16_t rpm);
-    DebugSettings getDebugSettings();
+
+    void updateDebugSettings();
+
+    size_t write(uint8_t c);
+
+    DebugSettings debugSettings;
 };
 
 #endif // SLAVE_H

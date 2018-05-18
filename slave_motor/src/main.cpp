@@ -14,9 +14,6 @@ volatile int8_t rotation;
 
 T3SPI spi;
 
-volatile uint16_t dataIn[1];
-volatile uint16_t dataOut[1];
-
 Timer ledTimer = Timer(LED_BLINK_TIME_SLAVE_MOTOR);
 
 bool ledOn;
@@ -47,10 +44,12 @@ void loop() {
 }
 
 void spi0_isr() {
-    spi.rxtx16(dataIn, dataOut, 1);
+    uint16_t dataIn = SPI0_POPR;
 
-    uint8_t command = (dataIn[0] >> 10);
-    uint16_t data = dataIn[0] & 0x3FF;
+    uint8_t command = (dataIn >> 10);
+    uint16_t data = dataIn & 0x3FF;
+
+    uint16_t sendData;
 
     switch (command) {
     case SlaveCommand::motorAngleCommand:
@@ -66,19 +65,22 @@ void spi0_isr() {
         break;
 
     case SlaveCommand::motorLeftRPMCommand:
-        dataOut[0] = motors.motorLeft.getRPM();
+        sendData = motors.motorLeft.getRPM();
         break;
 
     case SlaveCommand::motorRightRPMCommand:
-        dataOut[0] = motors.motorRight.getRPM();
+        sendData = motors.motorRight.getRPM();
         break;
 
     case SlaveCommand::motorBackLeftRPMCommand:
-        dataOut[0] = motors.motorBackLeft.getRPM();
+        sendData = motors.motorBackLeft.getRPM();
         break;
 
     case SlaveCommand::motorBackRightRPMCommand:
-        dataOut[0] = motors.motorBackRight.getRPM();
+        sendData = motors.motorBackRight.getRPM();
         break;
     }
+
+    SPI0_PUSHR_SLAVE = (command << 10) | (sendData & 0x3FF);
+    SPI0_SR |= SPI_SR_RFDF;
 }

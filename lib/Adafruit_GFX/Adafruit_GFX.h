@@ -95,6 +95,8 @@ class Adafruit_GFX : public Print {
     drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color,
       uint16_t bg, uint8_t size),
     setCursor(int16_t x, int16_t y),
+    setMaxCursor(int16_t x, int16_t y),
+    setBaseCursor(int16_t x),
     setTextColor(uint16_t c),
     setTextColor(uint16_t c, uint16_t bg),
     setTextSize(uint8_t s),
@@ -129,7 +131,7 @@ class Adafruit_GFX : public Print {
     WIDTH, HEIGHT;   // This is the 'raw' display w/h - never changes
   int16_t
     _width, _height, // Display w/h as modified by current rotation
-    cursor_x, cursor_y;
+    cursor_x, cursor_y, cursor_base_x, cursor_max_x, cursor_max_y;
   uint16_t
     textcolor, textbgcolor;
   uint8_t

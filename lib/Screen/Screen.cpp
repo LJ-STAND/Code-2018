@@ -1,6 +1,8 @@
 #include "Screen.h"
 
 void Screen::init() {
+    settings.readEEPROM();
+
     TFT.begin();
 
     TFT.setRotation(SCREEN_ROTATION);
@@ -8,6 +10,8 @@ void Screen::init() {
 
     TFT.setTextSize(TITLE_FONT_SIZE);
     TFT.setTextColor(FOREGROUND_COLOR);
+
+    TFT.setMaxCursor(TFT.width(), TFT.height());
 
     uint16_t width, height;
     int16_t tempX, tempY;
@@ -23,7 +27,9 @@ void Screen::init() {
 
     TFT.drawLine(0, LINE_Y, TFT.width(), LINE_Y, FOREGROUND_COLOR);
 
+
     homeButton = HomeButton(HOME_BUTTON_X, HOME_BUTTON_Y);
+    backButton = BackButton(BACK_BUTTON_X, BACK_BUTTON_Y);
 
     // Main Screen
 
@@ -35,8 +41,13 @@ void Screen::init() {
 
     // Debug Screen
 
-    headingLabel = Label(10, LINE_Y + 10, 150, 20, "Heading: 0", 2);
-    headingDial = Dial(TFT.width() / 2, TFT.height() / 2, 50, 360, 0, 0);
+    imuDebugButton = TextButton(120, LINE_Y + 40, 30, "IMU", 1);
+    motorsDebugButton = TextButton(200, LINE_Y + 40, 30, "Motors", 1);
+    ballDebugButton = TextButton(80, LINE_Y + (TFT.height() - LINE_Y) / 2, 30, "Ball", 1);
+    lightSensorsDebugButton = TextButton(160, LINE_Y + (TFT.height() - LINE_Y) / 2, 30, "Light", 1);
+    cameraDebugButton = TextButton(240, LINE_Y + (TFT.height() - LINE_Y) / 2, 30, "Camera", 1);
+    ledsDebugButton = TextButton(120, TFT.height() - 40, 30, "LEDs", 1);
+    terminalDebugButton = TextButton(200, TFT.height() - 40, 30, "Terminal", 1);
 
     // Settings Screen
 
@@ -45,6 +56,28 @@ void Screen::init() {
 
     defaultPlayModeLabel = Label(SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET * 2 + CHECK_BOX_OUTER_SIZE + SETTINGS_SCREEN_LABEL_Y_OFFSET, 200, 20, "Default play mode", 2);
     defaultPlayModeSwitch = Switch(TFT.width() - SWITCH_WIDTH - SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET * 2 + CHECK_BOX_OUTER_SIZE, WHITE, "A", WHITE, "D");
+
+    goalIsYellowLabel = Label(SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET * 3 + CHECK_BOX_OUTER_SIZE * 2 + SETTINGS_SCREEN_LABEL_Y_OFFSET, 200, 20, "Goal color", 2);
+    goalIsYellowSwitch = Switch(TFT.width() - SWITCH_WIDTH - SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET * 3 + CHECK_BOX_OUTER_SIZE * 2, YELLOW, "", BLUE, "");
+
+    // IMU Debug Screen
+
+    headingDial = Dial(TFT.width() / 2, LINE_Y + (TFT.height() - LINE_Y) / 2, 80, 360);
+
+    // Motors Debug Screen
+
+    leftRPMDial = Dial(TFT.width() / 2 - 50, LINE_Y + 50, 40, 1600);
+    rightRPMDial = Dial(TFT.width() / 2 + 50, LINE_Y + 50, 40, 1600);
+    backLeftRPMDial = Dial(TFT.width() / 2 - 50, TFT.height() - 50, 40, 1600);
+    backRightRPMDial = Dial(TFT.width() / 2 + 50, TFT.height() - 50, 40, 1600);
+
+    // Ball Debug Screen
+
+    ballView = BallView(0, LINE_Y + 1, TFT.width(), TFT.height() - LINE_Y);
+
+    // Terminal Debug Screen
+
+    terminal = Terminal(5, LINE_Y + 5, TFT.width() - 10, TFT.height() - LINE_Y - 10, 1, FOREGROUND_COLOR);
 }
 
 void Screen::clearAll() {
@@ -97,15 +130,50 @@ void Screen::checkTouch() {
             break;
 
         case ScreenType::debugScreenType:
+            if (imuDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                changeScreen(ScreenType::imuDebugScreenType);
+            }
+
+            if (motorsDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                changeScreen(ScreenType::motorsDebugScreenType);
+            }
+
+            if (ballDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                changeScreen(ScreenType::ballDebugScreenType);
+            }
+
+            if (lightSensorsDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                changeScreen(ScreenType::lightSensorsDebugScreenType);
+            }
+
+            if (cameraDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                changeScreen(ScreenType::cameraDebugScreenType);
+            }
+
+            if (ledsDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                changeScreen(ScreenType::ledDebugScreenType);
+            }
+
+            if (terminalDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                changeScreen(ScreenType::terminalDebugScreenType);
+            }
+
             break;
 
         case ScreenType::settingScreenType:
             if (playModeSwitchingCheckBox.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                playModeSwitchingCheckBox.setEnabled(!playModeSwitchingCheckBox.getEnabled());
+                settings.playModeSwitching = !settings.playModeSwitching;
+                settings.writeEEPROM();
             }
 
             if (defaultPlayModeSwitch.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                defaultPlayModeSwitch.setEnabled(!defaultPlayModeSwitch.getEnabled());
+                settings.defaultPlayModeIsAttack = !settings.defaultPlayModeIsAttack;
+                settings.writeEEPROM();
+            }
+
+            if (goalIsYellowSwitch.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                settings.goalIsYellow = !settings.goalIsYellow;
+                settings.writeEEPROM();
             }
 
             break;
@@ -113,6 +181,10 @@ void Screen::checkTouch() {
 
         if (homeButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
             changeScreen(ScreenType::mainScreenType);
+        }
+
+        if (backButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+            changeScreen(lastScreenType);
         }
     }
 
@@ -133,30 +205,65 @@ void Screen::update() {
             break;
 
         case ScreenType::debugScreenType:
-            if (updateTextTimer.timeHasPassed()) {
-                char headingString[50];
-                sprintf(headingString, "Heading: %d", heading);
-
-                headingLabel.setText(headingString);
-                headingDial.setValue(heading);
-            }
-
-            headingLabel.checkDraw();
-            headingDial.checkDraw();
+            imuDebugButton.checkDraw();
+            motorsDebugButton.checkDraw();
+            ballDebugButton.checkDraw();
+            lightSensorsDebugButton.checkDraw();
+            cameraDebugButton.checkDraw();
+            ledsDebugButton.checkDraw();
+            terminalDebugButton.checkDraw();
 
             break;
 
         case ScreenType::settingScreenType:
+            playModeSwitchingCheckBox.setEnabled(settings.playModeSwitching);
+            defaultPlayModeSwitch.setEnabled(settings.defaultPlayModeIsAttack);
+            goalIsYellowSwitch.setEnabled(settings.goalIsYellow);
+
             playModeSwitchingLabel.checkDraw();
             playModeSwitchingCheckBox.checkDraw();
 
             defaultPlayModeLabel.checkDraw();
             defaultPlayModeSwitch.checkDraw();
 
+            goalIsYellowLabel.checkDraw();
+            goalIsYellowSwitch.checkDraw();
+
+            break;
+
+        case ScreenType::imuDebugScreenType:
+            headingDial.setValue(heading);
+            headingDial.checkDraw();
+            
+            break;
+
+        case ScreenType::motorsDebugScreenType:
+            leftRPMDial.setValue(leftRPM);
+            leftRPMDial.checkDraw();
+
+            rightRPMDial.setValue(rightRPM);
+            rightRPMDial.checkDraw();
+
+            backLeftRPMDial.setValue(backLeftRPM);
+            backLeftRPMDial.checkDraw();
+
+            backRightRPMDial.setValue(backRightRPM);
+            backRightRPMDial.checkDraw();
+
+            break;
+
+        case ScreenType::ballDebugScreenType:
+            ballView.setBallData(ballData);
+            ballView.checkDraw();
+
+            break;
+
+        default:
             break;
         }
 
         homeButton.checkDraw();
+        backButton.checkDraw();
 
         checkTouch();
     }
@@ -174,12 +281,17 @@ void Screen::redrawScreen() {
         settingsButton.setNeedsDraw();
         IMUResetButton.setNeedsDraw();
         lightSensorsResetButton.setNeedsDraw();
-        headingDial.setNeedsDraw();
 
         break;
 
     case ScreenType::debugScreenType:
-        headingLabel.setNeedsDraw();
+        imuDebugButton.setNeedsDraw();
+        motorsDebugButton.setNeedsDraw();
+        ballDebugButton.setNeedsDraw();
+        lightSensorsDebugButton.setNeedsDraw();
+        cameraDebugButton.setNeedsDraw();
+        ledsDebugButton.setNeedsDraw();
+        terminalDebugButton.setNeedsDraw();
 
         break;
 
@@ -190,12 +302,37 @@ void Screen::redrawScreen() {
         defaultPlayModeLabel.setNeedsDraw();
         defaultPlayModeSwitch.setNeedsDraw();
 
+        goalIsYellowLabel.setNeedsDraw();
+        goalIsYellowSwitch.setNeedsDraw();
+
+        break;
+
+    case ScreenType::imuDebugScreenType:
+        headingDial.setNeedsDraw();
+
+        break;
+
+    case ScreenType::motorsDebugScreenType:
+        leftRPMDial.setNeedsDraw();
+        rightRPMDial.setNeedsDraw();
+        backLeftRPMDial.setNeedsDraw();
+        backRightRPMDial.setNeedsDraw();
+
+        break;
+
+    case ScreenType::ballDebugScreenType:
+        ballView.setNeedsDraw();
+
+        break;
+
+    default:
         break;
     }
 }
 
 void Screen::changeScreen(ScreenType newType) {
     if (screenType != newType) {
+        lastScreenType = screenType;
         screenType = newType;
 
         redrawScreen();
@@ -235,4 +372,12 @@ void Screen::clearMessage() {
 
         redrawScreen();
     }
+}
+
+size_t Screen::write(uint8_t c) {
+    if (screenType == ScreenType::terminalDebugScreenType) {
+        terminal.write(c);
+    }
+
+    return 1;
 }

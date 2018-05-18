@@ -9,14 +9,22 @@
 #include <Pins.h>
 #include <DebugSettings.h>
 #include <Timer.h>
+#include <BallData.h>
 
 enum ScreenType: uint8_t {
     mainScreenType,
     debugScreenType,
-    settingScreenType
+    settingScreenType,
+    imuDebugScreenType,
+    motorsDebugScreenType,
+    ballDebugScreenType,
+    lightSensorsDebugScreenType,
+    cameraDebugScreenType,
+    ledDebugScreenType,
+    terminalDebugScreenType
 };
 
-class Screen {
+class Screen : public Print {
 public:
     Screen() {}
 
@@ -34,13 +42,18 @@ public:
     void displayMessage(char *message);
     void clearMessage();
 
+    size_t write(uint8_t c);
+
     DebugSettings settings;
+
+    // Debug Variables
 
     int heading;
     int leftRPM;
     int rightRPM;
     int backLeftRPM;
     int backRightRPM;
+    BallData ballData;
 
 private:
     TouchScreen ts = TouchScreen(SCREEN_XP, SCREEN_YP, SCREEN_XM, SCREEN_YM, TS_RESISTANCE);
@@ -52,8 +65,10 @@ private:
     MovingAverage batteryAverage = MovingAverage(50);
 
     ScreenType screenType = ScreenType::mainScreenType;
+    ScreenType lastScreenType = ScreenType::mainScreenType;
 
     HomeButton homeButton;
+    BackButton backButton;
 
     // Main Screen
 
@@ -72,13 +87,43 @@ private:
     Label defaultPlayModeLabel;
     Switch defaultPlayModeSwitch;
 
-    Label gameModeLabel;
-    CheckBox gameModeSwitchingCheckBox;
+    Label goalIsYellowLabel;
+    Switch goalIsYellowSwitch;
 
     // Debug Screen
 
-    Label headingLabel;
+    TextButton imuDebugButton;
+    TextButton motorsDebugButton;
+    TextButton ballDebugButton;
+    TextButton lightSensorsDebugButton;
+    TextButton cameraDebugButton;
+    TextButton ledsDebugButton;
+    TextButton terminalDebugButton;
+
+    // IMU Debug Screen
+
     Dial headingDial;
+
+    // Motor Debug Screen
+
+    Dial leftRPMDial;
+    Dial rightRPMDial;
+    Dial backLeftRPMDial;
+    Dial backRightRPMDial;
+
+    // Ball Debug Screen
+
+    BallView ballView;
+
+    // Light Sensor Debug Screen
+
+    // Camera Debug Screen
+
+    // LED Debug Screen
+
+    // Terminal Debug Screen
+
+    Terminal terminal;
 
     Timer updateTextTimer = Timer(SCREEN_UPDATE_TEXT_TIME);
 };
