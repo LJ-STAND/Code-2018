@@ -86,6 +86,14 @@ void LED::displayAngle(uint16_t angle, double hue) {
     rgb.show();
 }
 
+void LED::displayAngleSize(uint16_t angle, double size, double maxSize, double minHue, double maxHue) {
+    for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
+        rgb.setPixelColor(i, HSBToRGB(minHue + (size / maxSize) * (maxHue - minHue), 1.0, 1.0 - ((double)min(smallestAngleBetween(angle, i * 360 / RGB_LED_COUNT), 60) / 60.0)));
+    }
+
+    rgb.show();
+}
+
 void LED::rgbColor(uint32_t color) {
     for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
         rgb.setPixelColor(i, color);
@@ -97,4 +105,9 @@ void LED::rgbColor(uint32_t color) {
 void LED::displayPlayMode(bool isAttacker) {
     digitalWrite(DEBUG_LED_DEFENDER, !isAttacker);
     digitalWrite(DEBUG_LED_ATTACKER, isAttacker);
+}
+
+void LED::rgbOff() {
+    rgb.clear();
+    rgb.show();
 }

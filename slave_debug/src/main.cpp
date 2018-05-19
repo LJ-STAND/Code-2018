@@ -13,6 +13,7 @@
 T3SPI spi;
 
 BallData ballData = BallData(TSOP_NO_BALL, 0);
+LineData lineData = LineData();
 
 LED leds;
 Screen screen;
@@ -37,13 +38,41 @@ void setup(void) {
 }
 
 void loop() {
-    if (screen.settings.IMUNeedsResetting || screen.settings.lightSensorsNeedResetting) {
-        leds.rainbow();
+    if (screen.settings.gameMode) {
+        leds.rgbOff();
     } else {
-        if (ballData.visible()) {
-            leds.displayAngle(ballData.angle, 300);
+        if (screen.settings.IMUNeedsResetting || screen.settings.lightSensorsNeedResetting) {
+            leds.rainbow();
         } else {
-            leds.rgbColor(leds.rgb.Color(100, 0, 0));
+            switch (screen.rgbType) {
+            case RGBType::ballRGBType:
+                if (ballData.visible()) {
+                    leds.displayAngle(ballData.angle, 300);
+                } else {
+                    leds.rgbColor(leds.rgb.Color(100, 0, 0));
+                }
+
+                break;
+
+            case RGBType::lineRGBType:
+                if (lineData.onField) {
+                    leds.rgbColor(leds.rgb.Color(0, 100, 0));
+                } else {
+                    leds.displayAngleSize(lineData.angle, lineData.size, 3, 120, 0);
+                }
+
+                break;
+
+            case RGBType::rainbowRGBType:
+                leds.rainbow();
+
+                break;
+
+            case RGBType::customRGBType:
+                leds.rgbOff();
+            
+                break;
+            }
         }
     }
 
@@ -123,6 +152,24 @@ void spi0_isr() {
     case SlaveCommand::debugTerminalCommand:
         screen.write(data);
         
+        break;
+
+    case SlaveCommand::lineAngleCommand:
+        lineData.angle = data;
+        screen.lineData = lineData;
+        
+        break;
+
+    case SlaveCommand::lineSizeCommand:
+        lineData.size = (double)data / 100.0;
+        screen.lineData = lineData;
+
+        break;
+
+    case SlaveCommand::lineOnFieldCommand:
+        lineData.onField = data;
+        screen.lineData = lineData;
+
         break;
     }
 

@@ -27,6 +27,8 @@
 
 #define AVOID_LINE true
 
+#define LIGHT_SENSOR_CALIBRATION_EEPROM 0
+
 // --- Motors --- //
 
 #define MOTOR_PID_KP 4.0
@@ -203,6 +205,8 @@
 #define BALL_VIEW_MAX_STRENGTH 150
 #define BALL_VIEW_ROBOT_RADIUS 20
 #define BALL_VIEW_BALL_RADIUS 10
+
+#define LINE_VIEW_ROBOT_RADIUS 10
 
 // --- Camera --- //
 

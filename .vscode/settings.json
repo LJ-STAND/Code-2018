@@ -30,6 +30,18 @@
         "unordered_map": "cpp",
         "unordered_set": "cpp",
         "algorithm": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "limits": "cpp",
+        "chrono": "cpp",
+        "cmath": "cpp",
+        "complex": "cpp",
+        "bitset": "cpp",
+        "memory": "cpp",
+        "queue": "cpp",
+        "stack": "cpp",
+        "utility": "cpp",
+        "*.tcc": "cpp",
+        "atomic": "cpp",
+        "system_error": "cpp"
     }
 }

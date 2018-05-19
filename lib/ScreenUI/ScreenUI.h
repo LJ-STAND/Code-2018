@@ -1,12 +1,14 @@
 #ifndef SCREEN_UI_H
 #define SCREEN_UI_H
 
+#include <Arduino.h>
 #include <Adafruit_ILI9341_8bit.h>
 #include <TouchScreen.h>
 #include <Config.h>
 #include <Common.h>
 #include <Fonts/Org_01.h>
 #include <BallData.h>
+#include <LineData.h>
 
 class View {
 public:
@@ -51,6 +53,19 @@ public:
 protected:
     BallData ballData;
     BallData oldData;
+};
+
+class LineView : public View {
+public:
+    LineView() {}
+    LineView(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+
+    void draw();
+    void setLineData(LineData data);
+
+protected:
+    LineData lineData;
+    LineData oldData;
 };
 
 class Button : public View {

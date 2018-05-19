@@ -10,6 +10,7 @@
 #include <DebugSettings.h>
 #include <Timer.h>
 #include <BallData.h>
+#include <LED.h>
 
 enum ScreenType: uint8_t {
     mainScreenType,
@@ -39,12 +40,13 @@ public:
     void updateBatteryMeter();
     void update();
 
-    void displayMessage(char *message);
+    void displayMessage(char *message, bool clearable = false);
     void clearMessage();
 
     size_t write(uint8_t c);
 
     DebugSettings settings;
+    RGBType rgbType = RGBType::ballRGBType;
 
     // Debug Variables
 
@@ -54,6 +56,7 @@ public:
     int backLeftRPM;
     int backRightRPM;
     BallData ballData;
+    LineData lineData;
 
 private:
     TouchScreen ts = TouchScreen(SCREEN_XP, SCREEN_YP, SCREEN_XM, SCREEN_YM, TS_RESISTANCE);
@@ -61,6 +64,7 @@ private:
     bool lastIsTouching;
 
     bool displayingMessage = false;
+    bool messageClearable = false;
 
     MovingAverage batteryAverage = MovingAverage(50);
 
@@ -90,6 +94,9 @@ private:
     Label goalIsYellowLabel;
     Switch goalIsYellowSwitch;
 
+    Label gameModeLabel;
+    CheckBox gameModeCheckBox;
+
     // Debug Screen
 
     TextButton imuDebugButton;
@@ -117,9 +124,23 @@ private:
 
     // Light Sensor Debug Screen
 
+    LineView lineView;
+
     // Camera Debug Screen
 
     // LED Debug Screen
+
+    Label ballRGBLabel;
+    CheckBox ballRGBCheckBox;
+
+    Label lineRGBLabel;
+    CheckBox lineRGBCheckBox;
+
+    Label rainbowRGBLabel;
+    CheckBox rainbowRGBCheckBox;
+
+    Label customRGBLabel;
+    CheckBox customRGBCheckBox;
 
     // Terminal Debug Screen
 

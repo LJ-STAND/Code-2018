@@ -130,7 +130,7 @@ BallData SlaveSensor::ballData() {
 void SlaveSensor::updateLightSensorData() {}
 
 void SlaveSensor::sendCalibrateLightSensors() {
-    transaction(SlaveCommand::calibrateLightSensorsCommand);
+    transaction(SlaveCommand::calibrateLightSensorsCommand, 0, 1);
 }
 
 void SlaveDebug::init() {
@@ -160,7 +160,7 @@ void SlaveDebug::updateDebugSettings() {
 }
 
 void SlaveDebug::sendIMUIsReset() {
-    transaction(SlaveCommand::IMUIsResetCommand);
+    transaction(SlaveCommand::IMUIsResetCommand, 0, 1);
 }
 
 void SlaveDebug::sendHeading(uint16_t heading) {
@@ -184,7 +184,13 @@ void SlaveDebug::sendBackRightRPM(uint16_t rpm) {
 }
 
 void SlaveDebug::sendLightSensorsAreReset() {
-    transaction(SlaveCommand::lightSensorsAreResetCommand);
+    transaction(SlaveCommand::lightSensorsAreResetCommand, 0, 1);
+}
+
+void SlaveDebug::sendLineData(LineData data) {
+    transaction(SlaveCommand::lineAngleCommand, data.angle);
+    transaction(SlaveCommand::lineSizeCommand, data.size * 100);
+    transaction(SlaveCommand::lineOnFieldCommand, data.onField);
 }
 
 size_t SlaveDebug::write(uint8_t c) {

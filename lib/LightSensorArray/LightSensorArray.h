@@ -5,6 +5,7 @@
 #include <Pins.h>
 #include <Common.h>
 #include <Config.h>
+#include <EEPROM.h>
 
 class LightSensorArray {
 public:
@@ -29,7 +30,7 @@ public:
     bool data[LS_NUM];
     bool filledInData[LS_NUM];
 
-    int thresholds[LS_NUM];
+    uint16_t thresholds[LS_NUM];
 
     int starts[4];
     int ends[4];

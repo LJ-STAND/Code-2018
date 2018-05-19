@@ -7,6 +7,7 @@
 #include <BallData.h>
 #include <MoveData.h>
 #include <DebugSettings.h>
+#include <LineData.h>
 
 enum SlaveCommand: uint8_t {
     motorAngleCommand,
@@ -16,6 +17,7 @@ enum SlaveCommand: uint8_t {
     ballStrengthCommand,
     lineAngleCommand,
     lineSizeCommand,
+    lineOnFieldCommand,
     lsFirst16BitCommmand,
     lsSecond16BitCommand,
     playModeCommand,
@@ -91,6 +93,7 @@ public:
     void init();
     void handleReceive(uint8_t command, uint16_t data);
     void sendLightSensorData(int data);
+    void sendLineData(LineData data);
     void sendPlayMode(bool isAttacker);
     void sendBallData(BallData ballData);
     void sendIMUIsReset();

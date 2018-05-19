@@ -46,19 +46,38 @@ void BallView::draw() {
     TFT.drawCircle(x + w / 2, y + h / 2, 20, FOREGROUND_COLOR);
 
     if (oldData.visible()) {
-        TFT.drawCircle(x + w / 2 + (oldData.strength / BALL_VIEW_MAX_STRENGTH) * min(w, h) * cos(degreesToRadians(ballData.angle - 90)), y + h / 2 + (oldData.strength / BALL_VIEW_MAX_STRENGTH) * min(w, h) * sin(degreesToRadians(oldData.angle - 90)), BALL_VIEW_BALL_RADIUS, FOREGROUND_COLOR);
+        TFT.fillCircle(x + w / 2 + ((double)oldData.strength / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * cos(degreesToRadians(oldData.angle - 90)), y + h / 2 + ((double)oldData.strength / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * sin(degreesToRadians(oldData.angle - 90)), BALL_VIEW_BALL_RADIUS, BACKGROUND_COLOR);
     }
 
     if (ballData.visible()) {
-        TFT.drawCircle(x + w / 2 + (oldData.strength / BALL_VIEW_MAX_STRENGTH) * min(w, h) * cos(degreesToRadians(ballData.angle - 90)), y + h / 2 + (ballData.strength / BALL_VIEW_MAX_STRENGTH) * min(w, h) * sin(degreesToRadians(ballData.angle - 90)), BALL_VIEW_BALL_RADIUS, FOREGROUND_COLOR);
+        TFT.fillCircle(x + w / 2 + ((double)ballData.strength / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * cos(degreesToRadians(ballData.angle - 90)), y + h / 2 + ((double)ballData.strength / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * sin(degreesToRadians(ballData.angle - 90)), BALL_VIEW_BALL_RADIUS, FOREGROUND_COLOR);
     }
 
     oldData = ballData;
 }
 
 void BallView::setBallData(BallData data) {
-    if (ballData != data) {
+    if (ballData.angle != data.angle) {
         ballData = data;
+        ballData.strength = 100;
+        setNeedsDraw();
+    }
+}
+
+LineView::LineView(uint16_t x, uint16_t y, uint16_t w, uint16_t h) : View(x, y, w, h) {}
+
+void LineView::draw() {
+    TFT.fillCircle(oldData.onField ? x + w / 2 : x + w / 2 + (min(w, h) / 4 - LINE_VIEW_ROBOT_RADIUS + (oldData.size / 3.0) * 2.0 * (double)LINE_VIEW_ROBOT_RADIUS) * cos(degreesToRadians(oldData.angle - 90)), oldData.onField ? y + h / 2 : y + h / 2 + (min(w, h) / 4 - LINE_VIEW_ROBOT_RADIUS + (oldData.size / 3.0) * 2.0 * (double)LINE_VIEW_ROBOT_RADIUS) * sin(degreesToRadians(oldData.angle - 90)), LINE_VIEW_ROBOT_RADIUS, BACKGROUND_COLOR);
+    TFT.fillCircle(lineData.onField ? x + w / 2 : x + w / 2 + (min(w, h) / 4 - LINE_VIEW_ROBOT_RADIUS + (lineData.size / 3.0) * 2.0 * (double)LINE_VIEW_ROBOT_RADIUS) * cos(degreesToRadians(lineData.angle - 90)), lineData.onField ? y + h / 2 : y + h / 2 + (min(w, h) / 4 - LINE_VIEW_ROBOT_RADIUS + (lineData.size / 3.0) * 2.0 * (double)LINE_VIEW_ROBOT_RADIUS) * sin(degreesToRadians(lineData.angle - 90)), LINE_VIEW_ROBOT_RADIUS, FOREGROUND_COLOR);
+
+    TFT.drawCircle(x + w / 2, y + h / 2, min(w, h) / 4, FOREGROUND_COLOR);
+
+    oldData = lineData;
+}
+
+void LineView::setLineData(LineData data) {
+    if (lineData != data) {
+        lineData = data;
         setNeedsDraw();
     }
 }

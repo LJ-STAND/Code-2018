@@ -200,17 +200,32 @@ void calculateMovement() {
 }
 
 void updateDebug() {
-    slaveDebug.sendBallData(ballData);
-    slaveDebug.sendHeading(imu.getHeading());
-    
     slaveDebug.updateDebugSettings();
     settings = slaveDebug.debugSettings;
 
+    if (!settings.gameMode) {
+        slaveDebug.sendBallData(ballData);
+        slaveDebug.sendHeading(imu.getHeading());
+
+        slaveMotor.updateLeftRPM();
+        slaveMotor.updateRightRPM();
+        slaveMotor.updateBackLeftRPM();
+        slaveMotor.updateBackRightRPM();
+        
+        slaveDebug.sendLeftRPM(slaveMotor.leftRPM);
+        slaveDebug.sendRightRPM(slaveMotor.rightRPM);
+        slaveDebug.sendBackLeftRPM(slaveMotor.backLeftRPM);
+        slaveDebug.sendBackRightRPM(slaveMotor.backRightRPM);
+
+        slaveDebug.sendLineData(lineData);
+    }    
+    
     if (settings.IMUNeedsResetting) {
         imu.calibrate();
         imu.resetHeading();
         slaveDebug.sendIMUIsReset();
-        delay(100);
+        slaveDebug.updateDebugSettings();
+        delay(500);
     }
 
     if (settings.lightSensorsNeedResetting) {
@@ -218,11 +233,11 @@ void updateDebug() {
         lineData = LineData();
         delay(500);
         slaveDebug.sendLightSensorsAreReset();
+        slaveDebug.updateDebugSettings();
         delay(500);
     }
 
     slaveDebug.updateDebugSettings();
-    settings = slaveDebug.debugSettings;
 }
 
 void loop() {
@@ -231,7 +246,7 @@ void loop() {
     slaveSensor.updateLineSize();
     
     ballData = slaveSensor.ballData();
-
+    
     updateLine(slaveSensor.lineAngle, slaveSensor.lineSize);
 
     imu.update();
@@ -252,7 +267,5 @@ void loop() {
     if (ledTimer.timeHasPassed()) {
         digitalWrite(LED_BUILTIN, ledOn);
         ledOn = !ledOn;
-
-        slaveDebug.print("meme ");
     }
 }

@@ -22,6 +22,7 @@ public:
     bool lightSensorsNeedResetting;
     bool defaultPlayModeIsAttack;
     bool goalIsYellow;
+    bool gameMode;
 };
 
 #endif // DEBUG_SETTINGS_H
