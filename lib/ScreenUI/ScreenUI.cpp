@@ -15,7 +15,7 @@ void View::setNeedsDraw() {
     needsDrawing = true;
 }
 
-Dial::Dial(uint16_t cx, uint16_t cy, uint16_t r, int maxValue, double minAngle, double maxAngle) : View(cx - r, cy - r, r * 2, r * 2), cx(cx), cy(cy), r(r), maxValue(maxValue), minAngle(minAngle), maxAngle(maxAngle) {}
+Dial::Dial(uint16_t cx, uint16_t cy, uint16_t r, int maxValue) : View(cx - r, cy - r, r * 2, r * 2), cx(cx), cy(cy), r(r), maxValue(maxValue) {}
 
 void Dial::draw() {
     TFT.drawCircle(cx, cy, r, FOREGROUND_COLOR);
@@ -30,12 +30,56 @@ void Dial::draw() {
 }
 
 void Dial::setValue(int newValue) {
-    value = newValue;
-    setNeedsDraw();
+    if (value != newValue) {
+        value = newValue;
+        setNeedsDraw();
+    }
 }
 
 int Dial::getValue() {
     return value;
+}
+
+BallView::BallView(uint16_t x, uint16_t y, uint16_t w, uint16_t h) : View(x, y, w, h) {}
+
+void BallView::draw() {
+    TFT.drawCircle(x + w / 2, y + h / 2, 20, FOREGROUND_COLOR);
+
+    if (oldData.visible()) {
+        TFT.fillCircle(x + w / 2 + ((double)oldData.strength / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * cos(degreesToRadians(oldData.angle - 90)), y + h / 2 + ((double)oldData.strength / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * sin(degreesToRadians(oldData.angle - 90)), BALL_VIEW_BALL_RADIUS, BACKGROUND_COLOR);
+    }
+
+    if (ballData.visible()) {
+        TFT.fillCircle(x + w / 2 + ((double)ballData.strength / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * cos(degreesToRadians(ballData.angle - 90)), y + h / 2 + ((double)ballData.strength / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * sin(degreesToRadians(ballData.angle - 90)), BALL_VIEW_BALL_RADIUS, FOREGROUND_COLOR);
+    }
+
+    oldData = ballData;
+}
+
+void BallView::setBallData(BallData data) {
+    if (ballData.angle != data.angle) {
+        ballData = data;
+        ballData.strength = 100;
+        setNeedsDraw();
+    }
+}
+
+LineView::LineView(uint16_t x, uint16_t y, uint16_t w, uint16_t h) : View(x, y, w, h) {}
+
+void LineView::draw() {
+    TFT.fillCircle(oldData.onField ? x + w / 2 : x + w / 2 + (min(w, h) / 4 - LINE_VIEW_ROBOT_RADIUS + (oldData.size / 3.0) * 2.0 * (double)LINE_VIEW_ROBOT_RADIUS) * cos(degreesToRadians(oldData.angle - 90)), oldData.onField ? y + h / 2 : y + h / 2 + (min(w, h) / 4 - LINE_VIEW_ROBOT_RADIUS + (oldData.size / 3.0) * 2.0 * (double)LINE_VIEW_ROBOT_RADIUS) * sin(degreesToRadians(oldData.angle - 90)), LINE_VIEW_ROBOT_RADIUS, BACKGROUND_COLOR);
+    TFT.fillCircle(lineData.onField ? x + w / 2 : x + w / 2 + (min(w, h) / 4 - LINE_VIEW_ROBOT_RADIUS + (lineData.size / 3.0) * 2.0 * (double)LINE_VIEW_ROBOT_RADIUS) * cos(degreesToRadians(lineData.angle - 90)), lineData.onField ? y + h / 2 : y + h / 2 + (min(w, h) / 4 - LINE_VIEW_ROBOT_RADIUS + (lineData.size / 3.0) * 2.0 * (double)LINE_VIEW_ROBOT_RADIUS) * sin(degreesToRadians(lineData.angle - 90)), LINE_VIEW_ROBOT_RADIUS, FOREGROUND_COLOR);
+
+    TFT.drawCircle(x + w / 2, y + h / 2, min(w, h) / 4, FOREGROUND_COLOR);
+
+    oldData = lineData;
+}
+
+void LineView::setLineData(LineData data) {
+    if (lineData != data) {
+        lineData = data;
+        setNeedsDraw();
+    }
 }
 
 void Button::setEnabled(bool isEnabled) {
@@ -73,6 +117,7 @@ Label::Label(uint16_t x, uint16_t y, uint16_t w, uint16_t h, char *str, uint8_t 
 
 void Label::draw() {
     TFT.fillRect(x, y, w, h, BACKGROUND_COLOR);
+    TFT.setTextColor(FOREGROUND_COLOR);
     TFT.setCursor(x, y);
     TFT.setTextSize(textSize);
     TFT.print(str);
@@ -149,13 +194,68 @@ void HomeButton::draw() {
 BackButton::BackButton(uint16_t x, uint16_t y) : Button(x, y, BACK_BUTTON_WIDTH, BACK_BUTTON_HEIGHT) {}
 
 void BackButton::draw() {
-    TFT.drawLine(x, y + h / 2, x + w, y + h / 2, FOREGROUND_COLOR);
+    TFT.drawLine(x, y + h / 2, x + w, y + h / 2, highlighted ? HIGHLIGHT_COLOR : FOREGROUND_COLOR);
+    TFT.drawLine(x, y + h / 2, x + w / 2, y, highlighted ? HIGHLIGHT_COLOR : FOREGROUND_COLOR);
+    TFT.drawLine(x, y + h / 2, x + w / 2, y + h, highlighted ? HIGHLIGHT_COLOR : FOREGROUND_COLOR);
 }
+
+CheckBox::CheckBox(uint16_t x, uint16_t y) : Button(x, y, CHECK_BOX_OUTER_SIZE, CHECK_BOX_OUTER_SIZE) {}
 
 void CheckBox::draw() {
     TFT.drawRect(x, y, CHECK_BOX_OUTER_SIZE, CHECK_BOX_OUTER_SIZE, highlighted ? HIGHLIGHT_COLOR : FOREGROUND_COLOR);
     TFT.fillRect(x + (CHECK_BOX_OUTER_SIZE - CHECK_BOX_INNER_SIZE) / 2, y + (CHECK_BOX_OUTER_SIZE - CHECK_BOX_INNER_SIZE) / 2, CHECK_BOX_INNER_SIZE, CHECK_BOX_INNER_SIZE, enabled ? FOREGROUND_COLOR : BACKGROUND_COLOR);
-
 }
 
-CheckBox::CheckBox(uint16_t x, uint16_t y) : Button(x, y, CHECK_BOX_OUTER_SIZE, CHECK_BOX_OUTER_SIZE) {}
+Switch::Switch(uint16_t x, uint16_t y, uint16_t onColor, char *onChar, uint16_t offColor, char *offChar) : Button(x, y, SWITCH_WIDTH, SWITCH_HEIGHT), onColor(onColor), onChar(onChar), offColor(offColor), offChar(offChar) {}
+
+void Switch::draw() {
+    TFT.drawRect(x, y, SWITCH_WIDTH, SWITCH_HEIGHT, highlighted ? HIGHLIGHT_COLOR : FOREGROUND_COLOR);
+    TFT.fillRect(enabled ? x + SWITCH_TOGGLE_INSET : x + SWITCH_WIDTH / 2, y + SWITCH_TOGGLE_INSET, SWITCH_WIDTH / 2 - SWITCH_TOGGLE_INSET, SWITCH_HEIGHT - SWITCH_TOGGLE_INSET * 2, enabled ? onColor : offColor);
+    TFT.fillRect(!enabled ? x + SWITCH_TOGGLE_INSET : x + SWITCH_WIDTH / 2, y + SWITCH_TOGGLE_INSET, SWITCH_WIDTH / 2 - SWITCH_TOGGLE_INSET, SWITCH_HEIGHT - SWITCH_TOGGLE_INSET * 2, BLACK);
+    
+    uint16_t textWidth, textHeight;
+    int16_t textX, textY;
+
+    TFT.setTextSize(2);
+    TFT.getTextBounds(enabled ? onChar : offChar, 0, 0, &textX, &textY, &textWidth, &textHeight);
+
+    TFT.setCursor(enabled ? x + SWITCH_TOGGLE_INSET + ((SWITCH_WIDTH / 2 - SWITCH_TOGGLE_INSET) - textWidth) / 2 : x + SWITCH_WIDTH / 2 + ((SWITCH_WIDTH / 2 - SWITCH_TOGGLE_INSET) - textWidth) / 2, y + (SWITCH_HEIGHT - textHeight) / 2);
+    TFT.setTextColor(BACKGROUND_COLOR);
+    TFT.print(enabled ? onChar : offChar);
+}
+
+Terminal::Terminal(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t textSize, uint16_t textColor) : View(x, y, w, h), textSize(textSize), textColor(textColor), cursorX(x), cursorY(y) {
+    needsDrawing = false;
+}
+
+void Terminal::clear() {
+    TFT.fillRect(x, y, w, h, BACKGROUND_COLOR);
+    cursorX = x;
+    cursorY = y;
+}
+
+size_t Terminal::write(uint8_t c) {
+    TFT.setTextColor(textColor);
+    TFT.setTextSize(textSize);
+    TFT.setCursor(cursorX, cursorY);
+    TFT.setMaxCursor(x + w, y + h);
+    TFT.setBaseCursor(x);
+    TFT.write(c);
+    cursorX = TFT.getCursorX();
+    cursorY = TFT.getCursorY();
+    TFT.setMaxCursor(TFT.width(), TFT.height());
+    TFT.setBaseCursor(0);
+    clearIfOverflow();
+
+    return 1;
+}
+
+void Terminal::clearIfOverflow() {
+    if (TFT.getCursorY() > y + h - textSize * 8) {
+        clear();
+    }
+}
+
+void Terminal::draw() {
+    clear();
+}

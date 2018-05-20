@@ -1,11 +1,14 @@
 #ifndef SCREEN_UI_H
 #define SCREEN_UI_H
 
+#include <Arduino.h>
 #include <Adafruit_ILI9341_8bit.h>
 #include <TouchScreen.h>
 #include <Config.h>
 #include <Common.h>
 #include <Fonts/Org_01.h>
+#include <BallData.h>
+#include <LineData.h>
 
 class View {
 public:
@@ -25,19 +28,44 @@ protected:
 class Dial : public View {
 public:
     Dial() {}
-    Dial(uint16_t cx, uint16_t cy, uint16_t r, int maxValue, double minAngle, double maxAngle);
+    Dial(uint16_t cx, uint16_t cy, uint16_t r, int maxValue);
 
     void draw();
     void setValue(int newValue);
     int getValue();
 
 protected:
-    double minAngle, maxAngle;
     int maxValue;
     int value;
     int oldValue;
 
     uint16_t cx, cy, r;
+};
+
+class BallView : public View {
+public:
+    BallView() {}
+    BallView(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+
+    void draw();
+    void setBallData(BallData data);
+
+protected:
+    BallData ballData;
+    BallData oldData;
+};
+
+class LineView : public View {
+public:
+    LineView() {}
+    LineView(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+
+    void draw();
+    void setLineData(LineData data);
+
+protected:
+    LineData lineData;
+    LineData oldData;
 };
 
 class Button : public View {
@@ -127,6 +155,38 @@ public:
     CheckBox(uint16_t x, uint16_t y);
 
     void draw();
+};
+
+class Switch : public Button {
+public:
+    Switch() {}
+    Switch(uint16_t x, uint16_t y, uint16_t onColor, char *onChar, uint16_t offColor, char *offChar);
+
+    void draw();
+
+protected:
+    uint16_t onColor;
+    char *onChar;
+    uint16_t offColor;
+    char *offChar;
+};
+
+class Terminal : public View, public Print {
+public:
+    Terminal() {}
+    Terminal(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t textSize, uint16_t textColor);
+
+    void draw();
+    void clear();
+
+    size_t write(uint8_t c);
+
+protected:
+    void clearIfOverflow();
+
+    uint16_t textColor;
+    int16_t cursorX, cursorY;
+    uint8_t textSize;
 };
 
 #endif // BUTTON_H

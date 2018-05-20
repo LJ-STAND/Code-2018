@@ -6,18 +6,38 @@ void Slave::init(int csPin) {
     spi.enableCS(cs, CS_ActiveLOW);
 }
 
-uint16_t Slave::transaction(SlaveCommand command, uint16_t data) {
+void Slave::transaction(SlaveCommand command, uint16_t data, uint8_t numSend) {
     dataOut[0] = (command << 10) | (data & 0x3FF);
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < numSend; i++) {
         spi.txrx16(dataOut, dataIn, 1, CTAR_0, cs);
     }
 
-    return dataIn[0];
+    handleReceive((dataIn[0] >> 10), dataIn[0] & 0x3FF);
 }
 
 void SlaveMotor::init() {
     Slave::init(MASTER_CS_MOTOR);
+}
+
+void SlaveMotor::handleReceive(uint8_t command, uint16_t data) {
+    switch (command) {
+    case SlaveCommand::motorLeftRPMCommand:
+        leftRPM = data * 2;
+        break;
+
+    case SlaveCommand::motorRightRPMCommand:
+        rightRPM = data * 2;
+        break;
+
+    case SlaveCommand::motorBackLeftRPMCommand:
+        backLeftRPM = data * 2;
+        break;
+
+    case SlaveCommand::motorBackRightRPMCommand:
+        backRightRPM = data * 2;
+        break;
+    }
 }
 
 void SlaveMotor::setMotorAngle(uint16_t angle) {
@@ -42,57 +62,69 @@ void SlaveMotor::brake() {
     setMotor(MoveData());
 }
 
-int SlaveMotor::getLeftRPM() {
-    return transaction(SlaveCommand::motorLeftRPMCommand);
+void SlaveMotor::updateLeftRPM() {
+    transaction(SlaveCommand::motorLeftRPMCommand);
 }
 
-int SlaveMotor::getRightRPM() {
-    return transaction(SlaveCommand::motorRightRPMCommand);
+void SlaveMotor::updateRightRPM() {
+    transaction(SlaveCommand::motorRightRPMCommand);
 }
 
-int SlaveMotor::getBackLeftRPM() {
-    return transaction(SlaveCommand::motorBackLeftRPMCommand);
+void SlaveMotor::updateBackLeftRPM() {
+    transaction(SlaveCommand::motorBackLeftRPMCommand);
 }
 
-int SlaveMotor::getBackRightRPM() {
-    return transaction(SlaveCommand::motorBackRightRPMCommand);
+void SlaveMotor::updateBackRightRPM() {
+    transaction(SlaveCommand::motorBackRightRPMCommand);
 }
 
 void SlaveSensor::init() {
     Slave::init(MASTER_CS_SENSOR);
 }
 
-uint16_t SlaveSensor::getBallAngle() {
-    return transaction(SlaveCommand::ballAngleCommand);
+void SlaveSensor::handleReceive(uint8_t command, uint16_t data) {
+    switch (command) {
+    case SlaveCommand::ballAngleCommand:
+        ballAngle = data;
+        break;
+
+    case SlaveCommand::ballStrengthCommand:
+        ballStrength = data;
+        break;
+
+    case SlaveCommand::lineAngleCommand:
+        lineAngle = data;
+        break;
+
+    case SlaveCommand::lineSizeCommand:
+        lineSize = (double)data / 100.0;
+        break;
+    }
 }
 
-uint16_t SlaveSensor::getBallStrength() {
-    return transaction(SlaveCommand::ballStrengthCommand);
+void SlaveSensor::updateBallAngle() {
+    transaction(SlaveCommand::ballAngleCommand);
 }
 
-uint16_t SlaveSensor::getLineAngle() {
-    return transaction(SlaveCommand::lineAngleCommand);
+void SlaveSensor::updateBallStrength() {
+    transaction(SlaveCommand::ballStrengthCommand);
 }
 
-double SlaveSensor::getLineSize() {
-    return (double)transaction(SlaveCommand::lineSizeCommand) / 100.0;
+void SlaveSensor::updateLineAngle() {
+    transaction(SlaveCommand::lineAngleCommand);
 }
 
-BallData SlaveSensor::getBallData() {
-    int angle = getBallAngle();
-    int strength = getBallStrength();
-
-    return BallData(angle, strength, angle != TSOP_NO_BALL);
+void SlaveSensor::updateLineSize() {
+    transaction(SlaveCommand::lineSizeCommand);
 }
 
-int SlaveSensor::getLightSensorData() {
-    uint16_t first16Bit = transaction(SlaveCommand::lsFirst16BitCommmand);
-    uint16_t second16Bit = transaction(SlaveCommand::lsFirst16BitCommmand);
-    return first16Bit | (second16Bit << 16);
+void SlaveSensor::updateBallData() {
+    updateBallAngle();
+    updateBallStrength();
 }
 
-void SlaveDebug::init() {
-    Slave::init(MASTER_CS_DEBUG);
+BallData SlaveSensor::ballData() {
+    return BallData(ballAngle, ballStrength);
 }
 
 void SlaveDebug::sendLightSensorData(int data) {
@@ -107,28 +139,40 @@ void SlaveDebug::sendLightSensorData(int data) {
     transaction(SlaveCommand::lsFourthByteCommand, fourthByte);
 }
 
+void SlaveSensor::updateLightSensorData() {}
+
+void SlaveSensor::sendCalibrateLightSensors() {
+    transaction(SlaveCommand::calibrateLightSensorsCommand, 0, 1);
+}
+
+void SlaveDebug::init() {
+    Slave::init(MASTER_CS_DEBUG);
+}
+
+void SlaveDebug::handleReceive(uint8_t command, uint16_t data) {
+    switch (command) {
+        case SlaveCommand::debugSettingsCommand:
+        debugSettings = DebugSettings(data);
+    }
+}
+
+void SlaveDebug::sendLightSensorData(int data) {}
+
 void SlaveDebug::sendPlayMode(bool isAttacker) {
     transaction(SlaveCommand::playModeCommand, isAttacker);
 }
 
-void SlaveDebug::sendBallAngle(uint16_t angle) {
-    transaction(SlaveCommand::ballAngleCommand, angle);
+void SlaveDebug::sendBallData(BallData ballData) {
+    transaction(SlaveCommand::ballAngleCommand, ballData.angle);
+    transaction(SlaveCommand::ballStrengthCommand, ballData.strength);
 }
 
-void SlaveDebug::sendBallStrength(uint16_t strength) {
-    transaction(SlaveCommand::ballStrengthCommand, strength);
+void SlaveDebug::updateDebugSettings() {
+    transaction(SlaveCommand::debugSettingsCommand);
 }
 
-DebugSettings SlaveDebug::getDebugSettings() {
-    return DebugSettings(transaction(SlaveCommand::debugSettingsCommand));
-}
-
-void SlaveDebug::sendIMUIsCalibrated() {
-    transaction(SlaveCommand::IMUIsCalibratedCommand);
-}
-
-void SlaveDebug::sendHeadingIsReset() {
-    transaction(SlaveCommand::headingIsResetCommand);
+void SlaveDebug::sendIMUIsReset() {
+    transaction(SlaveCommand::IMUIsResetCommand, 0, 1);
 }
 
 void SlaveDebug::sendHeading(uint16_t heading) {
@@ -151,8 +195,23 @@ void SlaveDebug::sendBackRightRPM(uint16_t rpm) {
     transaction(SlaveCommand::motorBackRightRPMCommand, rpm / 2);
 }
 
+
 void SlaveDebug::sendLineData(uint16_t angle, uint16_t size) {
     transaction(SlaveCommand::lineAngleCommand, angle);
     delay(10);
     transaction(SlaveCommand::lineSizeCommand, size);
+}
+
+void SlaveDebug::sendLightSensorsAreReset() {
+    transaction(SlaveCommand::lightSensorsAreResetCommand, 0, 1);
+}
+
+void SlaveDebug::sendLineData(LineData data) {
+    transaction(SlaveCommand::lineAngleCommand, data.angle);
+    transaction(SlaveCommand::lineSizeCommand, data.size * 100);
+    transaction(SlaveCommand::lineOnFieldCommand, data.onField);
+}
+
+size_t SlaveDebug::write(uint8_t c) {
+    transaction(SlaveCommand::debugTerminalCommand, c, 1);
 }

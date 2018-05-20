@@ -18,6 +18,10 @@ void LightSensorArray::init() {
 
     digitalWrite(MUX_CS, LOW);
     digitalWrite(MUX_EN, LOW);
+
+    for (int i = 0; i < LS_NUM; i++) {
+        thresholds[i] = EEPROM.read(LIGHT_SENSOR_CALIBRATION_EEPROM + 2 * i) | (EEPROM.read(LIGHT_SENSOR_CALIBRATION_EEPROM + 2 * i + 1) << 8);
+    }
 }
 
 void LightSensorArray::changeMUXChannel(uint8_t channel) {
@@ -37,11 +41,13 @@ void LightSensorArray::calibrate() {
         int defaultValue = 0;
 
         for (int j = 0; j < LS_CALIBRATION_COUNT; j++) {
-
             defaultValue += readSensor(i);
         }
 
-        thresholds[i] = round((int)((double)defaultValue / LS_CALIBRATION_COUNT) + LS_CALIBRATION_BUFFER);
+        thresholds[i] = round(((double)defaultValue / LS_CALIBRATION_COUNT) + LS_CALIBRATION_BUFFER);
+
+        EEPROM.write(LIGHT_SENSOR_CALIBRATION_EEPROM + 2 * i, thresholds[i] & 0xFF);
+        EEPROM.write(LIGHT_SENSOR_CALIBRATION_EEPROM + 2 * i + 1, thresholds[i] >> 8);
     }
 }
 

@@ -11,10 +11,19 @@
 #include <BallData.h>
 #include <LineData.h>
 #include <MoveData.h>
+#include <Camera.h>
+#include <Bluetooth.h>
+
+T3SPI spi;
 
 SlaveSensor slaveSensor;
 SlaveMotor slaveMotor;
 SlaveDebug slaveDebug;
+
+Bluetooth bluetooth;
+
+IMUFusion imu;
+Camera camera;
 
 DebugSettings settings;
 
@@ -22,13 +31,8 @@ LineData lineData(0, 0, true);
 BallData ballData;
 MoveData moveData;
 
-T3SPI spi;
-
 Timer ledTimer(LED_BLINK_TIME_MASTER);
-
 Timer slaveDebugUpdateTimer(SLAVE_DEBUG_UPDATE_TIME);
-
-IMUFusion imu;
 
 PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
 
@@ -36,9 +40,10 @@ bool ledOn;
 
 void setup() {
     Serial.begin(9600);
-    Serial5.begin(9600);
 
-    spi.begin_MASTER(MASTER_SCK, MASTER_MOSI, MASTER_MISO, MASTER_CS_SENSOR, CS_ActiveLOW);
+    bluetooth.init();
+
+    spi.begin_MASTER(MASTER_SCK, MASTER_MOSI, MASTER_MISO, MASTER_CS_MOTOR, CS_ActiveLOW);
     spi.setCTAR(CTAR_0, 16, SPI_MODE0, LSB_FIRST, SPI_CLOCK_DIV16);
 
     slaveSensor.init();
@@ -46,6 +51,7 @@ void setup() {
     slaveDebug.init();
 
     imu.init();
+    camera.init();
 
 	pinMode(LED_BUILTIN, OUTPUT);
 }
@@ -117,7 +123,7 @@ void calculateLineAvoid() {
 }
 
 void calculateOrbit() {
-    moveData.speed = ballData.angle == 400 ? 0 : ORBIT_SPEED;
+    moveData.speed = ballData.visible() ? ORBIT_SPEED : 0;
 
     if (angleIsInside(360 - ORBIT_SMALL_ANGLE, ORBIT_SMALL_ANGLE, ballData.angle)) {
         moveData.angle = (int)round(ballData.angle < 180 ? (ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) : (360 - (360 - ballData.angle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER));
@@ -140,6 +146,10 @@ void calculateOrbit() {
             moveData.angle = ballData.angle;
         }
     }
+}
+
+void updateCamera() {
+
 }
 
 void calculateMovement() {
@@ -184,37 +194,63 @@ void calculateMovement() {
     // }
 
     calculateOrbit();
-    calculateLineAvoid();
+    // calculateLineAvoid();
 
     moveData.rotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
 }
 
 void updateDebug() {
-    slaveDebug.sendBallAngle(ballData.angle);
-    slaveDebug.sendBallStrength(ballData.strength);
-    slaveDebug.sendHeading(imu.getHeading());
-    slaveDebug.sendLineData((uint16_t)lineData.angle, (uint16_t)lineData.size);
+    slaveDebug.updateDebugSettings();
+    settings = slaveDebug.debugSettings;
 
-    settings = slaveDebug.getDebugSettings();
+    if (!settings.gameMode) {
+        slaveDebug.sendBallData(ballData);
+        slaveDebug.sendHeading(imu.getHeading());
 
-    if (settings.headingNeedsResetting) {
-        imu.resetHeading();
-        slaveDebug.sendHeadingIsReset();
-    }
+        slaveMotor.updateLeftRPM();
+        slaveMotor.updateRightRPM();
+        slaveMotor.updateBackLeftRPM();
+        slaveMotor.updateBackRightRPM();
+        
+        slaveDebug.sendLeftRPM(slaveMotor.leftRPM);
+        slaveDebug.sendRightRPM(slaveMotor.rightRPM);
+        slaveDebug.sendBackLeftRPM(slaveMotor.backLeftRPM);
+        slaveDebug.sendBackRightRPM(slaveMotor.backRightRPM);
 
-    if (settings.IMUNeedsCalibrating) {
+        slaveDebug.sendLineData(lineData);
+    }    
+    
+    if (settings.IMUNeedsResetting) {
         imu.calibrate();
-        slaveDebug.sendIMUIsCalibrated();
+        imu.resetHeading();
+        slaveDebug.sendIMUIsReset();
+        slaveDebug.updateDebugSettings();
+        delay(500);
     }
 
-    settings = slaveDebug.getDebugSettings();
+    if (settings.lightSensorsNeedResetting) {
+        slaveSensor.sendCalibrateLightSensors();
+        lineData = LineData();
+        delay(500);
+        slaveDebug.sendLightSensorsAreReset();
+        slaveDebug.updateDebugSettings();
+        delay(500);
+    }
+
+    slaveDebug.updateDebugSettings();
 }
 
 void loop() {
-    ballData = slaveSensor.getBallData();
-    updateLine(slaveSensor.getLineAngle(), slaveSensor.getLineSize());
+    slaveSensor.updateBallData();
+    slaveSensor.updateLineAngle();
+    slaveSensor.updateLineSize();
+    
+    ballData = slaveSensor.ballData();
+    
+    updateLine(slaveSensor.lineAngle, slaveSensor.lineSize);
 
     imu.update();
+    camera.update();
 
     if (settings.engineStarted) {
         calculateMovement();

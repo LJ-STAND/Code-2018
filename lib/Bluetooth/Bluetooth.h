@@ -2,39 +2,48 @@
 #define BLUETOOTH_H
 
 #include <Arduino.h>
-#include <BluetoothData.h>
+#include <Config.h>
+#include <Timer.h>
+
+enum PlayMode: uint8_t {
+    attack,
+    defend,
+    undecided
+};
+
+typedef struct BluetoothData {
+    uint16_t ballAngle;
+    uint8_t ballStrength;
+    uint16_t heading;
+    bool ballIsOut;
+    PlayMode playMode;
+    bool isOnField;
+
+    BluetoothData() {
+        ballAngle = TSOP_NO_BALL;
+        ballStrength = 0;
+        heading = 0;
+        ballIsOut = false;
+        playMode = PlayMode::undecided;
+        isOnField = true;
+    }
+} BluetoothData;
 
 class Bluetooth {
 public:
-    static void init() {
-        Serial5.begin(9600);
-        Serial5.setTimeout(15);
-    }
+    void init();
+    void update(BluetoothData data);
 
-    static void send(String data, int dataCode = BluetoothDataType::info) {
-        Serial5.print("-" + String(dataCode) + ";" + data + "-");
-    }
+    BluetoothData otherData = BluetoothData();
+    bool isConnected = false;
 
-    static BluetoothData receive() {
-        if (Serial5.available()) {
-            String data = Serial5.readString();
+private:
+    BluetoothData thisData = BluetoothData();
 
-            if (data.indexOf(';') != -1) {
-                int splitIndex = data.indexOf(';');
-                String typeString = data.substring(0, splitIndex);
-                String valueString = data.substring(splitIndex + 1);
-
-                int type = typeString.toInt();
-                int value = valueString.toInt();
-
-                return (BluetoothData) {static_cast<BluetoothDataType>(type), value, data};
-            } else {
-                return (BluetoothData) {BluetoothDataType::noData, 0, data};
-            }
-        }
-
-        return (BluetoothData) {BluetoothDataType::noData, 0, ""};
-    }
+    Timer connectedTimer = Timer(BLUETOOTH_LOST_COMMUNICATION_TIME);
+    
+    void send();
+    void recieve();
 };
 
-#endif
+#endif // BLUETOOTH_H

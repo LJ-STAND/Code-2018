@@ -9,18 +9,11 @@
 #include <LED.h>
 #include <Slave.h>
 #include <Timer.h>
-#include <DebugController.h>
 
 T3SPI spi;
-volatile uint16_t dataIn[1];
-volatile uint16_t dataOut[1];
 
-volatile int ballAngle = 400;
-volatile int ballStrength;
-
-volatile int lineAng = 0;
-volatile int lineSiz = 0;
-volatile int compassHeading = 0;
+BallData ballData = BallData(TSOP_NO_BALL, 0);
+LineData lineData = LineData();
 
 LED leds;
 Screen screen;
@@ -28,15 +21,11 @@ Screen screen;
 Timer ledTimer(LED_BLINK_TIME_SLAVE_DEBUG);
 bool ledOn;
 
-DebugController debug;
-
 void setup(void) {
     Serial.begin(9600);
     Serial5.begin(9600);
 
     screen.init();
-
-    debug.init();
 
     spi.begin_SLAVE(SLAVE_DEBUG_SCK, SLAVE_DEBUG_MOSI, SLAVE_DEBUG_MISO, SLAVE_DEBUG_CS);
     spi.setCTAR_SLAVE(16, SPI_MODE0);
@@ -48,17 +37,42 @@ void setup(void) {
     pinMode(LED_BUILTIN, OUTPUT);
 }
 
-bool on = false;
-bool canPress = true;
-
 void loop() {
-    if (screen.settings.IMUNeedsCalibrating) {
-        leds.rainbow();
+    if (screen.settings.gameMode) {
+        leds.rgbOff();
     } else {
-        if (ballAngle != 400) {
-            leds.displayAngle(ballAngle, 300);
+        if (screen.settings.IMUNeedsResetting || screen.settings.lightSensorsNeedResetting) {
+            leds.rainbow();
         } else {
-            leds.rgbColor(leds.rgb.Color(100, 0, 0));
+            switch (screen.rgbType) {
+            case RGBType::ballRGBType:
+                if (ballData.visible()) {
+                    leds.displayAngle(ballData.angle, 300);
+                } else {
+                    leds.rgbColor(leds.rgb.Color(100, 0, 0));
+                }
+
+                break;
+
+            case RGBType::lineRGBType:
+                if (lineData.onField) {
+                    leds.rgbColor(leds.rgb.Color(0, 100, 0));
+                } else {
+                    leds.displayAngleSize(lineData.angle, lineData.size, 3, 120, 0);
+                }
+
+                break;
+
+            case RGBType::rainbowRGBType:
+                leds.rainbow();
+
+                break;
+
+            case RGBType::customRGBType:
+                leds.rgbOff();
+            
+                break;
+            }
         }
     }
 
@@ -68,19 +82,15 @@ void loop() {
         digitalWrite(LED_BUILTIN, ledOn);
         ledOn = !ledOn;
     }
-
-    debug.appSendBallAngle(ballAngle);
-    debug.appSendBallStrength(ballStrength);
-    debug.appSendHeading(heading);
-    debug.appSendLineAngle(lineAngle);
-    debug.appSendLineSize(lineSize);
 }
 
 void spi0_isr() {
-    spi.rxtx16(dataIn, dataOut, 1);
+    uint16_t dataIn = SPI0_POPR;
 
-    uint8_t command = (dataIn[0] >> 10);
-    uint16_t data = dataIn[0] & 0x3FF;
+    uint8_t command = (dataIn >> 10);
+    uint16_t data = dataIn & 0x3FF;
+
+    uint16_t sendData;
 
     switch (command) {
     case SlaveCommand::lsFirst16BitCommmand:
@@ -94,29 +104,27 @@ void spi0_isr() {
         break;
 
     case SlaveCommand::ballAngleCommand:
-        ballAngle = data;
+        ballData.angle = data;
+        screen.ballData = ballData;
         break;
 
     case SlaveCommand::ballStrengthCommand:
-        ballStrength = data;
+        ballData.strength = data;
+        screen.ballData = ballData;
         break;
 
     case SlaveCommand::debugSettingsCommand:
-        dataOut[0] = screen.settings.numberValue();
+        sendData = screen.settings.numberValue();
         break;
 
-    case SlaveCommand::headingIsResetCommand:
-        screen.settings.headingNeedsResetting = false;
-        break;
-
-    case SlaveCommand::IMUIsCalibratedCommand:
-        screen.settings.IMUNeedsCalibrating = false;
+    case SlaveCommand::IMUIsResetCommand:
+        screen.settings.IMUNeedsResetting = false;
         screen.clearMessage();
+        
         break;
 
     case SlaveCommand::headingCommand:
         screen.heading = data;
-        compassHeading = data;
         break;
 
     case SlaveCommand::motorLeftRPMCommand:
@@ -135,12 +143,36 @@ void spi0_isr() {
         screen.backRightRPM = data * 2;
         break;
 
+    case SlaveCommand::lightSensorsAreResetCommand:
+        screen.settings.lightSensorsNeedResetting = false;
+        screen.clearMessage();
+
+        break;
+
+    case SlaveCommand::debugTerminalCommand:
+        screen.write(data);
+        
+        break;
+
     case SlaveCommand::lineAngleCommand:
-        lineAng = (int)data * 100;
+        lineData.angle = data;
+        screen.lineData = lineData;
+        
         break;
 
     case SlaveCommand::lineSizeCommand:
-        lineSiz = (int)data * 100;
+        lineData.size = (double)data / 100.0;
+        screen.lineData = lineData;
+
+        break;
+
+    case SlaveCommand::lineOnFieldCommand:
+        lineData.onField = data;
+        screen.lineData = lineData;
+
         break;
     }
+
+    SPI0_PUSHR_SLAVE = (command << 10) | (sendData & 0x3FF);
+    SPI0_SR |= SPI_SR_RFDF;
 }

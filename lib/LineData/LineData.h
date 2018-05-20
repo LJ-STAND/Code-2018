@@ -8,6 +8,10 @@ typedef struct LineData {
 
     LineData() {}
     LineData(double a, double s, bool o) : angle(a), size(s), onField(o) {}
+
+    bool operator !=(const LineData &d) {
+        return angle != d.angle || size != d.size || onField != d.onField;
+    }
 } LineData;
 
 #endif // LINE_DATA_H
