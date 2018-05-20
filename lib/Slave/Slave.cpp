@@ -156,8 +156,6 @@ void SlaveDebug::handleReceive(uint8_t command, uint16_t data) {
     }
 }
 
-void SlaveDebug::sendLightSensorData(int data) {}
-
 void SlaveDebug::sendPlayMode(bool isAttacker) {
     transaction(SlaveCommand::playModeCommand, isAttacker);
 }

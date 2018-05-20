@@ -32,7 +32,7 @@ enum SlaveCommand : uint8_t
     lsFirstByteCommand,
     lsSecondByteCommand,
     lsThirdByteCommand,
-    lsFourthByteCommand
+    lsFourthByteCommand,
     lightSensorsAreResetCommand,
     calibrateLightSensorsCommand,
     debugTerminalCommand

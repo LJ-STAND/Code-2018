@@ -12,6 +12,7 @@ class DebugController {
 public:
     DebugController() {}
     void init();
+    void send(String data, int dataCode = BluetoothDataType::info);
     void appSendBallAngle(int angle);
     void appSendBallStrength(int strength);
     void appSendString(String string);
