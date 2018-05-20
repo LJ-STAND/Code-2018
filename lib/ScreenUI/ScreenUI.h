@@ -83,6 +83,18 @@ protected:
     int blueDistance, oldBlueDistance;
 };
 
+class LightSensorView : public View {
+public:
+    LightSensorView() {}
+    LightSensorView(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+
+    void draw();
+    void setLightSensorData(int data);
+    
+protected:
+    int lightSensorData;
+};
+
 class Button : public View {
 public:
     Button() {}
@@ -192,15 +204,20 @@ public:
     Terminal(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t textSize, uint16_t textColor);
 
     void draw();
+    void drawChar(uint8_t c);
+    void drawFromBuffer();
     void clear();
 
     size_t write(uint8_t c);
 
 protected:
+    uint8_t charBuffer[100];
+
+    uint8_t head, tail, bufferSize = 0;
+
     void clearIfOverflow();
 
     uint16_t textColor;
-    int16_t cursorX, cursorY;
     uint8_t textSize;
 };
 

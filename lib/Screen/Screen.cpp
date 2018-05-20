@@ -79,7 +79,8 @@ void Screen::init() {
 
     // Light Sensor Debug Screen
 
-    lineView = LineView(5, LINE_Y + 5, TFT.width() - 10, TFT.height() - LINE_Y - 10);
+    lineView = LineView(10, LINE_Y + 5, (TFT.width() - 20) / 3, TFT.height() - LINE_Y - 10);
+    lightSensorView = LightSensorView(TFT.width() / 3, LINE_Y + 5, 2 * (TFT.width() - 20) / 3, TFT.height() - LINE_Y - 10);
 
     // Camera Debug Screen
 
@@ -96,8 +97,8 @@ void Screen::init() {
     rainbowRGBLabel = Label(SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET * 3 + CHECK_BOX_OUTER_SIZE * 2 + SETTINGS_SCREEN_LABEL_Y_OFFSET, 200, 20, "Rainbow", 2);
     rainbowRGBCheckBox = CheckBox(TFT.width() - CHECK_BOX_OUTER_SIZE - SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET * 3 + CHECK_BOX_OUTER_SIZE * 2);
 
-    customRGBLabel = Label(SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET * 4 + CHECK_BOX_OUTER_SIZE * 3 + SETTINGS_SCREEN_LABEL_Y_OFFSET, 200, 20, "Custom", 2);
-    customRGBCheckBox = CheckBox(TFT.width() - CHECK_BOX_OUTER_SIZE - SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET * 4 + CHECK_BOX_OUTER_SIZE * 3);
+    goalRGBLabel = Label(SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET * 4 + CHECK_BOX_OUTER_SIZE * 3 + SETTINGS_SCREEN_LABEL_Y_OFFSET, 200, 20, "Goal", 2);
+    goalRGBCheckBox = CheckBox(TFT.width() - CHECK_BOX_OUTER_SIZE - SETTINGS_SCREEN_INSET, LINE_Y + SETTINGS_SCREEN_INSET * 4 + CHECK_BOX_OUTER_SIZE * 3);
 
     // Terminal Debug Screen
 
@@ -221,8 +222,8 @@ void Screen::checkTouch() {
                     rgbType = RGBType::rainbowRGBType;
                 }
 
-                if (customRGBCheckBox.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                    rgbType = RGBType::customRGBType;
+                if (goalRGBCheckBox.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                    rgbType = RGBType::goalRGBType;
                 }
 
                 break;
@@ -316,6 +317,9 @@ void Screen::update() {
             lineView.setLineData(lineData);
             lineView.checkDraw();
 
+            lightSensorView.setLightSensorData(lsFirst | (lsSecond << 10) | (lsThird << 20) | (lsFourth << 30));
+            lightSensorView.checkDraw();
+
             break;
 
         case ScreenType::cameraDebugScreenType:
@@ -328,7 +332,7 @@ void Screen::update() {
             ballRGBCheckBox.setEnabled(rgbType == RGBType::ballRGBType);
             lineRGBCheckBox.setEnabled(rgbType == RGBType::lineRGBType);
             rainbowRGBCheckBox.setEnabled(rgbType == RGBType::rainbowRGBType);
-            customRGBCheckBox.setEnabled(rgbType == RGBType::customRGBType);
+            goalRGBCheckBox.setEnabled(rgbType == RGBType::goalRGBType);
 
             ballRGBLabel.checkDraw();
             ballRGBCheckBox.checkDraw();
@@ -339,8 +343,13 @@ void Screen::update() {
             rainbowRGBLabel.checkDraw();
             rainbowRGBCheckBox.checkDraw();
             
-            customRGBLabel.checkDraw();
-            customRGBCheckBox.checkDraw();
+            goalRGBLabel.checkDraw();
+            goalRGBCheckBox.checkDraw();
+
+            break;
+
+        case ScreenType::terminalDebugScreenType:
+            terminal.drawFromBuffer();
 
             break;
 
@@ -423,6 +432,7 @@ void Screen::redrawScreen() {
 
     case ScreenType::lightSensorsDebugScreenType:
         lineView.setNeedsDraw();
+        lightSensorView.setNeedsDraw();
 
         break;
 
@@ -441,8 +451,8 @@ void Screen::redrawScreen() {
         rainbowRGBLabel.setNeedsDraw();
         rainbowRGBCheckBox.setNeedsDraw();
 
-        customRGBLabel.setNeedsDraw();
-        customRGBCheckBox.setNeedsDraw();
+        goalRGBLabel.setNeedsDraw();
+        goalRGBCheckBox.setNeedsDraw();
 
         break;
 

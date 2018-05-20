@@ -42,6 +42,8 @@
         "utility": "cpp",
         "*.tcc": "cpp",
         "atomic": "cpp",
-        "system_error": "cpp"
+        "system_error": "cpp",
+        "ostream": "cpp",
+        "hashtable": "cpp"
     }
 }

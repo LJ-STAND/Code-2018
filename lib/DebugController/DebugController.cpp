@@ -6,7 +6,7 @@ void DebugController::init() {
 }
 
 void DebugController::send(String data, int dataCode) {
-    Serial.print("-" + String(dataCode) + ";" + data + "-");
+    // Serial.print("-" + String(dataCode) + ";" + data + "-");
     Serial5.print("-" + String(dataCode) + ";" + data + "-");
 }
 

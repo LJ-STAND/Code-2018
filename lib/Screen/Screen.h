@@ -58,6 +58,7 @@ public:
     BallData ballData;
     LineData lineData;
     int yellowAngle, yellowDistance, blueAngle, blueDistance;
+    uint16_t lsFirst, lsSecond, lsThird, lsFourth;
 
 private:
     TouchScreen ts = TouchScreen(SCREEN_XP, SCREEN_YP, SCREEN_XM, SCREEN_YM, TS_RESISTANCE);
@@ -126,6 +127,7 @@ private:
     // Light Sensor Debug Screen
 
     LineView lineView;
+    LightSensorView lightSensorView;
 
     // Camera Debug Screen
 
@@ -142,8 +144,8 @@ private:
     Label rainbowRGBLabel;
     CheckBox rainbowRGBCheckBox;
 
-    Label customRGBLabel;
-    CheckBox customRGBCheckBox;
+    Label goalRGBLabel;
+    CheckBox goalRGBCheckBox;
 
     // Terminal Debug Screen
 

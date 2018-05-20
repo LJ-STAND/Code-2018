@@ -91,8 +91,6 @@ void Button::setEnabled(bool isEnabled) {
 GoalView::GoalView(uint16_t x, uint16_t y, uint16_t w, uint16_t h) : View(x, y, w, h) {}
 
 void GoalView::draw() {
-    Serial.println(yellowAngle);
-
     int16_t centreX = x + w / 2;
     int16_t centreY = y + h / 2;
 
@@ -126,6 +124,32 @@ void GoalView::setGoalData(int ya, int yd, int ba, int bd) {
         blueAngle = ba;
         blueDistance = bd;
 
+        setNeedsDraw();
+    }
+}
+
+LightSensorView::LightSensorView(uint16_t x, uint16_t y, uint16_t w, uint16_t h) : View(x, y, w, h) {}
+
+void LightSensorView::draw() {
+    int16_t centreX = x + w / 2;
+    int16_t centreY = y + h / 2;
+
+    for (int i = 0; i < LS_NUM; i++) {
+        bool on = (lightSensorData >> i) & 0x1;
+
+        int16_t sensorX = centreX + (min(w, h) / 2 - LIGHT_SENSOR_VIEW_SENSOR_RADIUS * 2) * cos(degreesToRadians(i * LS_NUM_MULTIPLIER - 90));
+        int16_t sensorY = centreY + (min(w, h) / 2 - LIGHT_SENSOR_VIEW_SENSOR_RADIUS * 2) * sin(degreesToRadians(i * LS_NUM_MULTIPLIER - 90));
+
+        TFT.drawCircle(sensorX, sensorY, LIGHT_SENSOR_VIEW_SENSOR_RADIUS, WHITE);
+        TFT.fillCircle(sensorX, sensorY, LIGHT_SENSOR_VIEW_SENSOR_RADIUS / 2, on ? WHITE : BLACK);
+    }
+}
+
+void LightSensorView::setLightSensorData(int data) {
+    Serial.println(data, BIN);
+
+    if (lightSensorData != data) {
+        lightSensorData = data;
         setNeedsDraw();
     }
 }
@@ -265,28 +289,23 @@ void Switch::draw() {
     TFT.print(enabled ? onChar : offChar);
 }
 
-Terminal::Terminal(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t textSize, uint16_t textColor) : View(x, y, w, h), textSize(textSize), textColor(textColor), cursorX(x), cursorY(y) {
+Terminal::Terminal(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t textSize, uint16_t textColor) : View(x, y, w, h), textSize(textSize), textColor(textColor) {
     needsDrawing = false;
 }
 
 void Terminal::clear() {
     TFT.fillRect(x, y, w, h, BACKGROUND_COLOR);
-    cursorX = x;
-    cursorY = y;
+    TFT.setCursor(x, y);
 }
 
 size_t Terminal::write(uint8_t c) {
-    TFT.setTextColor(textColor);
-    TFT.setTextSize(textSize);
-    TFT.setCursor(cursorX, cursorY);
-    TFT.setMaxCursor(x + w, y + h);
-    TFT.setBaseCursor(x);
-    TFT.write(c);
-    cursorX = TFT.getCursorX();
-    cursorY = TFT.getCursorY();
-    TFT.setMaxCursor(TFT.width(), TFT.height());
-    TFT.setBaseCursor(0);
-    clearIfOverflow();
+    if (bufferSize == 100) {
+        return 0;
+    } else {
+        bufferSize++;
+        charBuffer[tail] = c;
+        tail = mod(tail + 1, 100);
+    }
 
     return 1;
 }
@@ -299,4 +318,26 @@ void Terminal::clearIfOverflow() {
 
 void Terminal::draw() {
     clear();
+}
+
+void Terminal::drawChar(uint8_t c) {
+    TFT.setMaxCursor(x + w, y + h);
+    TFT.setBaseCursor(x);
+    TFT.write(c);
+   
+    clearIfOverflow();
+}
+
+void Terminal::drawFromBuffer() {
+    TFT.setTextColor(textColor);
+    TFT.setTextSize(textSize);
+
+    while (bufferSize > 0) {
+        drawChar(charBuffer[head]);
+        bufferSize--;
+        head = mod(head + 1, 100);
+    }
+
+    TFT.setBaseCursor(0);
+    TFT.setMaxCursor(TFT.width(), TFT.height());
 }

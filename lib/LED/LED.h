@@ -10,7 +10,7 @@ enum RGBType {
     ballRGBType,
     lineRGBType,
     rainbowRGBType,
-    customRGBType
+    goalRGBType
 };
 
 class LED {

@@ -99,6 +99,22 @@ void SlaveSensor::handleReceive(uint8_t command, uint16_t data) {
     case SlaveCommand::lineSizeCommand:
         lineSize = (double)data / 100.0;
         break;
+
+    case SlaveCommand::lsFirstCommand:
+        lsFirst = data;
+        break;
+
+    case SlaveCommand::lsSecondCommand:
+        lsSecond = data;
+        break;
+
+    case SlaveCommand::lsThirdCommand:
+        lsThird = data;
+        break;
+
+    case SlaveCommand::lsFourthCommand:
+        lsFourth = data;
+        break;
     }
 }
 
@@ -127,19 +143,12 @@ BallData SlaveSensor::ballData() {
     return BallData(ballAngle, ballStrength);
 }
 
-void SlaveDebug::sendLightSensorData(int data) {
-    uint8_t firstByte = data & 0xFF;
-    uint8_t secondByte = (data >> 8) & 0xFF;
-    uint8_t thirdByte = (data >> 16) & 0xFF;
-    uint8_t fourthByte = (data >> 24) & 0xFF;
-
-    transaction(SlaveCommand::lsFirstByteCommand, firstByte);
-    transaction(SlaveCommand::lsSecondByteCommand, secondByte);
-    transaction(SlaveCommand::lsThirdByteCommand, thirdByte);
-    transaction(SlaveCommand::lsFourthByteCommand, fourthByte);
+void SlaveSensor::updateLightSensorData() {
+    transaction(SlaveCommand::lsFirstCommand);
+    transaction(SlaveCommand::lsSecondCommand);
+    transaction(SlaveCommand::lsThirdCommand);
+    transaction(SlaveCommand::lsFourthCommand);
 }
-
-void SlaveSensor::updateLightSensorData() {}
 
 void SlaveSensor::sendCalibrateLightSensors() {
     transaction(SlaveCommand::calibrateLightSensorsCommand, 0, 1);
@@ -154,6 +163,13 @@ void SlaveDebug::handleReceive(uint8_t command, uint16_t data) {
         case SlaveCommand::debugSettingsCommand:
         debugSettings = DebugSettings(data);
     }
+}
+
+void SlaveDebug::sendLightSensorData(uint16_t first, uint16_t second, uint16_t third, uint16_t fourth) {
+    transaction(SlaveCommand::lsFirstCommand, first);
+    transaction(SlaveCommand::lsSecondCommand, second);
+    transaction(SlaveCommand::lsThirdCommand, third);
+    transaction(SlaveCommand::lsFourthCommand, fourth);
 }
 
 void SlaveDebug::sendPlayMode(bool isAttacker) {
@@ -212,4 +228,5 @@ void SlaveDebug::sendGoals(uint16_t yellowAngle, uint16_t yellowDistance, uint16
 
 size_t SlaveDebug::write(uint8_t c) {
     transaction(SlaveCommand::debugTerminalCommand, c, 1);
+    return 1;
 }

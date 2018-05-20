@@ -229,7 +229,10 @@ void updateDebug() {
         slaveDebug.sendBackLeftRPM(slaveMotor.backLeftRPM);
         slaveDebug.sendBackRightRPM(slaveMotor.backRightRPM);
 
+        slaveSensor.updateLightSensorData();
+
         slaveDebug.sendLineData(lineData);
+        slaveDebug.sendLightSensorData(slaveSensor.lsFirst, slaveSensor.lsSecond, slaveSensor.lsThird, slaveSensor.lsFourth);
 
         slaveDebug.sendGoals(camera.yellowAngle, camera.yellowPixelDistance, camera.blueAngle, camera.bluePixelDistance);
     }    
@@ -276,6 +279,7 @@ void loop() {
 
     if (slaveDebugUpdateTimer.timeHasPassed()) {
         updateDebug();
+        
     }
 
     if (ledTimer.timeHasPassed()) {

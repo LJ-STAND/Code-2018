@@ -9,8 +9,7 @@
 #include <DebugSettings.h>
 #include <LineData.h>
 
-enum SlaveCommand : uint8_t
-{
+enum SlaveCommand : uint8_t {
     motorAngleCommand,
     motorRotationCommand,
     motorSpeedCommand,
@@ -19,8 +18,6 @@ enum SlaveCommand : uint8_t
     lineAngleCommand,
     lineSizeCommand,
     lineOnFieldCommand,
-    lsFirst16BitCommmand,
-    lsSecond16BitCommand,
     playModeCommand,
     debugSettingsCommand,
     IMUIsResetCommand,
@@ -29,10 +26,10 @@ enum SlaveCommand : uint8_t
     motorRightRPMCommand,
     motorBackLeftRPMCommand,
     motorBackRightRPMCommand,
-    lsFirstByteCommand,
-    lsSecondByteCommand,
-    lsThirdByteCommand,
-    lsFourthByteCommand,
+    lsFirstCommand,
+    lsSecondCommand,
+    lsThirdCommand,
+    lsFourthCommand,
     lightSensorsAreResetCommand,
     calibrateLightSensorsCommand,
     debugTerminalCommand,
@@ -94,14 +91,14 @@ public:
 
     uint16_t lineAngle;
     double lineSize;
-    int lightSensorData;
+    uint16_t lsFirst, lsSecond, lsThird, lsFourth;
 };
 
 class SlaveDebug: public Slave, public Print {
 public:
     void init();
     void handleReceive(uint8_t command, uint16_t data);
-    void sendLightSensorData(int data);
+    void sendLightSensorData(uint16_t first, uint16_t second, uint16_t third, uint16_t fourth);
     void sendLineData(LineData data);
     void sendPlayMode(bool isAttacker);
     void sendBallData(BallData ballData);

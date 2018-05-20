@@ -25,6 +25,8 @@ Screen screen;
 Timer ledTimer(LED_BLINK_TIME_SLAVE_DEBUG);
 bool ledOn;
 
+Timer appDebugTimer(50);
+
 void setup(void) {
     Serial.begin(9600);
     Serial5.begin(9600);
@@ -72,8 +74,12 @@ void loop() {
 
                 break;
 
-            case RGBType::customRGBType:
-                leds.rgbOff();
+            case RGBType::goalRGBType:
+                if (screen.settings.goalIsYellow) {
+                    leds.displayAngle(yellowAngle, 60);
+                } else {
+                    leds.displayAngle(blueAngle, 240);
+                }
             
                 break;
             }
@@ -87,11 +93,12 @@ void loop() {
         ledOn = !ledOn;
     }
 
-    debug.appSendBallAngle(ballData.angle);
-    debug.appSendBallStrength(ballData.strength);
-    debug.appSendLineAngle(lineData.angle);
-    debug.appSendLineSize(lineData.size);
-    delay(50);
+    if (appDebugTimer.timeHasPassed()) {
+        debug.appSendBallAngle(ballData.angle);
+        debug.appSendBallStrength(ballData.strength);
+        debug.appSendLineAngle(lineData.angle);
+        debug.appSendLineSize(lineData.size);
+    }
 }
 
 void spi0_isr() {
@@ -103,10 +110,20 @@ void spi0_isr() {
     uint16_t sendData;
 
     switch (command) {
-    case SlaveCommand::lsFirst16BitCommmand:
+    case SlaveCommand::lsFirstCommand:
+        screen.lsFirst = data;
         break;
 
-    case SlaveCommand::lsSecond16BitCommand:
+    case SlaveCommand::lsSecondCommand:
+        screen.lsSecond = data;
+        break;
+
+    case SlaveCommand::lsThirdCommand:
+        screen.lsThird = data;
+        break;
+
+    case SlaveCommand::lsFourthCommand:
+        screen.lsFourth = data;
         break;
 
     case SlaveCommand::playModeCommand:

@@ -36,7 +36,7 @@ void loop() {
     if (tsopTimer.timeHasPassed()) {
         tsops.finishRead();
         // tsops.unlock();
-        Serial.println(tsops.getStrength());
+        // Serial.println(tsops.getStrength());
 
         lightSensors.read();
         lightSensors.calculateClusters();
@@ -71,24 +71,41 @@ void spi0_isr() {
         break;
 
     case SlaveCommand::lineSizeCommand:
-        sendData = 
-        (uint16_t)(lightSensors.getLineSize() * 100.0);
+        sendData = (uint16_t)(lightSensors.getLineSize() * 100.0);
         break;
 
-    case SlaveCommand::lsFirst16BitCommmand:
+    case SlaveCommand::lsFirstCommand:
         sendData = 0;
 
-        for (uint8_t i = 0; i < 16; i++) {
+        for (uint8_t i = 0; i < 10; i++) {
             sendData |= lightSensors.data[i] << i;
         }
 
         break;
 
-    case SlaveCommand::lsSecond16BitCommand:
+    case SlaveCommand::lsSecondCommand:
         sendData = 0;
 
-        for (uint8_t i = 0; i < 16; i++) {
-            sendData |= lightSensors.data[i + 16] << i;
+        for (uint8_t i = 0; i < 10; i++) {
+            sendData |= lightSensors.data[i + 10] << i;
+        }
+
+        break;
+
+    case SlaveCommand::lsThirdCommand:
+        sendData = 0;
+
+        for (uint8_t i = 0; i < 10; i++) {
+            sendData |= lightSensors.data[i + 20] << i;
+        }
+
+        break;
+
+    case SlaveCommand::lsFourthCommand:
+        sendData = 0;
+
+        for (uint8_t i = 0; i < 6; i++) {
+            sendData |= lightSensors.data[i + 30] << i;
         }
 
         break;
