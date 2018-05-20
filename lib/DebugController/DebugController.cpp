@@ -5,7 +5,8 @@ void DebugController::init() {
     Serial5.setTimeout(15);
 }
 
-void DebugController::send(String data, int dataCode = BluetoothDataType::info) {
+void DebugController::send(String data, int dataCode) {
+    Serial.print("-" + String(dataCode) + ";" + data + "-");
     Serial5.print("-" + String(dataCode) + ";" + data + "-");
 }
 
@@ -18,7 +19,6 @@ void DebugController::appSendBallStrength(int strength) {
 }
 
 void DebugController::appSendHeading(int heading) {
-    // Bluetooth::send(heading, BluetoothDataType::heading);
     send(String(heading), BluetoothDataType::heading);
 }
 

@@ -9,11 +9,14 @@
 #include <LED.h>
 #include <Slave.h>
 #include <Timer.h>
+#include <DebugController.h>
 
 T3SPI spi;
 
 BallData ballData = BallData(TSOP_NO_BALL, 0);
 LineData lineData = LineData();
+
+DebugController debug = DebugController();
 
 LED leds;
 Screen screen;
@@ -82,6 +85,11 @@ void loop() {
         digitalWrite(LED_BUILTIN, ledOn);
         ledOn = !ledOn;
     }
+
+    debug.appSendBallAngle(ballData.angle);
+    debug.appSendBallStrength(ballData.strength);
+    debug.appSendLineAngle(lineData.angle);
+    debug.appSendLineSize(lineData.size);
 }
 
 void spi0_isr() {

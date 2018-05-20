@@ -6,7 +6,7 @@
 #include <Bluetooth.h>
 #include <Config.h>
 #include <Timer.h>
-#include <BluetoothData.h>
+#include <BluetoothDataType.h>
 
 class DebugController {
 public:
