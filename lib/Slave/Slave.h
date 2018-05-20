@@ -112,12 +112,8 @@ public:
     void sendRightRPM(uint16_t rpm);
     void sendBackLeftRPM(uint16_t rpm);
     void sendBackRightRPM(uint16_t rpm);
-<<<<<<< HEAD
     void sendGoals(uint16_t yellowAngle, uint16_t yellowDistance, uint16_t blueAngle, uint16_t blueDistance);
-=======
-    void sendLineData(uint16_t angle, uint16_t size);
     DebugSettings getDebugSettings();
->>>>>>> 38cafe135ba5130bb26f493eb69d1e65b85c14eb
 
     void updateDebugSettings();
 

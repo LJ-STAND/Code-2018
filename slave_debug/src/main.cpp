@@ -16,11 +16,8 @@ T3SPI spi;
 BallData ballData = BallData(TSOP_NO_BALL, 0);
 LineData lineData = LineData();
 
-<<<<<<< HEAD
 int yellowAngle, yellowDistance, blueAngle, blueDistance;
-=======
 DebugController debug = DebugController();
->>>>>>> 38cafe135ba5130bb26f493eb69d1e65b85c14eb
 
 LED leds;
 Screen screen;
