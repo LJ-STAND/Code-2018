@@ -90,6 +90,7 @@ void loop() {
     debug.appSendBallStrength(ballData.strength);
     debug.appSendLineAngle(lineData.angle);
     debug.appSendLineSize(lineData.size);
+    delay(50);
 }
 
 void spi0_isr() {
