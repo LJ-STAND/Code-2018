@@ -95,6 +95,19 @@ protected:
     int lightSensorData;
 };
 
+class RobotPositionView : public View {
+public:
+    RobotPositionView() {}
+    RobotPositionView(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+
+    void draw();
+    void setRobotPositionData(double px, double py);
+
+protected:
+    double positionX, positionY;
+    double oldX, oldY;    
+};
+
 class Button : public View {
 public:
     Button() {}

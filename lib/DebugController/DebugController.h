@@ -6,13 +6,23 @@
 #include <Bluetooth.h>
 #include <Config.h>
 #include <Timer.h>
-#include <BluetoothDataType.h>
+
+enum AppDataType: int {
+    noData,
+    settings,
+    info,
+    ball,
+    ballStr,
+    heading,
+    lineAngle,
+    lineSize
+};
 
 class DebugController {
 public:
     DebugController() {}
     void init();
-    void send(String data, int dataCode = BluetoothDataType::info);
+    void send(String data, AppDataType dataCode = AppDataType::info);
     void appSendBallAngle(int angle);
     void appSendBallStrength(int strength);
     void appSendString(String string);

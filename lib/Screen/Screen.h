@@ -50,15 +50,16 @@ public:
 
     // Debug Variables
 
-    int heading;
-    int leftRPM;
-    int rightRPM;
-    int backLeftRPM;
-    int backRightRPM;
-    BallData ballData;
-    LineData lineData;
-    int yellowAngle, yellowDistance, blueAngle, blueDistance;
-    uint16_t lsFirst, lsSecond, lsThird, lsFourth;
+    int heading = 0;
+    int leftRPM = 0;
+    int rightRPM = 0;
+    int backLeftRPM = 0;
+    int backRightRPM = 0;
+    BallData ballData = BallData();
+    LineData lineData = LineData();
+    int yellowAngle = 0, yellowDistance = 0, blueAngle = 0, blueDistance = 0;
+    uint16_t lsFirst = 0, lsSecond = 0, lsThird = 0, lsFourth = 0;
+    int robotPositionX = 0, robotPositionY = 0;
 
 private:
     TouchScreen ts = TouchScreen(SCREEN_XP, SCREEN_YP, SCREEN_XM, SCREEN_YM, TS_RESISTANCE);
@@ -132,6 +133,7 @@ private:
     // Camera Debug Screen
 
     GoalView goalView;
+    RobotPositionView robotPositionView;
 
     // LED Debug Screen
 

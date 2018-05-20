@@ -5,31 +5,31 @@ void DebugController::init() {
     Serial5.setTimeout(15);
 }
 
-void DebugController::send(String data, int dataCode) {
+void DebugController::send(String data, AppDataType dataCode) {
     // Serial.print("-" + String(dataCode) + ";" + data + "-");
     Serial5.print("-" + String(dataCode) + ";" + data + "-");
 }
 
 void DebugController::appSendBallAngle(int angle) {
-    send(String(angle), BluetoothDataType::ball);
+    send(String(angle), AppDataType::ball);
 }
 
 void DebugController::appSendBallStrength(int strength) {
-    send(String(strength), BluetoothDataType::ballStr);
+    send(String(strength), AppDataType::ballStr);
 }
 
 void DebugController::appSendHeading(int heading) {
-    send(String(heading), BluetoothDataType::heading);
+    send(String(heading), AppDataType::heading);
 }
 
 void DebugController::appSendString(String string) {
-    send(string, BluetoothDataType::info);
+    send(string, AppDataType::info);
 }
 
 void DebugController::appSendLineSize(int size) {
-    send(String(size), BluetoothDataType::lineSize);
+    send(String(size), AppDataType::lineSize);
 }
 
 void DebugController::appSendLineAngle(int angle) {
-    send(String(angle), BluetoothDataType::lineAngle);
+    send(String(angle), AppDataType::lineAngle);
 }

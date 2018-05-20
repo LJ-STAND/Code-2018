@@ -13,6 +13,7 @@
 #include <MoveData.h>
 #include <Camera.h>
 #include <Bluetooth.h>
+#include <PlayMode.h>
 
 T3SPI spi;
 
@@ -41,7 +42,10 @@ Timer slaveDebugUpdateTimer(SLAVE_DEBUG_UPDATE_TIME);
 
 PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
 
-PlayMode playMode;
+PID coordinateXPID(COORDINATE_X_PID_KP, COORDINATE_X_PID_KI, COORDINATE_X_PID_KD);
+PID coordinateYPID(COORDINATE_Y_PID_KP, COORDINATE_Y_PID_KI, COORDINATE_X_PID_KD);
+
+PlayMode playMode = PlayMode::undecidedMode;
 
 bool ledOn;
 
@@ -61,6 +65,10 @@ void setup() {
     camera.init();
 
 	pinMode(LED_BUILTIN, OUTPUT);
+}
+
+PlayMode currentPlayMode() {
+    return playMode == PlayMode::undecidedMode ? (settings.defaultPlayModeIsAttack ? PlayMode::attackMode : PlayMode::defendMode) : playMode;
 }
 
 void updateLine(double angle, double size) {
@@ -130,7 +138,7 @@ void calculateLineAvoid() {
 }
 
 void calculateOrbit() {
-    moveData.speed = ballData.visible() ? ORBIT_SPEED : 0;
+    moveData.speed = ORBIT_SPEED;
 
     if (angleIsInside(360 - ORBIT_SMALL_ANGLE, ORBIT_SMALL_ANGLE, ballData.angle)) {
         moveData.angle = (int)round(ballData.angle < 180 ? (ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) : (360 - (360 - ballData.angle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER));
@@ -155,54 +163,61 @@ void calculateOrbit() {
     }
 }
 
+void moveToCoordinate(double x, double y) {
+    double xMovement = coordinateXPID.update(robotPositionX, x);
+    double yMovement = coordinateYPID.update(robotPositionY, y);
+
+    moveData.angle = mod(atan2(yMovement, xMovement) - imu.getHeading(), 360);
+    moveData.speed = sqrt(xMovement * xMovement + yMovement * yMovement);
+}
+
+int attackingGoalAngle() {
+    return settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
+}
+
+int defendingGoalAngle() {
+    return !settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
+}
+
 void updateCamera() {
     camera.update();
 
-    facingDirection = settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
+    if (camera.goalsVisible()) {
+        int angle = camera.shortestDistance() == camera.yellowCentimeterDistance() ? camera.yellowAngle : camera.blueAngle;
+        double distance = camera.shortestDistance();
+
+        angle = mod(angle + imu.getHeading(), 360);
+
+        robotPositionX = distance * -sin(degreesToRadians(angle));
+        robotPositionY = FIELD_LENGTH_CENTIMETERS - mod(distance * cos(degreesToRadians(angle)), FIELD_LENGTH_CENTIMETERS);
+
+        facingDirection = attackingGoalAngle();
+    }
+}
+
+void attack() {
+    if (ballData.visible()) {
+        calculateOrbit();
+    } else {
+        moveToCoordinate(NO_BALL_CENTRE_X, NO_BALL_CENTRE_Y);
+    }
+}
+
+void defend() {
+    // Need to figure out what to do here
+    int defendX = constrain(ballData.visible() ? robotPositionX + (double)(180 - smallestAngleBetween(ballData.angle, defendingGoalAngle())) * (double)(ballData.angle > 180 ? -1 : 1) * 0.01 : 0, MIN_DEFEND_X, MAX_DEFEND_X);
+
+    moveToCoordinate(defendX, DEFEND_GOAL_DISTANCE);
+    facingDirection = ballData.angle;
 }
 
 void calculateMovement() {
-    // if (currentPlayMode() == PlayMode::attack) {
-    //     if (xbee.otherBallIsOut) {
-    //         attackingBackwards = false;
-    //         centre(CENTRE_GOAL_DISTANCE_CLOSE);
-    //     } else {
-    //         if (attackingBackwards) {
-    //             ballData.angle = mod(ballData.angle + 180, 360);
-    //
-    //             calculateOrbit();
-    //             moveData.angle = mod(moveData.angle + 180, 360);
-    //
-    //             if (!ballData.visible) {
-    //                 attackingBackwards = false;
-    //             } else {
-    //                 if (smallestAngleBetween(imu.heading, 0) < 90) {
-    //                     attackingBackwards = false;
-    //                 } else if (!lineData.onField && smallestAngleBetween(lineData.angle, ballData.angle) < 90) {
-    //                     attackingBackwards = false;
-    //                 } else if (goalData.status != GoalStatus::invisible) {
-    //                     if (switchingStrengthAverage.average() < ATTACK_BACKWARDS_MAX_STRENGTH && (goalData.distance < DEFEND_LEFT_GOAL_DISTANCE)) {
-    //                         attackingBackwards = false;
-    //                     }
-    //                 } else {
-    //                     if (switchingStrengthAverage.average() < ATTACK_BACKWARDS_MAX_STRENGTH) {
-    //                         attackingBackwards = false;
-    //                     }
-    //                 }
-    //             }
-    //         } else {
-    //             if (ballData.visible) {
-    //                 calculateOrbit();
-    //             } else {
-    //                 centre(CENTRE_GOAL_DISTANCE);
-    //             }
-    //         }
-    //     }
-    // } else {
-    //     calculateDefense();
-    // }
+    if (currentPlayMode() == PlayMode::attackMode) {
+        attack();
+    } else {
+        defend();
+    }
 
-    calculateOrbit();
     calculateLineAvoid();
 
     moveData.rotation = (int8_t)round(headingPID.update(doubleMod(doubleMod(imu.getHeading() - facingDirection, 360) + 180, 360) - 180, 0));
@@ -212,8 +227,7 @@ void updateDebug() {
     slaveDebug.updateDebugSettings();
     settings = slaveDebug.debugSettings;
 
-    playMode = settings.defaultPlayModeIsAttack ? PlayMode::attack : PlayMode::defend;
-    slaveDebug.sendPlayMode(playMode == PlayMode::attack);
+    slaveDebug.sendPlayMode(currentPlayMode() == PlayMode::attackMode);
 
     if (!settings.gameMode) {
         slaveDebug.sendBallData(ballData);
@@ -235,6 +249,8 @@ void updateDebug() {
         slaveDebug.sendLightSensorData(slaveSensor.lsFirst, slaveSensor.lsSecond, slaveSensor.lsThird, slaveSensor.lsFourth);
 
         slaveDebug.sendGoals(camera.yellowAngle, camera.yellowPixelDistance, camera.blueAngle, camera.bluePixelDistance);
+
+        slaveDebug.sendRobotPosition((int8_t)robotPositionX, robotPositionY);
     }    
     
     if (settings.IMUNeedsResetting) {
@@ -255,6 +271,24 @@ void updateDebug() {
     }
 
     slaveDebug.updateDebugSettings();
+}
+
+void updatePlayMode() {}
+
+void updateBluetooth() {
+    if (settings.gameMode || settings.playModeSwitching) {
+        bluetooth.update(BluetoothData(ballData.angle, ballData.strength, imu.getHeading(), isOutsideLine(ballData.angle), playMode, lineData.onField));
+
+        if (bluetooth.isConnected) {
+            updatePlayMode();
+        } else {
+            if (bluetooth.previouslyConnected) {
+                playMode = PlayMode::defendMode;
+            }
+        }
+    } else {
+        playMode = PlayMode::undecidedMode;
+    }
 }
 
 void loop() {
@@ -279,7 +313,6 @@ void loop() {
 
     if (slaveDebugUpdateTimer.timeHasPassed()) {
         updateDebug();
-        
     }
 
     if (ledTimer.timeHasPassed()) {

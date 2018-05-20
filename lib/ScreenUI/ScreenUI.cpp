@@ -94,21 +94,30 @@ void GoalView::draw() {
     int16_t centreX = x + w / 2;
     int16_t centreY = y + h / 2;
 
-    int16_t oldYellowX = centreX + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)oldYellowDistance / (double)GOAL_VIEW_MAX_DISTANCE) * cos(degreesToRadians(oldYellowAngle - 90));
-    int16_t oldYellowY = centreY + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)oldYellowDistance / (double)GOAL_VIEW_MAX_DISTANCE) * sin(degreesToRadians(oldYellowAngle - 90));
-    int16_t yellowX = centreX + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)yellowDistance / (double)GOAL_VIEW_MAX_DISTANCE) * cos(degreesToRadians(yellowAngle - 90));
-    int16_t yellowY = centreY + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)yellowDistance / (double)GOAL_VIEW_MAX_DISTANCE) * sin(degreesToRadians(yellowAngle - 90));
+    if (oldYellowAngle != 400) {
+        int16_t oldYellowX = centreX + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)oldYellowDistance / (double)GOAL_VIEW_MAX_DISTANCE) * cos(degreesToRadians(oldYellowAngle - 90));
+        int16_t oldYellowY = centreY + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)oldYellowDistance / (double)GOAL_VIEW_MAX_DISTANCE) * sin(degreesToRadians(oldYellowAngle - 90));
+        TFT.fillCircle(oldYellowX, oldYellowY, GOAL_VIEW_GOAL_RADIUS, BACKGROUND_COLOR);
+    }
 
-    int16_t oldBlueX = centreX + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)oldBlueDistance / (double)GOAL_VIEW_MAX_DISTANCE) * cos(degreesToRadians(oldBlueAngle - 90));
-    int16_t oldBlueY = centreY + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)oldBlueDistance / (double)GOAL_VIEW_MAX_DISTANCE) * sin(degreesToRadians(oldBlueAngle - 90));
-    int16_t blueX = centreX + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)blueDistance / (double)GOAL_VIEW_MAX_DISTANCE) * cos(degreesToRadians(blueAngle - 90));
-    int16_t blueY = centreY + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)blueDistance / (double)GOAL_VIEW_MAX_DISTANCE) * sin(degreesToRadians(blueAngle - 90));
+    if (yellowAngle != 400) {
+        int16_t yellowX = centreX + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)yellowDistance / (double)GOAL_VIEW_MAX_DISTANCE) * cos(degreesToRadians(yellowAngle - 90));
+        int16_t yellowY = centreY + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)yellowDistance / (double)GOAL_VIEW_MAX_DISTANCE) * sin(degreesToRadians(yellowAngle - 90));  
+        TFT.fillCircle(yellowX, yellowY, GOAL_VIEW_GOAL_RADIUS, YELLOW);
+    }
 
-    TFT.fillCircle(oldYellowX, oldYellowY, GOAL_VIEW_GOAL_RADIUS, BACKGROUND_COLOR);
-    TFT.fillCircle(yellowX, yellowY, GOAL_VIEW_GOAL_RADIUS, YELLOW);
-    TFT.fillCircle(oldBlueX, oldBlueY, GOAL_VIEW_GOAL_RADIUS, BACKGROUND_COLOR);
-    TFT.fillCircle(blueX, blueY, GOAL_VIEW_GOAL_RADIUS, BLUE);
-    
+    if (oldBlueAngle != 400) {
+        int16_t oldBlueX = centreX + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)oldBlueDistance / (double)GOAL_VIEW_MAX_DISTANCE) * cos(degreesToRadians(oldBlueAngle - 90));
+        int16_t oldBlueY = centreY + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)oldBlueDistance / (double)GOAL_VIEW_MAX_DISTANCE) * sin(degreesToRadians(oldBlueAngle - 90));
+        TFT.fillCircle(oldBlueX, oldBlueY, GOAL_VIEW_GOAL_RADIUS, BACKGROUND_COLOR);
+    }
+
+    if (blueAngle != 400) {
+        int16_t blueX = centreX + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)blueDistance / (double)GOAL_VIEW_MAX_DISTANCE) * cos(degreesToRadians(blueAngle - 90));
+        int16_t blueY = centreY + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)blueDistance / (double)GOAL_VIEW_MAX_DISTANCE) * sin(degreesToRadians(blueAngle - 90));
+        TFT.fillCircle(blueX, blueY, GOAL_VIEW_GOAL_RADIUS, BLUE);
+    }
+     
     TFT.fillCircle(centreX, centreY, GOAL_VIEW_ROBOT_RADIUS, WHITE);
 
     oldYellowAngle = yellowAngle;
@@ -146,10 +155,29 @@ void LightSensorView::draw() {
 }
 
 void LightSensorView::setLightSensorData(int data) {
-    Serial.println(data, BIN);
-
     if (lightSensorData != data) {
         lightSensorData = data;
+        setNeedsDraw();
+    }
+}
+
+RobotPositionView::RobotPositionView(uint16_t x, uint16_t y, uint16_t w, uint16_t h) : View(x, y, w, h) {}
+
+void RobotPositionView::draw() {
+    TFT.fillCircle(x + w / 2 + (double)(w - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)oldX / (double)FIELD_WIDTH_CENTIMETERS), y + h - ROBOT_POSITION_VIEW_ROBOT_RADIUS - (double)(h - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)oldY / (double)FIELD_LENGTH_CENTIMETERS), ROBOT_POSITION_VIEW_ROBOT_RADIUS, BACKGROUND_COLOR);
+    TFT.fillCircle(x + w / 2 + (double)(w - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)positionX / (double)FIELD_WIDTH_CENTIMETERS), y + h - ROBOT_POSITION_VIEW_ROBOT_RADIUS - (double)(h - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)positionY / (double)FIELD_LENGTH_CENTIMETERS), ROBOT_POSITION_VIEW_ROBOT_RADIUS, FOREGROUND_COLOR);
+
+    oldX = positionX;
+    oldY = positionY;
+
+    TFT.drawRect(x, y, w, h, FOREGROUND_COLOR);
+}
+
+void RobotPositionView::setRobotPositionData(double px, double py) {
+    if (positionX != px || positionY != py) {
+        positionX = px;
+        positionY = py;
+
         setNeedsDraw();
     }
 }

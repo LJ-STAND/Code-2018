@@ -84,7 +84,8 @@ void Screen::init() {
 
     // Camera Debug Screen
 
-    goalView = GoalView(5, LINE_Y + 5, TFT.width() - 10, TFT.height() - LINE_Y - 10);
+    goalView = GoalView(5, LINE_Y + 5, (TFT.width() - 10) / 2, TFT.height() - LINE_Y - 10);
+    robotPositionView = RobotPositionView(TFT.width() / 2, LINE_Y + 5, (TFT.width() - 10) / 2, TFT.height() - LINE_Y - 10);
 
     // LED Debug Screen
 
@@ -325,6 +326,9 @@ void Screen::update() {
         case ScreenType::cameraDebugScreenType:
             goalView.setGoalData(yellowAngle, yellowDistance, blueAngle, blueDistance);
             goalView.checkDraw();
+
+            robotPositionView.setRobotPositionData(robotPositionX, robotPositionY);
+            robotPositionView.checkDraw();
 
             break;
 

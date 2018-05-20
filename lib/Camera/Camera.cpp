@@ -23,10 +23,36 @@ void Camera::update() {
     }
 }
 
-int Camera::blueCentimeterDistance() {
+double Camera::blueCentimeterDistance() {
     return bluePixelDistance;
 }
 
-int Camera::yellowCentimeterDistance() {
+double Camera::yellowCentimeterDistance() {
     return yellowPixelDistance;
+}
+
+double Camera::shortestDistance() {
+    if (goalsVisible()) {
+        if (!yellowGoalVisible()) {
+            return blueCentimeterDistance();
+        } else if (!blueGoalVisible()) {
+            return yellowCentimeterDistance();
+        } else {
+            return min(blueCentimeterDistance(), yellowCentimeterDistance());
+        }
+    } 
+
+    return 0;
+}
+
+bool Camera::yellowGoalVisible() {
+    return yellowAngle != NO_GOAL_ANGLE;
+}
+
+bool Camera::blueGoalVisible() {
+    return blueAngle != NO_GOAL_ANGLE;
+}
+
+bool Camera::goalsVisible() {
+    return yellowGoalVisible() || blueGoalVisible();
 }

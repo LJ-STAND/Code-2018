@@ -50,7 +50,11 @@ void Bluetooth::recieve() {
 
     isConnected = !nothingRecieved || !connectedTimer.timeHasPassedNoUpdate();
 
-    if (!isConnected) {
+    if (isConnected) {
+        if (!previouslyConnected) {
+            previouslyConnected = true;
+        }
+    } else {
         otherData = BluetoothData();
     }
 }

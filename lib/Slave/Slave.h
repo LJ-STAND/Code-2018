@@ -36,7 +36,9 @@ enum SlaveCommand : uint8_t {
     yellowAngleCommand,
     yellowDistanceCommand,
     blueAngleCommand,
-    blueDistanceCommand
+    blueDistanceCommand,
+    robotPositionXCommand,
+    robotPositionYCommand
 };
 
 class Slave {
@@ -110,6 +112,7 @@ public:
     void sendBackLeftRPM(uint16_t rpm);
     void sendBackRightRPM(uint16_t rpm);
     void sendGoals(uint16_t yellowAngle, uint16_t yellowDistance, uint16_t blueAngle, uint16_t blueDistance);
+    void sendRobotPosition(uint16_t x, uint16_t y);
     DebugSettings getDebugSettings();
 
     void updateDebugSettings();

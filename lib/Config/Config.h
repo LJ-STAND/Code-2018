@@ -215,10 +215,35 @@
 
 #define LIGHT_SENSOR_VIEW_SENSOR_RADIUS 5
 
+#define ROBOT_POSITION_VIEW_ROBOT_RADIUS 10
+
 // --- Camera --- //
 
 #define CAMERA_START_BYTE 0x80
 #define CAMERA_PACKET_SIZE 9
+
+#define FIELD_WIDTH_CENTIMETERS 182
+#define FIELD_LENGTH_CENTIMETERS 183
+
+#define NO_GOAL_ANGLE 400
+
+// --- Robot Position --- //
+
+#define COORDINATE_X_PID_KP 3
+#define COORDINATE_X_PID_KI 0
+#define COORDINATE_X_PID_KD 0
+
+#define COORDINATE_Y_PID_KP 3
+#define COORDINATE_Y_PID_KI 0
+#define COORDINATE_Y_PID_KD 0
+
+#define NO_BALL_CENTRE_X 0
+#define NO_BALL_CENTRE_Y 100
+
+#define DEFEND_GOAL_DISTANCE 30
+
+#define MIN_DEFEND_X -30
+#define MAX_DEFEND_X 30
 
 // --- Bluetooth --- //
 

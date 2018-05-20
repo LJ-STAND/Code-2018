@@ -3,13 +3,8 @@
 
 #include <Arduino.h>
 #include <Config.h>
+#include <PlayMode.h>
 #include <Timer.h>
-
-enum PlayMode: uint8_t {
-    attack,
-    defend,
-    undecided
-};
 
 typedef struct BluetoothData {
     uint16_t ballAngle;
@@ -24,9 +19,11 @@ typedef struct BluetoothData {
         ballStrength = 0;
         heading = 0;
         ballIsOut = false;
-        playMode = PlayMode::undecided;
+        playMode = PlayMode::undecidedMode;
         isOnField = true;
     }
+
+    BluetoothData(uint16_t ballAngle, uint8_t ballStrength, uint16_t heading, bool ballIsOut, PlayMode playMode, bool isOnField) : ballAngle(ballAngle), ballStrength(ballStrength), heading(heading), ballIsOut(ballIsOut), playMode(playMode), isOnField(isOnField) {}
 } BluetoothData;
 
 class Bluetooth {
@@ -36,6 +33,7 @@ public:
 
     BluetoothData otherData = BluetoothData();
     bool isConnected = false;
+    bool previouslyConnected = false;
 
 private:
     BluetoothData thisData = BluetoothData();

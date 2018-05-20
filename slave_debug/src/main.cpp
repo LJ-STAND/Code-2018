@@ -222,6 +222,14 @@ void spi0_isr() {
         screen.blueDistance = blueDistance;
 
         break;
+
+    case SlaveCommand::robotPositionXCommand:
+        screen.robotPositionX = (double)((int8_t)data);
+        break;
+
+    case SlaveCommand::robotPositionYCommand:
+        screen.robotPositionY = data;
+        break;
     }
 
     SPI0_PUSHR_SLAVE = (command << 10) | (sendData & 0x3FF);

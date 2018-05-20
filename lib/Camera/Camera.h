@@ -9,8 +9,13 @@ public:
     void init();
     void update();
 
-    int blueCentimeterDistance();
-    int yellowCentimeterDistance();
+    double blueCentimeterDistance();
+    double yellowCentimeterDistance();
+    double shortestDistance();
+
+    bool blueGoalVisible();
+    bool yellowGoalVisible();
+    bool goalsVisible();
 
     int blueAngle;
     int bluePixelDistance;

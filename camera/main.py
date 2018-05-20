@@ -1,17 +1,17 @@
 import image, sensor, time
 from math import atan2, sqrt, pi, degrees
-from pyb import UART, LED
+from pyb import UART
 
 DRAW_CROSSES = True
 DRAW_RECTANGLES = False
 
 NO_GOAL_ANGLE = 400
 
-MAX_VALID_RADIUS = 58
+MAX_VALID_RADIUS = 55
 MIN_VALID_RADIUS = 27
 
-CENTRE_X = 80
-CENTRE_Y = 44
+CENTRE_X = 76
+CENTRE_Y = 48
 
 YELLOW_THRESHOLD = (56, 99, -16, 19, 15, 73)
 BLUE_THRESHOLD = (32, 58, -21, -1, -44, -6)
@@ -24,7 +24,7 @@ sensor.set_framesize(sensor.QQVGA)
 sensor.skip_frames(time=500)
 
 sensor.set_auto_whitebal(True, rgb_gain_db=(-6.02073, -6.02073, 1.717804)) #Must remain false for blob tracking
-sensor.set_auto_exposure(False, exposure_us=5500)
+sensor.set_auto_exposure(False, exposure_us=3000)
 sensor.skip_frames(time=500)
 
 curr_gain = sensor.get_gain_db()
@@ -37,10 +37,6 @@ sensor.set_saturation(0)
 sensor.skip_frames(time=500)
 
 uart = UART(3, 9600, timeout_char=10)
-
-redLED = LED(1)
-greenLED = LED(2)
-blueLED = LED(3)
 
 def send(data):
     sendData = [0x80]
@@ -91,14 +87,5 @@ while True:
 
     yellowAngle, yellowDistance = sortBlobs(yellowBlobs, img)
     blueAngle, blueDistance = sortBlobs(blueBlobs, img)
-
-    if True:
-        redLED.off()
-        greenLED.off()
-        blueLED.on()
-    else:
-        redLED.on()
-        greenLED.on()
-        blueLED.off()
 
     send([yellowAngle, yellowDistance, blueAngle, blueDistance])
