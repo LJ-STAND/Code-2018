@@ -16,9 +16,17 @@ void Camera::update() {
             }
 
             yellowAngle = (dataBuffer[0] << 7) | dataBuffer[1];
-            yellowDistance = (dataBuffer[2] << 7) | dataBuffer[3];
+            yellowPixelDistance = (dataBuffer[2] << 7) | dataBuffer[3];
             blueAngle = (dataBuffer[4] << 7) | dataBuffer[5];
-            blueDistance = (dataBuffer[5] << 7) | dataBuffer[6];
+            bluePixelDistance = (dataBuffer[6] << 7) | dataBuffer[7];
         }
     }
+}
+
+int Camera::blueCentimeterDistance() {
+    return bluePixelDistance;
+}
+
+int Camera::yellowCentimeterDistance() {
+    return yellowPixelDistance;
 }

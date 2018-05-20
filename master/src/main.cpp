@@ -31,10 +31,17 @@ LineData lineData(0, 0, true);
 BallData ballData;
 MoveData moveData;
 
+double robotPositionX;
+double robotPositionY;
+
+int facingDirection;
+
 Timer ledTimer(LED_BLINK_TIME_MASTER);
 Timer slaveDebugUpdateTimer(SLAVE_DEBUG_UPDATE_TIME);
 
 PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
+
+PlayMode playMode;
 
 bool ledOn;
 
@@ -149,7 +156,9 @@ void calculateOrbit() {
 }
 
 void updateCamera() {
+    camera.update();
 
+    facingDirection = settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
 }
 
 void calculateMovement() {
@@ -194,14 +203,17 @@ void calculateMovement() {
     // }
 
     calculateOrbit();
-    // calculateLineAvoid();
+    calculateLineAvoid();
 
-    moveData.rotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
+    moveData.rotation = (int8_t)round(headingPID.update(doubleMod(doubleMod(imu.getHeading() - facingDirection, 360) + 180, 360) - 180, 0));
 }
 
 void updateDebug() {
     slaveDebug.updateDebugSettings();
     settings = slaveDebug.debugSettings;
+
+    playMode = settings.defaultPlayModeIsAttack ? PlayMode::attack : PlayMode::defend;
+    slaveDebug.sendPlayMode(playMode == PlayMode::attack);
 
     if (!settings.gameMode) {
         slaveDebug.sendBallData(ballData);
@@ -218,6 +230,8 @@ void updateDebug() {
         slaveDebug.sendBackRightRPM(slaveMotor.backRightRPM);
 
         slaveDebug.sendLineData(lineData);
+
+        slaveDebug.sendGoals(camera.yellowAngle, camera.yellowPixelDistance, camera.blueAngle, camera.bluePixelDistance);
     }    
     
     if (settings.IMUNeedsResetting) {
@@ -250,7 +264,7 @@ void loop() {
     updateLine(slaveSensor.lineAngle, slaveSensor.lineSize);
 
     imu.update();
-    camera.update();
+    updateCamera();
 
     if (settings.engineStarted) {
         calculateMovement();

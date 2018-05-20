@@ -193,6 +193,13 @@ void SlaveDebug::sendLineData(LineData data) {
     transaction(SlaveCommand::lineOnFieldCommand, data.onField);
 }
 
+void SlaveDebug::sendGoals(uint16_t yellowAngle, uint16_t yellowDistance, uint16_t blueAngle, uint16_t blueDistance) {
+    transaction(SlaveCommand::yellowAngleCommand, yellowAngle);
+    transaction(SlaveCommand::yellowDistanceCommand, yellowDistance);
+    transaction(SlaveCommand::blueAngleCommand, blueAngle);
+    transaction(SlaveCommand::blueDistanceCommand, blueDistance);
+}
+
 size_t SlaveDebug::write(uint8_t c) {
     transaction(SlaveCommand::debugTerminalCommand, c, 1);
 }

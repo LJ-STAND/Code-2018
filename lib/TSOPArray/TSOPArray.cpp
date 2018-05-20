@@ -160,7 +160,7 @@ void TSOPArray::calculateAngle(uint8_t n) {
     else{
         angle = mod(radiansToDegrees(atan2(y, x)), 360);
     }
-    // strength = sqrt(x*x + y*y);
+    strength = 100.0 * (double)sqrt(x*x + y*y) / 1500.0;
 
     /* Averages the indexes of the best n TSOPs. Best TSOP is weighted
      * TSOP_FIRST_TSOP_WEIGHT and second is weighted TSOP_SECOND_TSOP_WEIGHT.

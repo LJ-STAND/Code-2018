@@ -46,11 +46,11 @@ void BallView::draw() {
     TFT.drawCircle(x + w / 2, y + h / 2, 20, FOREGROUND_COLOR);
 
     if (oldData.visible()) {
-        TFT.fillCircle(x + w / 2 + ((double)oldData.strength / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * cos(degreesToRadians(oldData.angle - 90)), y + h / 2 + ((double)oldData.strength / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * sin(degreesToRadians(oldData.angle - 90)), BALL_VIEW_BALL_RADIUS, BACKGROUND_COLOR);
+        TFT.fillCircle(x + w / 2 + ((BALL_VIEW_MAX_STRENGTH - (double)oldData.strength) / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * cos(degreesToRadians(oldData.angle - 90)), y + h / 2 + ((BALL_VIEW_MAX_STRENGTH - (double)oldData.strength) / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * sin(degreesToRadians(oldData.angle - 90)), BALL_VIEW_BALL_RADIUS, BACKGROUND_COLOR);
     }
 
     if (ballData.visible()) {
-        TFT.fillCircle(x + w / 2 + ((double)ballData.strength / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * cos(degreesToRadians(ballData.angle - 90)), y + h / 2 + ((double)ballData.strength / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * sin(degreesToRadians(ballData.angle - 90)), BALL_VIEW_BALL_RADIUS, FOREGROUND_COLOR);
+        TFT.fillCircle(x + w / 2 + ((BALL_VIEW_MAX_STRENGTH - (double)ballData.strength) / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * cos(degreesToRadians(ballData.angle - 90)), y + h / 2 + ((BALL_VIEW_MAX_STRENGTH - (double)ballData.strength) / (double)BALL_VIEW_MAX_STRENGTH) * (double)min((w - BALL_VIEW_BALL_RADIUS) / 2, (h - BALL_VIEW_BALL_RADIUS) / 2) * sin(degreesToRadians(ballData.angle - 90)), BALL_VIEW_BALL_RADIUS, FOREGROUND_COLOR);
     }
 
     oldData = ballData;
@@ -59,7 +59,6 @@ void BallView::draw() {
 void BallView::setBallData(BallData data) {
     if (ballData.angle != data.angle) {
         ballData = data;
-        ballData.strength = 100;
         setNeedsDraw();
     }
 }
@@ -86,6 +85,48 @@ void Button::setEnabled(bool isEnabled) {
     if (enabled != isEnabled) {
         enabled = isEnabled;
         setNeedsDraw(true);
+    }
+}
+
+GoalView::GoalView(uint16_t x, uint16_t y, uint16_t w, uint16_t h) : View(x, y, w, h) {}
+
+void GoalView::draw() {
+    Serial.println(yellowAngle);
+
+    int16_t centreX = x + w / 2;
+    int16_t centreY = y + h / 2;
+
+    int16_t oldYellowX = centreX + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)oldYellowDistance / (double)GOAL_VIEW_MAX_DISTANCE) * cos(degreesToRadians(oldYellowAngle - 90));
+    int16_t oldYellowY = centreY + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)oldYellowDistance / (double)GOAL_VIEW_MAX_DISTANCE) * sin(degreesToRadians(oldYellowAngle - 90));
+    int16_t yellowX = centreX + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)yellowDistance / (double)GOAL_VIEW_MAX_DISTANCE) * cos(degreesToRadians(yellowAngle - 90));
+    int16_t yellowY = centreY + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)yellowDistance / (double)GOAL_VIEW_MAX_DISTANCE) * sin(degreesToRadians(yellowAngle - 90));
+
+    int16_t oldBlueX = centreX + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)oldBlueDistance / (double)GOAL_VIEW_MAX_DISTANCE) * cos(degreesToRadians(oldBlueAngle - 90));
+    int16_t oldBlueY = centreY + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)oldBlueDistance / (double)GOAL_VIEW_MAX_DISTANCE) * sin(degreesToRadians(oldBlueAngle - 90));
+    int16_t blueX = centreX + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)blueDistance / (double)GOAL_VIEW_MAX_DISTANCE) * cos(degreesToRadians(blueAngle - 90));
+    int16_t blueY = centreY + (min(w, h) / 2 - GOAL_VIEW_GOAL_RADIUS) * ((double)blueDistance / (double)GOAL_VIEW_MAX_DISTANCE) * sin(degreesToRadians(blueAngle - 90));
+
+    TFT.fillCircle(oldYellowX, oldYellowY, GOAL_VIEW_GOAL_RADIUS, BACKGROUND_COLOR);
+    TFT.fillCircle(yellowX, yellowY, GOAL_VIEW_GOAL_RADIUS, YELLOW);
+    TFT.fillCircle(oldBlueX, oldBlueY, GOAL_VIEW_GOAL_RADIUS, BACKGROUND_COLOR);
+    TFT.fillCircle(blueX, blueY, GOAL_VIEW_GOAL_RADIUS, BLUE);
+    
+    TFT.fillCircle(centreX, centreY, GOAL_VIEW_ROBOT_RADIUS, WHITE);
+
+    oldYellowAngle = yellowAngle;
+    oldYellowDistance = yellowDistance;
+    oldBlueAngle = blueAngle;
+    oldBlueDistance = blueDistance;
+}
+
+void GoalView::setGoalData(int ya, int yd, int ba, int bd) {
+    if (ya != yellowAngle || yd != yellowDistance || ba != blueAngle || bd != blueDistance)  {
+        yellowAngle = ya;
+        yellowDistance = yd;
+        blueAngle = ba;
+        blueDistance = bd;
+
+        setNeedsDraw();
     }
 }
 

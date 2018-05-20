@@ -75,11 +75,15 @@ void Screen::init() {
 
     // Ball Debug Screen
 
-    ballView = BallView(0, LINE_Y, TFT.width(), TFT.height() - LINE_Y);
+    ballView = BallView(5, LINE_Y + 5, TFT.width() - 10, TFT.height() - LINE_Y - 10);
 
     // Light Sensor Debug Screen
 
-    lineView = LineView(0, LINE_Y, TFT.width(), TFT.height() - LINE_Y);
+    lineView = LineView(5, LINE_Y + 5, TFT.width() - 10, TFT.height() - LINE_Y - 10);
+
+    // Camera Debug Screen
+
+    goalView = GoalView(5, LINE_Y + 5, TFT.width() - 10, TFT.height() - LINE_Y - 10);
 
     // LED Debug Screen
 
@@ -314,6 +318,12 @@ void Screen::update() {
 
             break;
 
+        case ScreenType::cameraDebugScreenType:
+            goalView.setGoalData(yellowAngle, yellowDistance, blueAngle, blueDistance);
+            goalView.checkDraw();
+
+            break;
+
         case ScreenType::ledDebugScreenType:
             ballRGBCheckBox.setEnabled(rgbType == RGBType::ballRGBType);
             lineRGBCheckBox.setEnabled(rgbType == RGBType::lineRGBType);
@@ -414,6 +424,13 @@ void Screen::redrawScreen() {
     case ScreenType::lightSensorsDebugScreenType:
         lineView.setNeedsDraw();
 
+        break;
+
+    case ScreenType::cameraDebugScreenType:
+        goalView.setNeedsDraw();
+
+        break;
+
     case ScreenType::ledDebugScreenType:
         ballRGBLabel.setNeedsDraw();
         ballRGBCheckBox.setNeedsDraw();
@@ -431,6 +448,8 @@ void Screen::redrawScreen() {
 
     case ScreenType::terminalDebugScreenType:
         terminal.setNeedsDraw();
+
+        break;
 
     default:
         break;

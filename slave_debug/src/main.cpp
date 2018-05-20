@@ -15,6 +15,8 @@ T3SPI spi;
 BallData ballData = BallData(TSOP_NO_BALL, 0);
 LineData lineData = LineData();
 
+int yellowAngle, yellowDistance, blueAngle, blueDistance;
+
 LED leds;
 Screen screen;
 
@@ -169,6 +171,30 @@ void spi0_isr() {
     case SlaveCommand::lineOnFieldCommand:
         lineData.onField = data;
         screen.lineData = lineData;
+
+        break;
+
+    case SlaveCommand::yellowAngleCommand:
+        yellowAngle = data;
+        screen.yellowAngle = yellowAngle;
+
+        break;
+
+    case SlaveCommand::yellowDistanceCommand:
+        yellowDistance = data;
+        screen.yellowDistance = yellowDistance;
+
+        break;
+
+    case SlaveCommand::blueAngleCommand:
+        blueAngle = data;
+        screen.blueAngle = blueAngle;
+
+        break;
+
+    case SlaveCommand::blueDistanceCommand:
+        blueDistance = data;
+        screen.blueDistance = blueDistance;
 
         break;
     }

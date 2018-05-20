@@ -30,7 +30,11 @@ enum SlaveCommand: uint8_t {
     motorBackRightRPMCommand,
     lightSensorsAreResetCommand,
     calibrateLightSensorsCommand,
-    debugTerminalCommand
+    debugTerminalCommand,
+    yellowAngleCommand,
+    yellowDistanceCommand,
+    blueAngleCommand,
+    blueDistanceCommand
 };
 
 class Slave {
@@ -103,6 +107,7 @@ public:
     void sendRightRPM(uint16_t rpm);
     void sendBackLeftRPM(uint16_t rpm);
     void sendBackRightRPM(uint16_t rpm);
+    void sendGoals(uint16_t yellowAngle, uint16_t yellowDistance, uint16_t blueAngle, uint16_t blueDistance);
 
     void updateDebugSettings();
 

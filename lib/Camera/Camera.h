@@ -9,10 +9,13 @@ public:
     void init();
     void update();
 
+    int blueCentimeterDistance();
+    int yellowCentimeterDistance();
+
     int blueAngle;
-    int blueDistance;
+    int bluePixelDistance;
     int yellowAngle;
-    int yellowDistance;
+    int yellowPixelDistance;
 };
 
 #endif // CAMERA_H

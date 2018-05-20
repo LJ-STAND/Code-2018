@@ -103,8 +103,8 @@ void LED::rgbColor(uint32_t color) {
 }
 
 void LED::displayPlayMode(bool isAttacker) {
-    digitalWrite(DEBUG_LED_DEFENDER, !isAttacker);
-    digitalWrite(DEBUG_LED_ATTACKER, isAttacker);
+    analogWrite(DEBUG_LED_DEFENDER, isAttacker ? 0 : 50);
+    analogWrite(DEBUG_LED_ATTACKER, isAttacker ? 50 : 0);
 }
 
 void LED::rgbOff() {

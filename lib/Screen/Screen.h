@@ -57,6 +57,7 @@ public:
     int backRightRPM;
     BallData ballData;
     LineData lineData;
+    int yellowAngle, yellowDistance, blueAngle, blueDistance;
 
 private:
     TouchScreen ts = TouchScreen(SCREEN_XP, SCREEN_YP, SCREEN_XM, SCREEN_YM, TS_RESISTANCE);
@@ -127,6 +128,8 @@ private:
     LineView lineView;
 
     // Camera Debug Screen
+
+    GoalView goalView;
 
     // LED Debug Screen
 

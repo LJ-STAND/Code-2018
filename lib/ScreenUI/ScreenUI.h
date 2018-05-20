@@ -68,6 +68,21 @@ protected:
     LineData oldData;
 };
 
+class GoalView : public View {
+public:
+    GoalView() {}
+    GoalView(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+
+    void draw();
+    void setGoalData(int ya, int yd, int ba, int bd);
+
+protected:
+    int yellowAngle, oldYellowAngle;
+    int yellowDistance, oldYellowDistance;
+    int blueAngle, oldBlueAngle;
+    int blueDistance, oldBlueDistance;
+};
+
 class Button : public View {
 public:
     Button() {}
