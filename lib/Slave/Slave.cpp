@@ -127,6 +127,18 @@ BallData SlaveSensor::ballData() {
     return BallData(ballAngle, ballStrength);
 }
 
+void SlaveDebug::sendLightSensorData(int data) {
+    uint8_t firstByte = data & 0xFF;
+    uint8_t secondByte = (data >> 8) & 0xFF;
+    uint8_t thirdByte = (data >> 16) & 0xFF;
+    uint8_t fourthByte = (data >> 24) & 0xFF;
+
+    transaction(SlaveCommand::lsFirstByteCommand, firstByte);
+    transaction(SlaveCommand::lsSecondByteCommand, secondByte);
+    transaction(SlaveCommand::lsThirdByteCommand, thirdByte);
+    transaction(SlaveCommand::lsFourthByteCommand, fourthByte);
+}
+
 void SlaveSensor::updateLightSensorData() {}
 
 void SlaveSensor::sendCalibrateLightSensors() {
@@ -143,8 +155,6 @@ void SlaveDebug::handleReceive(uint8_t command, uint16_t data) {
         debugSettings = DebugSettings(data);
     }
 }
-
-void SlaveDebug::sendLightSensorData(int data) {}
 
 void SlaveDebug::sendPlayMode(bool isAttacker) {
     transaction(SlaveCommand::playModeCommand, isAttacker);
@@ -181,6 +191,13 @@ void SlaveDebug::sendBackLeftRPM(uint16_t rpm) {
 
 void SlaveDebug::sendBackRightRPM(uint16_t rpm) {
     transaction(SlaveCommand::motorBackRightRPMCommand, rpm / 2);
+}
+
+
+void SlaveDebug::sendLineData(uint16_t angle, uint16_t size) {
+    transaction(SlaveCommand::lineAngleCommand, angle);
+    delay(10);
+    transaction(SlaveCommand::lineSizeCommand, size);
 }
 
 void SlaveDebug::sendLightSensorsAreReset() {
