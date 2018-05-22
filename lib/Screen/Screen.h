@@ -59,7 +59,7 @@ public:
     LineData lineData = LineData();
     int yellowAngle = 0, yellowDistance = 0, blueAngle = 0, blueDistance = 0;
     uint16_t lsFirst = 0, lsSecond = 0, lsThird = 0, lsFourth = 0;
-    int robotPositionX = 0, robotPositionY = 0;
+    int8_t robotPositionX = 0, robotPositionY = 0;
 
 private:
     TouchScreen ts = TouchScreen(SCREEN_XP, SCREEN_YP, SCREEN_XM, SCREEN_YM, TS_RESISTANCE);

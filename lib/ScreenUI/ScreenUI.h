@@ -101,11 +101,11 @@ public:
     RobotPositionView(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
     void draw();
-    void setRobotPositionData(double px, double py);
+    void setRobotPositionData(int8_t px, int8_t py);
 
 protected:
-    double positionX, positionY;
-    double oldX, oldY;    
+    int8_t positionX, positionY;
+    int8_t oldX, oldY;    
 };
 
 class Button : public View {

@@ -1,42 +1,41 @@
 import image, sensor, time
-from math import atan2, sqrt, pi, degrees
+from math import atan2, sqrt, pi, degrees, radians, sin, cos
 from pyb import UART
 
-DRAW_CROSSES = True
-DRAW_RECTANGLES = False
-
-NO_GOAL_ANGLE = 400
-
-MAX_VALID_RADIUS = 55
-MIN_VALID_RADIUS = 27
-
-CENTRE_X = 76
-CENTRE_Y = 48
-
-YELLOW_THRESHOLD = (56, 99, -16, 19, 15, 73)
-BLUE_THRESHOLD = (32, 58, -21, -1, -44, -6)
-
-clock = time.clock()
-
 sensor.reset()
+
 sensor.set_pixformat(sensor.RGB565)
-sensor.set_framesize(sensor.QQVGA)
+sensor.set_framesize(sensor.VGA)
+sensor.set_windowing((147, 0, 330, 312))
+#sensor.set_windowing((73, 0, 166, 158))
 sensor.skip_frames(time=500)
 
-sensor.set_auto_whitebal(True, rgb_gain_db=(-6.02073, -6.02073, 1.717804)) #Must remain false for blob tracking
-sensor.set_auto_exposure(False, exposure_us=3000)
+sensor.set_auto_whitebal(True, rgb_gain_db=(-6.02073, -5.623446, -0.4892338))
+sensor.set_auto_exposure(False, exposure_us=5000)
+sensor.set_auto_gain(False, gain_db=18)
 sensor.skip_frames(time=500)
 
-curr_gain = sensor.get_gain_db()
-sensor.set_auto_gain(False, gain_db=curr_gain*1.3) #Must remain false for blob tracking
-
-sensor.set_brightness(0)
+sensor.set_brightness(2)
 sensor.set_contrast(3)
-sensor.set_saturation(0)
-
+sensor.set_saturation(3)
 sensor.skip_frames(time=500)
 
 uart = UART(3, 9600, timeout_char=10)
+
+DRAW_CROSSES = False
+DRAW_RECTANGLES = False
+DRAW_CIRCLES = False
+
+NO_GOAL_ANGLE = 400
+
+MAX_VALID_RADIUS = 83
+MIN_VALID_RADIUS = 10
+
+CENTRE_X = 83
+CENTRE_Y = 72
+
+YELLOW_THRESHOLD = (40, 90, -30, 23, 46, 81)
+BLUE_THRESHOLD = (35, 50, -22, -7, -33, -11)
 
 def send(data):
     sendData = [0x80]
@@ -76,16 +75,17 @@ def sortBlobs(blobs, img):
 while True:
     img = sensor.snapshot()
 
-    img.draw_circle(CENTRE_X, CENTRE_Y, MIN_VALID_RADIUS, color=(0, 0, 0), fill=True);
-    img.draw_circle(CENTRE_X, CENTRE_Y, MAX_VALID_RADIUS, color=(0, 0, 0));
+    #if DRAW_CIRCLES:
+        #img.draw_circle(CENTRE_X, CENTRE_Y, MIN_VALID_RADIUS, color=(0, 0, 0), fill=True);
+        #img.draw_circle(CENTRE_X, CENTRE_Y, MAX_VALID_RADIUS, color=(0, 0, 0));
 
-    if (DRAW_CROSSES):
-        img.draw_cross(CENTRE_X, CENTRE_Y)
+    #if DRAW_CROSSES:
+        #img.draw_cross(CENTRE_X, CENTRE_Y)
 
-    yellowBlobs = img.find_blobs([YELLOW_THRESHOLD], x_stride=5, y_stride=5, area_threshold=1, pixel_threshold=1, merge=False, roi=(27, 2, 111, 109))
-    blueBlobs = img.find_blobs([BLUE_THRESHOLD], x_stride=5, y_stride=5, area_threshold=1, pixel_threshold=1, merge=False, roi=(27, 2, 111, 109))
+    #yellowBlobs = img.find_blobs([YELLOW_THRESHOLD], x_stride=5, y_stride=5, area_threshold=5, pixel_threshold=5, merge=True, margin=12)
+    #blueBlobs = img.find_blobs([BLUE_THRESHOLD], x_stride=5, y_stride=5, area_threshold=5, pixel_threshold=5, merge=True, margin=12)
 
-    yellowAngle, yellowDistance = sortBlobs(yellowBlobs, img)
-    blueAngle, blueDistance = sortBlobs(blueBlobs, img)
+    #yellowAngle, yellowDistance = sortBlobs(yellowBlobs, img)
+    #blueAngle, blueDistance = sortBlobs(blueBlobs, img)
 
-    send([yellowAngle, yellowDistance, blueAngle, blueDistance])
+    #send([yellowAngle, yellowDistance, blueAngle, blueDistance])

@@ -35,7 +35,7 @@ MoveData moveData;
 double robotPositionX;
 double robotPositionY;
 
-int facingDirection;
+int facingDirection = 0;
 
 Timer ledTimer(LED_BLINK_TIME_MASTER);
 Timer slaveDebugUpdateTimer(SLAVE_DEBUG_UPDATE_TIME);
@@ -189,9 +189,11 @@ void updateCamera() {
         angle = mod(angle + imu.getHeading(), 360);
 
         robotPositionX = distance * -sin(degreesToRadians(angle));
-        robotPositionY = FIELD_LENGTH_CENTIMETERS - mod(distance * cos(degreesToRadians(angle)), FIELD_LENGTH_CENTIMETERS);
+        robotPositionY = FIELD_LENGTH_CENTIMETERS / 2 - mod(distance * cos(degreesToRadians(angle)), FIELD_LENGTH_CENTIMETERS);
 
         facingDirection = attackingGoalAngle();
+    } else {
+        facingDirection = 0;
     }
 }
 
@@ -199,7 +201,8 @@ void attack() {
     if (ballData.visible()) {
         calculateOrbit();
     } else {
-        moveToCoordinate(NO_BALL_CENTRE_X, NO_BALL_CENTRE_Y);
+        // moveToCoordinate(NO_BALL_CENTRE_X, NO_BALL_CENTRE_Y);
+        moveData.speed = 0;
     }
 }
 
@@ -250,7 +253,7 @@ void updateDebug() {
 
         slaveDebug.sendGoals(camera.yellowAngle, camera.yellowPixelDistance, camera.blueAngle, camera.bluePixelDistance);
 
-        slaveDebug.sendRobotPosition((int8_t)robotPositionX, robotPositionY);
+        slaveDebug.sendRobotPosition((int8_t)robotPositionX, (int8_t)robotPositionY);
     }    
     
     if (settings.IMUNeedsResetting) {

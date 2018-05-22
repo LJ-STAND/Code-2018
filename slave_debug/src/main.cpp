@@ -224,11 +224,11 @@ void spi0_isr() {
         break;
 
     case SlaveCommand::robotPositionXCommand:
-        screen.robotPositionX = (double)((int8_t)data);
+        screen.robotPositionX = (int8_t)data;
         break;
 
     case SlaveCommand::robotPositionYCommand:
-        screen.robotPositionY = data;
+        screen.robotPositionY = (int8_t)data;
         break;
     }
 

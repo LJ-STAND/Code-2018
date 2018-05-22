@@ -3,12 +3,14 @@
 
 #include <Arduino.h>
 #include <Config.h>
+#include <Common.h>
 
 class Camera {
 public:
     void init();
     void update();
 
+    double centimeterDistance(int pixelDistance);
     double blueCentimeterDistance();
     double yellowCentimeterDistance();
     double shortestDistance();

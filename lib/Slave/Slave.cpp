@@ -226,7 +226,7 @@ void SlaveDebug::sendGoals(uint16_t yellowAngle, uint16_t yellowDistance, uint16
     transaction(SlaveCommand::blueDistanceCommand, blueDistance);
 }
 
-void SlaveDebug::sendRobotPosition(uint16_t x, uint16_t y) {
+void SlaveDebug::sendRobotPosition(int8_t x, int8_t y) {
     transaction(SlaveCommand::robotPositionXCommand, x);
     transaction(SlaveCommand::robotPositionYCommand, y);
 }

@@ -23,12 +23,16 @@ void Camera::update() {
     }
 }
 
+double Camera::centimeterDistance(int pixelDistance) {
+    return 10.205 * pow(E, 0.037 * (double)pixelDistance);
+}
+
 double Camera::blueCentimeterDistance() {
-    return bluePixelDistance;
+    return centimeterDistance(bluePixelDistance);
 }
 
 double Camera::yellowCentimeterDistance() {
-    return yellowPixelDistance;
+    return centimeterDistance(yellowPixelDistance);
 }
 
 double Camera::shortestDistance() {
