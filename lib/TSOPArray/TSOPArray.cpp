@@ -29,9 +29,30 @@ void TSOPArray::init() {
 
 void TSOPArray::updateOnce() {
     // Read each TSOP once
-    for (uint8_t i = 0; i < TSOP_NUM; i++) {
-        tempValues[i] += digitalRead(TSOPPins[i]) ^ 1;
-    }
+    tempValues[0] += digitalReadFast(TSOP_0) ^ 1;
+    tempValues[1] += digitalReadFast(TSOP_1) ^ 1;
+    tempValues[2] += digitalReadFast(TSOP_2) ^ 1;
+    tempValues[3] += digitalReadFast(TSOP_3) ^ 1;
+    tempValues[4] += digitalReadFast(TSOP_4) ^ 1;
+    tempValues[5] += digitalReadFast(TSOP_5) ^ 1;
+    tempValues[6] += digitalReadFast(TSOP_6) ^ 1;
+    tempValues[7] += digitalReadFast(TSOP_7) ^ 1;
+    tempValues[8] += digitalReadFast(TSOP_8) ^ 1;
+    tempValues[9] += digitalReadFast(TSOP_9) ^ 1;
+    tempValues[10] += digitalReadFast(TSOP_10) ^ 1;
+    tempValues[11] += digitalReadFast(TSOP_11) ^ 1;
+    tempValues[12] += digitalReadFast(TSOP_12) ^ 1;
+    tempValues[13] += digitalReadFast(TSOP_13) ^ 1;
+    tempValues[14] += digitalReadFast(TSOP_14) ^ 1;
+    tempValues[15] += digitalReadFast(TSOP_15) ^ 1;
+    tempValues[16] += digitalReadFast(TSOP_16) ^ 1;
+    tempValues[17] += digitalReadFast(TSOP_17) ^ 1;
+    tempValues[18] += digitalReadFast(TSOP_18) ^ 1;
+    tempValues[19] += digitalReadFast(TSOP_19) ^ 1;
+    tempValues[20] += digitalReadFast(TSOP_20) ^ 1;
+    tempValues[21] += digitalReadFast(TSOP_21) ^ 1;
+    tempValues[22] += digitalReadFast(TSOP_22) ^ 1;
+    tempValues[23] += digitalReadFast(TSOP_23) ^ 1;
 
     tsopCounter++;
 }

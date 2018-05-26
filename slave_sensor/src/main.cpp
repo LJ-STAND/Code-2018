@@ -27,14 +27,18 @@ void setup() {
 
     lightSensors.init();
 
-    pinMode(LED_BUILTIN, OUTPUT);    
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
     tsops.updateOnce();
 
     if (tsopTimer.timeHasPassed()) {
+        Serial.println(tsops.tsopCounter);
         tsops.finishRead();
+        // Serial.print(tsops.getStrength());
+        // Serial.print(",");
+
 
         lightSensors.read();
         lightSensors.calculateClusters();
