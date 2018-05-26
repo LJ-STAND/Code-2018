@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
 void setup() {
-    Serial.begin(9600);
-    Serial5.begin(9600);
+    Serial.begin(115200);
+    Serial5.begin(115200);
 }
 
 void loop() {

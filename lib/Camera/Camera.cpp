@@ -9,6 +9,8 @@ void Camera::update() {
         uint8_t first = Serial3.read();
 
         if (first == CAMERA_START_BYTE) {
+            newCameraData = true;
+
             uint8_t dataBuffer[CAMERA_PACKET_SIZE - 1];
 
             for (int i = 0; i < CAMERA_PACKET_SIZE - 1; i++) {
@@ -59,4 +61,11 @@ bool Camera::blueGoalVisible() {
 
 bool Camera::goalsVisible() {
     return yellowGoalVisible() || blueGoalVisible();
+}
+
+bool Camera::newData() {
+    bool returnValue = newCameraData;
+    newCameraData = false;
+
+    return returnValue;
 }

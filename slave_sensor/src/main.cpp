@@ -12,7 +12,7 @@ TSOPArray tsops;
 LightSensorArray lightSensors;
 
 Timer ledTimer(LED_BLINK_TIME_SLAVE_SENSOR);
-Timer tsopTimer(6664);
+Timer tsopTimer(833 * 8);
 bool ledOn;
 
 void setup() {
@@ -27,7 +27,7 @@ void setup() {
 
     lightSensors.init();
 
-    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);    
 }
 
 void loop() {
@@ -35,8 +35,6 @@ void loop() {
 
     if (tsopTimer.timeHasPassed()) {
         tsops.finishRead();
-        // tsops.unlock();
-        // Serial.println(tsops.getStrength());
 
         lightSensors.read();
         lightSensors.calculateClusters();

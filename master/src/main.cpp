@@ -36,6 +36,8 @@ double robotPositionX;
 double robotPositionY;
 
 int facingDirection = 0;
+int attackingGoalAngle = 0;
+int defendingGoalAngle = 0;
 
 Timer ledTimer(LED_BLINK_TIME_MASTER);
 Timer slaveDebugUpdateTimer(SLAVE_DEBUG_UPDATE_TIME);
@@ -69,6 +71,14 @@ void setup() {
 
 PlayMode currentPlayMode() {
     return playMode == PlayMode::undecidedMode ? (settings.defaultPlayModeIsAttack ? PlayMode::attackMode : PlayMode::defendMode) : playMode;
+}
+
+bool attackingGoalVisible() {
+    return settings.goalIsYellow ? camera.yellowGoalVisible() : camera.blueGoalVisible();
+}
+
+bool defendingGoalVisible() {
+    return !settings.goalIsYellow ? camera.yellowGoalVisible() : camera.blueGoalVisible();
 }
 
 void updateLine(double angle, double size) {
@@ -138,11 +148,9 @@ void calculateLineAvoid() {
 }
 
 void calculateOrbit() {
-    moveData.speed = ORBIT_SPEED;
-
     if (angleIsInside(360 - ORBIT_SMALL_ANGLE, ORBIT_SMALL_ANGLE, ballData.angle)) {
         moveData.angle = (int)round(ballData.angle < 180 ? (ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) : (360 - (360 - ballData.angle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER));
-    } else if (angleIsInside(360 - ORBIT_BIG_ANGLE, ORBIT_BIG_ANGLE, ballData.angle)) {
+    } else if (angleIsInside(360 - ORBIT_BIG_ANGLE, ORBIT_BIG_ANGLE, ballData.angle)) {       
         if (ballData.angle < 180) {
             double nearFactor = (double)(ballData.angle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
             moveData.angle = (int)round(90 * nearFactor + ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + ballData.angle * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor);
@@ -161,39 +169,46 @@ void calculateOrbit() {
             moveData.angle = ballData.angle;
         }
     }
+
+    if (ballData.strength < ORBIT_BIG_STRENGTH) {
+        moveData.speed = FAR_ORBIT_SPEED;
+    } else if (ballData.strength > ORBIT_SHORT_STRENGTH) {
+        moveData.speed = MEDIUM_ORBIT_SPEED;
+    } else {
+        if (angleIsInside(360 - ORBIT_SMALL_ANGLE, ORBIT_SMALL_ANGLE, ballData.angle)) {
+            moveData.speed = FRONT_ORBIT_SPEED;
+        } else {
+            moveData.speed = CLOSE_ORBIT_SPEED;
+        }
+    }
 }
 
 void moveToCoordinate(double x, double y) {
-    double xMovement = coordinateXPID.update(robotPositionX, x);
-    double yMovement = coordinateYPID.update(robotPositionY, y);
+    double dx = x - robotPositionX;
+    double dy = y - robotPositionY;
 
-    moveData.angle = mod(atan2(yMovement, xMovement) - imu.getHeading(), 360);
-    moveData.speed = sqrt(xMovement * xMovement + yMovement * yMovement);
-}
-
-int attackingGoalAngle() {
-    return settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
-}
-
-int defendingGoalAngle() {
-    return !settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
+    moveData.angle = mod(atan2(dy, dx) - imu.getHeading(), 360);
+    moveData.speed = 90;
 }
 
 void updateCamera() {
     camera.update();
 
     if (camera.goalsVisible()) {
-        int angle = camera.shortestDistance() == camera.yellowCentimeterDistance() ? camera.yellowAngle : camera.blueAngle;
-        double distance = camera.shortestDistance();
+        if (camera.newData()) {
+            int angle = camera.shortestDistance() == camera.yellowCentimeterDistance() ? camera.yellowAngle : camera.blueAngle;
+            double distance = camera.shortestDistance();
 
-        angle = mod(angle + imu.getHeading(), 360);
+            angle = mod(angle + imu.getHeading(), 360);
 
-        robotPositionX = distance * -sin(degreesToRadians(angle));
-        robotPositionY = FIELD_LENGTH_CENTIMETERS / 2 - mod(distance * cos(degreesToRadians(angle)), FIELD_LENGTH_CENTIMETERS);
+            robotPositionX = distance * -sin(degreesToRadians(angle));
+            robotPositionY = FIELD_LENGTH_CENTIMETERS / 2 - mod(distance * cos(degreesToRadians(angle)), FIELD_LENGTH_CENTIMETERS);
 
-        facingDirection = attackingGoalAngle();
-    } else {
-        facingDirection = 0;
+            attackingGoalAngle = settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
+            defendingGoalAngle = !settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
+
+            facingDirection = attackingGoalAngle;
+        }
     }
 }
 
@@ -208,7 +223,7 @@ void attack() {
 
 void defend() {
     // Need to figure out what to do here
-    int defendX = constrain(ballData.visible() ? robotPositionX + (double)(180 - smallestAngleBetween(ballData.angle, defendingGoalAngle())) * (double)(ballData.angle > 180 ? -1 : 1) * 0.01 : 0, MIN_DEFEND_X, MAX_DEFEND_X);
+    int defendX = constrain(ballData.visible() ? robotPositionX + (double)(180 - smallestAngleBetween(ballData.angle, defendingGoalAngle)) * (double)(ballData.angle > 180 ? -1 : 1) * 0.01 : 0, MIN_DEFEND_X, MAX_DEFEND_X);
 
     moveToCoordinate(defendX, DEFEND_GOAL_DISTANCE);
     facingDirection = ballData.angle;
@@ -304,7 +319,18 @@ void loop() {
     updateLine(slaveSensor.lineAngle, slaveSensor.lineSize);
 
     imu.update();
-    updateCamera();
+
+    #if CAMERA_ENABLED
+        updateCamera();
+    #endif
+
+    // #if BLUETOOTH_ENABLED
+    //     updateBluetooth();
+    // #endif
+
+    while (Serial5.available()) {
+        slaveDebug.write(Serial5.read());
+    }
 
     if (settings.engineStarted) {
         calculateMovement();

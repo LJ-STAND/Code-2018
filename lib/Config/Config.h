@@ -8,7 +8,7 @@
 
 #define LS_CALIBRATION_COUNT 50
 
-#define LS_CALIBRATION_BUFFER 200
+#define LS_CALIBRATION_BUFFER 300
 
 #define LS_ES_DEFAULT 100
 
@@ -36,7 +36,7 @@
 #define MOTOR_PID_KD 0.3
 
 #define MAX_PWM 65535
-#define MAX_SPEED 300
+#define MAX_SPEED 1200
 
 #define ENCODER_UPDATE_TIME 40000
 
@@ -75,10 +75,14 @@
 
 // --- IMU --- //
 
-#define HEADING_KP 3.0
+#define GOAL_HEADING_KP 0.8
+#define GOAL_HEADING_KI 0.0
+#define GOAL_HEADING_KD 0.01
+
+#define HEADING_KP 1.0
 #define HEADING_KI 0.0
-#define HEADING_KD 0.1
-#define HEADING_MAX_CORRECTION 70
+#define HEADING_KD 0.05
+#define HEADING_MAX_CORRECTION 50
 
 #define IMU_CALIBRATION_COUNT 20
 #define IMU_CALIBRATION_TIME 50
@@ -89,15 +93,18 @@
 
 // --- Orbit --- //
 
-#define ORBIT_SHORT_STRENGTH 65
-#define ORBIT_BIG_STRENGTH 50
+#define ORBIT_SHORT_STRENGTH 150
+#define ORBIT_BIG_STRENGTH 100
 
 #define ORBIT_SMALL_ANGLE 5
 #define ORBIT_BIG_ANGLE 60
 
 #define ORBIT_BALL_FORWARD_ANGLE_TIGHTENER 0.5
 
-#define ORBIT_SPEED 100
+#define FAR_ORBIT_SPEED 50
+#define MEDIUM_ORBIT_SPEED 40
+#define CLOSE_ORBIT_SPEED 30
+#define FRONT_ORBIT_SPEED 100
 
 #define BALL_FRONT_BUFFER 10
 
@@ -219,6 +226,8 @@
 
 // --- Camera --- //
 
+#define CAMERA_ENABLED true
+
 #define CAMERA_START_BYTE 0x80
 #define CAMERA_PACKET_SIZE 9
 
@@ -238,7 +247,7 @@
 #define COORDINATE_Y_PID_KD 0
 
 #define NO_BALL_CENTRE_X 0
-#define NO_BALL_CENTRE_Y 100
+#define NO_BALL_CENTRE_Y 0
 
 #define DEFEND_GOAL_DISTANCE 30
 
@@ -246,6 +255,8 @@
 #define MAX_DEFEND_X 30
 
 // --- Bluetooth --- //
+
+#define BLUETOOTH_ENABLED true
 
 #define BLUETOOTH_BAUD 9600
 #define BLUETOOTH_START_BYTE 0x80

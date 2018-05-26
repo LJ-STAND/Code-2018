@@ -60,7 +60,6 @@ void TSOPArray::unlock() {
 
 void TSOPArray::finishRead() {
     // Complete a reading of the TSOPs after a certain amount of individual readings, TSOP values are now stored in the values array until the next complete read
-    tsopCounter = 0;
     for (uint8_t i = 0; i < TSOP_NUM; i++) {
         #if DEBUG_TSOP
             Serial.print(tempValues[i]);
@@ -71,12 +70,14 @@ void TSOPArray::finishRead() {
             }
         #endif
 
-        values[i] = tempValues[i];
+        values[i] = 100 * (double)tempValues[i] / (double)tsopCounter;
         tempValues[i] = 0;
         filteredValues[i] = 0;
         sortedFilteredValues[i] = 0;
         indexes[i] = 0;
     }
+
+    tsopCounter = 0;
 
     sortFilterValues();
     calculateAngleSimple();
@@ -160,7 +161,7 @@ void TSOPArray::calculateAngle(uint8_t n) {
     else{
         angle = mod(radiansToDegrees(atan2(y, x)), 360);
     }
-    strength = 100.0 * (double)sqrt(x*x + y*y) / 1500.0;
+    strength = (double)sqrt(x*x + y*y);
 
     /* Averages the indexes of the best n TSOPs. Best TSOP is weighted
      * TSOP_FIRST_TSOP_WEIGHT and second is weighted TSOP_SECOND_TSOP_WEIGHT.

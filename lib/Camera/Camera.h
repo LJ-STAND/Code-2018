@@ -18,11 +18,15 @@ public:
     bool blueGoalVisible();
     bool yellowGoalVisible();
     bool goalsVisible();
+    bool newData();
 
     int blueAngle;
     int bluePixelDistance;
     int yellowAngle;
     int yellowPixelDistance;
+
+private:
+    bool newCameraData;
 };
 
 #endif // CAMERA_H
