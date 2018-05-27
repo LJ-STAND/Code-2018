@@ -328,10 +328,6 @@ void loop() {
     //     updateBluetooth();
     // #endif
 
-    while (Serial5.available()) {
-        slaveDebug.write(Serial5.read());
-    }
-
     if (settings.engineStarted) {
         calculateMovement();
 

@@ -53,7 +53,7 @@ void loop() {
             switch (screen.rgbType) {
             case RGBType::ballRGBType:
                 if (ballData.visible()) {
-                    leds.displayAngle(ballData.angle, 300);
+                    leds.displayAngleSize(ballData.angle, ballData.strength, BALL_VIEW_MAX_STRENGTH, 180, 360);
                 } else {
                     leds.rgbColor(leds.rgb.Color(100, 0, 0));
                 }

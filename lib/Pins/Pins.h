@@ -134,6 +134,9 @@
 #define TSOP_PWR_2 44
 #define TSOP_PWR_3 45
 #define TSOP_PWR_4 47
+#define TSOP_PWR_5 48
+#define TSOP_PWR_6 49
+#define TSOP_PWR_7 50
 
 // --- IMU --- //
 
