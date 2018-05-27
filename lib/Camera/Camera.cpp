@@ -26,7 +26,7 @@ void Camera::update() {
 }
 
 double Camera::centimeterDistance(int pixelDistance) {
-    return 10.205 * pow(E, 0.037 * (double)pixelDistance);
+    return 10.205 * pow(MATH_E, 0.037 * (double)pixelDistance);
 }
 
 double Camera::blueCentimeterDistance() {
