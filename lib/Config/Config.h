@@ -94,8 +94,8 @@
 
 // --- Orbit --- //
 
-#define ORBIT_SHORT_STRENGTH 150
-#define ORBIT_BIG_STRENGTH 100
+#define ORBIT_SHORT_STRENGTH 145
+#define ORBIT_BIG_STRENGTH 70
 
 #define ORBIT_SMALL_ANGLE 5
 #define ORBIT_BIG_ANGLE 60
@@ -227,7 +227,7 @@
 
 // --- Camera --- //
 
-#define CAMERA_ENABLED true
+#define CAMERA_ENABLED false
 
 #define CAMERA_START_BYTE 0x80
 #define CAMERA_PACKET_SIZE 9
