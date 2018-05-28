@@ -118,7 +118,7 @@ void GoalView::draw() {
         TFT.fillCircle(blueX, blueY, GOAL_VIEW_GOAL_RADIUS, BLUE);
     }
      
-    TFT.fillCircle(centreX, centreY, GOAL_VIEW_ROBOT_RADIUS, WHITE);
+    TFT.fillCircle(centreX, centreY, GOAL_VIEW_ROBOT_RADIUS, FOREGROUND_COLOR);
 
     oldYellowAngle = yellowAngle;
     oldYellowDistance = yellowDistance;
@@ -149,8 +149,8 @@ void LightSensorView::draw() {
         int16_t sensorX = centreX + (min(w, h) / 2 - LIGHT_SENSOR_VIEW_SENSOR_RADIUS * 2) * cos(degreesToRadians(i * LS_NUM_MULTIPLIER - 90));
         int16_t sensorY = centreY + (min(w, h) / 2 - LIGHT_SENSOR_VIEW_SENSOR_RADIUS * 2) * sin(degreesToRadians(i * LS_NUM_MULTIPLIER - 90));
 
-        TFT.drawCircle(sensorX, sensorY, LIGHT_SENSOR_VIEW_SENSOR_RADIUS, WHITE);
-        TFT.fillCircle(sensorX, sensorY, LIGHT_SENSOR_VIEW_SENSOR_RADIUS / 2, on ? WHITE : BLACK);
+        TFT.drawCircle(sensorX, sensorY, LIGHT_SENSOR_VIEW_SENSOR_RADIUS, FOREGROUND_COLOR);
+        TFT.fillCircle(sensorX, sensorY, LIGHT_SENSOR_VIEW_SENSOR_RADIUS / 2, on ? FOREGROUND_COLOR : BACKGROUND_COLOR);
     }
 }
 
@@ -304,7 +304,7 @@ Switch::Switch(uint16_t x, uint16_t y, uint16_t onColor, char *onChar, uint16_t 
 void Switch::draw() {
     TFT.drawRect(x, y, SWITCH_WIDTH, SWITCH_HEIGHT, highlighted ? HIGHLIGHT_COLOR : FOREGROUND_COLOR);
     TFT.fillRect(enabled ? x + SWITCH_TOGGLE_INSET : x + SWITCH_WIDTH / 2, y + SWITCH_TOGGLE_INSET, SWITCH_WIDTH / 2 - SWITCH_TOGGLE_INSET, SWITCH_HEIGHT - SWITCH_TOGGLE_INSET * 2, enabled ? onColor : offColor);
-    TFT.fillRect(!enabled ? x + SWITCH_TOGGLE_INSET : x + SWITCH_WIDTH / 2, y + SWITCH_TOGGLE_INSET, SWITCH_WIDTH / 2 - SWITCH_TOGGLE_INSET, SWITCH_HEIGHT - SWITCH_TOGGLE_INSET * 2, BLACK);
+    TFT.fillRect(!enabled ? x + SWITCH_TOGGLE_INSET : x + SWITCH_WIDTH / 2, y + SWITCH_TOGGLE_INSET, SWITCH_WIDTH / 2 - SWITCH_TOGGLE_INSET, SWITCH_HEIGHT - SWITCH_TOGGLE_INSET * 2, BACKGROUND_COLOR);
     
     uint16_t textWidth, textHeight;
     int16_t textX, textY;

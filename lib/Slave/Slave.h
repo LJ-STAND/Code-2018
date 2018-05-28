@@ -38,7 +38,8 @@ enum SlaveCommand : uint8_t {
     blueAngleCommand,
     blueDistanceCommand,
     robotPositionXCommand,
-    robotPositionYCommand
+    robotPositionYCommand,
+    bluetoothConnectedCommand
 };
 
 class Slave {
@@ -113,6 +114,7 @@ public:
     void sendBackRightRPM(uint16_t rpm);
     void sendGoals(uint16_t yellowAngle, uint16_t yellowDistance, uint16_t blueAngle, uint16_t blueDistance);
     void sendRobotPosition(int8_t x, int8_t y);
+    void sendBluetoothConnected(bool bluetoothConnected);
     DebugSettings getDebugSettings();
 
     void updateDebugSettings();

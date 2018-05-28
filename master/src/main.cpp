@@ -22,6 +22,7 @@ SlaveMotor slaveMotor;
 SlaveDebug slaveDebug;
 
 Bluetooth bluetooth;
+Timer bluetoothTimer(BLUETOOTH_UPDATE_TIME);
 
 IMUFusion imu;
 Camera camera;
@@ -246,6 +247,7 @@ void updateDebug() {
     settings = slaveDebug.debugSettings;
 
     slaveDebug.sendPlayMode(currentPlayMode() == PlayMode::attackMode);
+    slaveDebug.sendBluetoothConnected(bluetooth.isConnected);
 
     if (!settings.gameMode) {
         slaveDebug.sendBallData(ballData);
@@ -272,6 +274,7 @@ void updateDebug() {
     }    
     
     if (settings.IMUNeedsResetting) {
+        slaveMotor.brake();
         imu.calibrate();
         imu.resetHeading();
         slaveDebug.sendIMUIsReset();
@@ -280,6 +283,7 @@ void updateDebug() {
     }
 
     if (settings.lightSensorsNeedResetting) {
+        slaveMotor.brake();
         slaveSensor.sendCalibrateLightSensors();
         lineData = LineData();
         delay(500);
@@ -324,9 +328,11 @@ void loop() {
         updateCamera();
     #endif
 
-    // #if BLUETOOTH_ENABLED
-    //     updateBluetooth();
-    // #endif
+    #if BLUETOOTH_ENABLED
+        if (bluetoothTimer.timeHasPassed()) {
+            updateBluetooth();
+        }
+    #endif
 
     if (settings.engineStarted) {
         calculateMovement();

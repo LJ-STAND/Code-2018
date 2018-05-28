@@ -127,7 +127,7 @@ void spi0_isr() {
         break;
 
     case SlaveCommand::playModeCommand:
-        leds.displayPlayMode((bool)data);
+        leds.displayPlayMode(data);
         break;
 
     case SlaveCommand::ballAngleCommand:
@@ -229,6 +229,10 @@ void spi0_isr() {
 
     case SlaveCommand::robotPositionYCommand:
         screen.robotPositionY = (int8_t)data;
+        break;
+
+    case SlaveCommand::bluetoothConnectedCommand:
+        screen.setBluetoothConnected(data);
         break;
     }
 

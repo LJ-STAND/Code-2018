@@ -235,3 +235,7 @@ size_t SlaveDebug::write(uint8_t c) {
     transaction(SlaveCommand::debugTerminalCommand, c, 1);
     return 1;
 }
+
+void SlaveDebug::sendBluetoothConnected(bool bluetoothConnected) {
+    transaction(SlaveCommand::bluetoothConnectedCommand, bluetoothConnected);
+}
