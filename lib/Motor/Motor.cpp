@@ -22,7 +22,7 @@ void Motor::init() {
     digitalWrite(enAPin, HIGH);
     digitalWrite(enBPin, HIGH);
 
-    frequency(19000);
+    frequency(457.7635);
 
     lastTimeA = micros();
     lastTimeB = micros();
@@ -68,7 +68,7 @@ void Motor::brake() {
     move(0);
 }
 
-void Motor::frequency(int frequency) {
+void Motor::frequency(double frequency) {
     analogWriteFrequency(pwmPin, frequency);
 }
 

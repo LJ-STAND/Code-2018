@@ -15,7 +15,7 @@ public:
     void init();
     void move(int value);
     void update();
-    void frequency(int frequency);
+    void frequency(double frequency);
     void brake();
     double getRPM();
     void updateEncoderRPM();

@@ -37,14 +37,16 @@ void MotorArray::move(int angle, int rotation, int speed) {
     double motorBackLeftValue = b - a;
     double motorLeftValue = -a - b;
 
-    double updatedSpeed = (double)speedRPM / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftValue), doubleAbs(motorRightValue)), doubleAbs(motorBackRightValue)), doubleAbs(motorBackLeftValue)));
+    double maxSpeed = doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftValue), doubleAbs(motorRightValue)), doubleAbs(motorBackRightValue)), doubleAbs(motorBackLeftValue)));
+    double updatedSpeed = maxSpeed != 0 ? (double)speedRPM / maxSpeed : 0;
 
     double motorRightSpeed = motorRightValue * updatedSpeed - rotationRPM;
     double motorLeftSpeed = motorLeftValue * updatedSpeed - rotationRPM;
     double motorBackRightSpeed = motorBackRightValue * updatedSpeed - rotationRPM;
     double motorBackLeftSpeed = motorBackLeftValue * updatedSpeed - rotationRPM;
 
-    double updatedSpeed2 = (double)MAX_SPEED / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftSpeed), doubleAbs(motorRightSpeed)), doubleAbs(motorBackRightSpeed)), doubleAbs(motorBackLeftSpeed)));
+    double maxSpeed2 = doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftSpeed), doubleAbs(motorRightSpeed)), doubleAbs(motorBackRightSpeed)), doubleAbs(motorBackLeftSpeed)));
+    double updatedSpeed2 = maxSpeed2 != 0 ? (double)MAX_SPEED / maxSpeed2 : 0;
 
     if (updatedSpeed2 < 1) {
         motorRightSpeed = motorRightSpeed * updatedSpeed2;
@@ -57,7 +59,7 @@ void MotorArray::move(int angle, int rotation, int speed) {
     double rightDifference = motorRightSpeed - lastRightSpeed;
     double backLeftDifference = motorBackLeftSpeed - lastBackLeftSpeed;
     double backRightDifference = motorBackRightSpeed - lastBackRightSpeed;
-    
+
     double maxDifference = fmax(fmax(fmax(doubleAbs(leftDifference), doubleAbs(rightDifference)), doubleAbs(backLeftDifference)), doubleAbs(backRightDifference));
 
     unsigned long currentTime = micros();
@@ -67,10 +69,10 @@ void MotorArray::move(int angle, int rotation, int speed) {
 
     double difference = fmin(maxDifference, acceleration);
 
-    motorLeftSpeed = lastLeftSpeed + difference * (double)leftDifference / (double)maxDifference;
-    motorRightSpeed = lastRightSpeed + difference * (double)rightDifference / (double)maxDifference;
-    motorBackLeftSpeed = lastBackLeftSpeed + difference * (double)backLeftDifference / (double)maxDifference;
-    motorBackRightSpeed = lastBackRightSpeed + difference * (double)backRightDifference / (double)maxDifference;
+    motorLeftSpeed = lastLeftSpeed + difference * (maxDifference != 0 ? (double)leftDifference / (double)maxDifference : 0);
+    motorRightSpeed = lastRightSpeed + difference * (maxDifference != 0 ? (double)rightDifference / (double)maxDifference : 0);
+    motorBackLeftSpeed = lastBackLeftSpeed + difference * (maxDifference != 0 ? (double)backLeftDifference / (double)maxDifference : 0);
+    motorBackRightSpeed = lastBackRightSpeed + difference * (maxDifference != 0 ? (double)backRightDifference / (double)maxDifference : 0);
 
     lastLeftSpeed = motorLeftSpeed;
     lastRightSpeed = motorRightSpeed;
