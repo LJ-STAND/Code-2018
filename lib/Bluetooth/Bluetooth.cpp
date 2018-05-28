@@ -29,26 +29,20 @@ void Bluetooth::recieve() {
     while (Serial5.available() >= BLUETOOTH_PACKET_SIZE) {
         uint8_t first = Serial5.read();
 
-        Serial.print(first);
-        Serial.print("\t");
-
         if (first == BLUETOOTH_START_BYTE) {
+
             uint8_t dataBuffer[BLUETOOTH_PACKET_SIZE - 1];
 
-            for (int i = 0; i < CAMERA_PACKET_SIZE - 1; i++) {
-                dataBuffer[i] = Serial3.read();
-                Serial.print(dataBuffer[i]);
-                Serial.print("\t");
+            for (int i = 0; i < BLUETOOTH_PACKET_SIZE - 1; i++) {
+                dataBuffer[i] = Serial5.read();
             }
-
-            Serial.println();
 
             otherData.ballAngle = (dataBuffer[0] << 7) | dataBuffer[1];
             otherData.ballStrength = dataBuffer[2];
             otherData.heading = (dataBuffer[3] << 7) | dataBuffer[4];
             otherData.ballIsOut = (bool)dataBuffer[5];
             otherData.playMode = static_cast<PlayMode>(dataBuffer[6]);
-            otherData.isOnField = (bool)dataBuffer[6];
+            otherData.isOnField = (bool)dataBuffer[7];
 
             nothingRecieved = false;
             connectedTimer.update();
