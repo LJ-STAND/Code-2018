@@ -4,34 +4,33 @@ from pyb import UART
 
 sensor.reset()
 
-ROI1 = (67, 0, 180, 180)
+ROI1 = (58, 0, 174, 164)
 ROI2 = (74, 0, 176, 162)
 
-roi = ROI2
+roi = ROI1
 
-CENTRE_X_1 = 91
+CENTRE_X_1 = 86
 CENTRE_X_2 = 86
 
-CENTRE_Y_1 = 81
+CENTRE_Y_1 = 75
 CENTRE_Y_2 = 65
 
-CENTRE_X = CENTRE_X_2
-CENTRE_Y = CENTRE_Y_2
+CENTRE_X = CENTRE_X_1
+CENTRE_Y = CENTRE_Y_1
 
 MAX_VALID_RADIUS_1 = 88
 MAX_VALID_RADIUS_2 = 87
 
-MAX_VALID_RADIUS = MAX_VALID_RADIUS_2
+MAX_VALID_RADIUS = MAX_VALID_RADIUS_1
 
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 sensor.set_windowing(roi)
 sensor.skip_frames(time=100)
 
-sensor.set_auto_whitebal(False, rgb_gain_db=(-6.02073, -5.368132, -2.963407))
-sensor.set_auto_exposure(False, exposure_us=2000)
-sensor.set_auto_gain(False, gain_db=18)
-
+sensor.set_auto_whitebal(False, rgb_gain_db=(-6.02073, -5.623446, -1.160657))
+sensor.set_auto_exposure(False, exposure_us=5000)
+sensor.set_auto_gain(False, gain_db=18.5)
 sensor.skip_frames(time=500)
 
 sensor.set_brightness(0)
@@ -39,16 +38,16 @@ sensor.set_contrast(3)
 sensor.set_saturation(3)
 sensor.skip_frames(time=500)
 
-uart = UART(3, 9600, timeout_char=10)
+uart = UART(3, 115200, timeout_char=10)
 
-DRAW_CROSSES = True
-DRAW_RECTANGLES = True
+DRAW_CROSSES = False
+DRAW_RECTANGLES = False
 DRAW_CIRCLES = False
 
 NO_GOAL_ANGLE = 400
 
-YELLOW_THRESHOLD = (90, 100, -28, -12, 41, 90)
-BLUE_THRESHOLD = (35, 50, -30, 0, -20, 0)
+YELLOW_THRESHOLD = (50, 97, -28, 9, 51, 95)
+BLUE_THRESHOLD = (49, 71, -24, -6, -31, -3)
 
 def send(data):
     sendData = [0x80]
@@ -98,6 +97,6 @@ while True:
     blueBlobs = img.find_blobs([BLUE_THRESHOLD], x_stride=5, y_stride=5, area_threshold=5, pixel_threshold=5, merge=True, margin=12)
 
     yellowAngle, yellowDistance = sortBlobs(yellowBlobs, img)
-    blueAngle, blueDistance = NO_GOAL_ANGLE, 0 #sortBlobs(blueBlobs, img)
+    blueAngle, blueDistance = sortBlobs(blueBlobs, img)
 
     send([yellowAngle, yellowDistance, blueAngle, blueDistance])

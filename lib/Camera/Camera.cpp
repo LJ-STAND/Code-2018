@@ -1,7 +1,7 @@
 #include "Camera.h"
 
 void Camera::init() {
-    Serial3.begin(9600);
+    Serial3.begin(CAMERA_BAUD);
 }
 
 void Camera::update() {

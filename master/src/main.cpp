@@ -324,15 +324,15 @@ void loop() {
 
     imu.update();
 
-    #if CAMERA_ENABLED
-        updateCamera();
-    #endif
+    // #if CAMERA_ENABLED
+    //     updateCamera();
+    // #endif
 
-    #if BLUETOOTH_ENABLED
-        if (bluetoothTimer.timeHasPassed()) {
-            updateBluetooth();
-        }
-    #endif
+    // #if BLUETOOTH_ENABLED
+    //     if (bluetoothTimer.timeHasPassed()) {
+    //         updateBluetooth();
+    //     }
+    // #endif
 
     if (settings.engineStarted) {
         calculateMovement();
