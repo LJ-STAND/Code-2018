@@ -14,6 +14,8 @@ void MotorArray::init() {
     motorRight.init();
     motorBackLeft.init();
     motorBackRight.init();
+
+    lastTime = micros();
 }
 
 void MotorArray::update() {
@@ -35,26 +37,50 @@ void MotorArray::move(int angle, int rotation, int speed) {
     double motorBackLeftValue = b - a;
     double motorLeftValue = -a - b;
 
-    double updatedSpeed = (double) speedRPM / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftValue), doubleAbs(motorRightValue)), doubleAbs(motorBackRightValue)), doubleAbs(motorBackLeftValue)));
+    double updatedSpeed = (double)speedRPM / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftValue), doubleAbs(motorRightValue)), doubleAbs(motorBackRightValue)), doubleAbs(motorBackLeftValue)));
 
-    int motorRightSpeed = (int) round(motorRightValue * updatedSpeed) - rotationRPM;
-    int motorLeftSpeed = (int) round(motorLeftValue * updatedSpeed) - rotationRPM;
-    int motorBackRightSpeed = (int) round(motorBackRightValue * updatedSpeed) - rotationRPM;
-    int motorBackLeftSpeed = (int) round(motorBackLeftValue * updatedSpeed) - rotationRPM;
+    double motorRightSpeed = motorRightValue * updatedSpeed - rotationRPM;
+    double motorLeftSpeed = motorLeftValue * updatedSpeed - rotationRPM;
+    double motorBackRightSpeed = motorBackRightValue * updatedSpeed - rotationRPM;
+    double motorBackLeftSpeed = motorBackLeftValue * updatedSpeed - rotationRPM;
 
-    double updatedSpeed2 = (double) MAX_SPEED / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftSpeed), doubleAbs(motorRightSpeed)), doubleAbs(motorBackRightSpeed)), doubleAbs(motorBackLeftSpeed)));
+    double updatedSpeed2 = (double)MAX_SPEED / doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftSpeed), doubleAbs(motorRightSpeed)), doubleAbs(motorBackRightSpeed)), doubleAbs(motorBackLeftSpeed)));
 
     if (updatedSpeed2 < 1) {
-        int motorRightSpeed = (int) round(motorRightSpeed * updatedSpeed2);
-        int motorLeftSpeed = (int) round(motorLeftSpeed * updatedSpeed2);
-        int motorBackRightSpeed = (int) round(motorBackRightSpeed * updatedSpeed2);
-        int motorBackLeftSpeed = (int) round(motorBackLeftSpeed * updatedSpeed2);
+        motorRightSpeed = motorRightSpeed * updatedSpeed2;
+        motorLeftSpeed = motorLeftSpeed * updatedSpeed2;
+        motorBackRightSpeed = motorBackRightSpeed * updatedSpeed2;
+        motorBackLeftSpeed = motorBackLeftSpeed * updatedSpeed2;
     }
 
-    motorRight.move(motorRightSpeed);
-    motorLeft.move(motorLeftSpeed);
-    motorBackRight.move(motorBackRightSpeed);
-    motorBackLeft.move(motorBackLeftSpeed);
+    double leftDifference = motorLeftSpeed - lastLeftSpeed;
+    double rightDifference = motorRightSpeed - lastRightSpeed;
+    double backLeftDifference = motorBackLeftSpeed - lastBackLeftSpeed;
+    double backRightDifference = motorBackRightSpeed - lastBackRightSpeed;
+    
+    double maxDifference = fmax(fmax(fmax(doubleAbs(leftDifference), doubleAbs(rightDifference)), doubleAbs(backLeftDifference)), doubleAbs(backRightDifference));
+
+    unsigned long currentTime = micros();
+    double acceleration = (double)MOTOR_MAX_ACCELERATION * (double)(currentTime - lastTime) / 1000000.0;
+
+    lastTime = currentTime;
+
+    double difference = fmin(maxDifference, acceleration);
+
+    motorLeftSpeed = lastLeftSpeed + difference * (double)leftDifference / (double)maxDifference;
+    motorRightSpeed = lastRightSpeed + difference * (double)rightDifference / (double)maxDifference;
+    motorBackLeftSpeed = lastBackLeftSpeed + difference * (double)backLeftDifference / (double)maxDifference;
+    motorBackRightSpeed = lastBackRightSpeed + difference * (double)backRightDifference / (double)maxDifference;
+
+    lastLeftSpeed = motorLeftSpeed;
+    lastRightSpeed = motorRightSpeed;
+    lastBackLeftSpeed = motorBackLeftSpeed;
+    lastBackRightSpeed = motorBackRightSpeed;
+
+    motorRight.move(round(motorRightSpeed));
+    motorLeft.move(round(motorLeftSpeed));
+    motorBackRight.move(round(motorBackRightSpeed));
+    motorBackLeft.move(round(motorBackLeftSpeed));
 }
 
 void MotorArray::brake() {

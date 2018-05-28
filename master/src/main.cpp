@@ -71,7 +71,11 @@ void setup() {
 }
 
 PlayMode currentPlayMode() {
-    return playMode == PlayMode::undecidedMode ? (settings.defaultPlayModeIsAttack ? PlayMode::attackMode : PlayMode::defendMode) : playMode;
+    if (settings.playModeSwitching) {
+        return playMode == PlayMode::undecidedMode ? (settings.defaultPlayModeIsAttack ? PlayMode::attackMode : PlayMode::defendMode) : playMode;
+    } else {
+        return settings.defaultPlayModeIsAttack ? PlayMode::attackMode : PlayMode::defendMode;
+    }
 }
 
 bool attackingGoalVisible() {
@@ -210,6 +214,8 @@ void updateCamera() {
 
             facingDirection = attackingGoalAngle;
         }
+    } else {
+        facingDirection = 0;
     }
 }
 
@@ -219,6 +225,7 @@ void attack() {
     } else {
         // moveToCoordinate(NO_BALL_CENTRE_X, NO_BALL_CENTRE_Y);
         moveData.speed = 0;
+        moveData.angle = 0;
     }
 }
 
@@ -324,15 +331,17 @@ void loop() {
 
     imu.update();
 
-    // #if CAMERA_ENABLED
-    //     updateCamera();
-    // #endif
+    Serial.println(ballData.strength);
 
-    // #if BLUETOOTH_ENABLED
-    //     if (bluetoothTimer.timeHasPassed()) {
-    //         updateBluetooth();
-    //     }
-    // #endif
+    #if CAMERA_ENABLED
+        updateCamera();
+    #endif
+
+    #if BLUETOOTH_ENABLED
+        if (bluetoothTimer.timeHasPassed()) {
+            updateBluetooth();
+        }
+    #endif
 
     if (settings.engineStarted) {
         calculateMovement();
