@@ -76,9 +76,17 @@ void loop() {
 
             case RGBType::goalRGBType:
                 if (screen.settings.goalIsYellow) {
-                    leds.displayAngle(yellowAngle, 60);
+                    if (yellowAngle != NO_GOAL_ANGLE) {
+                        leds.displayAngle(yellowAngle, 60);
+                    } else {
+                        leds.rgbColor(leds.rgb.Color(100, 0, 0));
+                    }
                 } else {
-                    leds.displayAngle(blueAngle, 240);
+                    if (blueAngle != NO_GOAL_ANGLE) {
+                        leds.displayAngle(blueAngle, 240);
+                    } else {
+                        leds.rgbColor(leds.rgb.Color(100, 0, 0));
+                    }                    
                 }
             
                 break;

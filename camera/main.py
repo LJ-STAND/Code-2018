@@ -2,34 +2,56 @@ import image, sensor, time
 from math import atan2, sqrt, pi, degrees, radians, sin, cos
 from pyb import UART
 
-sensor.reset()
+# --- Robot 1 --- #
 
 ROI1 = (58, 0, 174, 164)
-ROI2 = (74, 0, 176, 162)
 
-roi = ROI1
-
-CENTRE_X_1 = 86
-CENTRE_X_2 = 86
-
-CENTRE_Y_1 = 75
-CENTRE_Y_2 = 65
-
-CENTRE_X = CENTRE_X_1
-CENTRE_Y = CENTRE_Y_1
+CENTRE_X_1 = 89
+CENTRE_Y_1 = 77
 
 MAX_VALID_RADIUS_1 = 88
+
+#YELLOW_THRESHOLD = (55, 72, -15, 25, 45, 75)
+#BLUE_THRESHOLD = (49, 71, -24, -6, -31, -3)
+
+# --- Robot 2 --- #
+
+ROI2 = (77, 0, 180, 159)
+
+CENTRE_X_2 = 92
+CENTRE_Y_2 = 66
+
 MAX_VALID_RADIUS_2 = 87
 
-MAX_VALID_RADIUS = MAX_VALID_RADIUS_1
+YELLOW_THRESHOLD = (75, 96, -24, 0, 60, 90)
+BLUE_THRESHOLD = (49, 71, -24, -6, -31, -3)
+
+# --- Current --- #
+
+ROI = ROI2
+
+CENTRE_X = CENTRE_X_2
+CENTRE_Y = CENTRE_Y_2
+
+MAX_VALID_RADIUS = MAX_VALID_RADIUS_2
+
+# -------------- #
+
+DRAW_CROSSES = True
+DRAW_RECTANGLES = True
+DRAW_CIRCLES = False
+
+NO_GOAL_ANGLE = 400
+
+sensor.reset()
 
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
-sensor.set_windowing(roi)
+sensor.set_windowing(ROI)
 sensor.skip_frames(time=100)
 
 sensor.set_auto_whitebal(False, rgb_gain_db=(-6.02073, -5.623446, -1.160657))
-sensor.set_auto_exposure(False, exposure_us=5000)
+sensor.set_auto_exposure(False, exposure_us=6000)
 sensor.set_auto_gain(False, gain_db=18.5)
 sensor.skip_frames(time=500)
 
@@ -39,15 +61,6 @@ sensor.set_saturation(3)
 sensor.skip_frames(time=500)
 
 uart = UART(3, 115200, timeout_char=10)
-
-DRAW_CROSSES = False
-DRAW_RECTANGLES = False
-DRAW_CIRCLES = False
-
-NO_GOAL_ANGLE = 400
-
-YELLOW_THRESHOLD = (50, 97, -28, 9, 51, 95)
-BLUE_THRESHOLD = (49, 71, -24, -6, -31, -3)
 
 def send(data):
     sendData = [0x80]

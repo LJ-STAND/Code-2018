@@ -206,7 +206,11 @@ void updateCamera() {
             attackingGoalAngle = settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
             defendingGoalAngle = !settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
 
-            facingDirection = attackingGoalAngle;
+            if (ballData.strength > GOAL_TRACK_STRENGTH || angleIsInside(360 - ORBIT_BIG_ANGLE, ORBIT_BIG_ANGLE, ballData.angle)) {
+                facingDirection = attackingGoalAngle;
+            } else {
+                facingDirection = 0;
+            }            
         }
     } else {
         facingDirection = 0;
