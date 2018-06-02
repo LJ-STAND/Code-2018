@@ -30,6 +30,7 @@ class Bluetooth {
 public:
     void init();
     void update(BluetoothData data);
+    void disconnect();
 
     BluetoothData otherData = BluetoothData();
     bool isConnected = false;

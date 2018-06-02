@@ -1,6 +1,9 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define ROBOT_ID_EEPROM_ADDRESS 0
+#define WRITE_ROBOT_ID_EEPROM false
+
 // --- Light Sensors --- //
 
 #define LS_NUM 36
@@ -243,19 +246,12 @@
 #define CAMERA_PACKET_SIZE 9
 
 #define FIELD_WIDTH_CENTIMETERS 182
-#define FIELD_LENGTH_CENTIMETERS 183
+#define FIELD_LENGTH_CENTIMETERS 243
+#define GOAL_EDGE_OFFSET_CENTIMETERS 30
 
 #define NO_GOAL_ANGLE 400
 
 // --- Robot Position --- //
-
-#define COORDINATE_X_PID_KP 3
-#define COORDINATE_X_PID_KI 0
-#define COORDINATE_X_PID_KD 0
-
-#define COORDINATE_Y_PID_KP 3
-#define COORDINATE_Y_PID_KI 0
-#define COORDINATE_Y_PID_KD 0
 
 #define NO_BALL_CENTRE_X 0
 #define NO_BALL_CENTRE_Y 0
@@ -267,7 +263,7 @@
 
 // --- Bluetooth --- //
 
-#define BLUETOOTH_ENABLED false
+#define BLUETOOTH_ENABLED true
 
 #define BLUETOOTH_BAUD 115200
 #define BLUETOOTH_START_BYTE 0x80

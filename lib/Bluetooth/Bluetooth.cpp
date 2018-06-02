@@ -59,3 +59,7 @@ void Bluetooth::recieve() {
         otherData = BluetoothData();
     }
 }
+
+void Bluetooth::disconnect() {
+    isConnected = false;
+}
