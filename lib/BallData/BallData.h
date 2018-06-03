@@ -2,8 +2,11 @@
 #define BALL_DATA_H
 
 #include <Config.h>
+#include <Point.h>
+#include <Common.h>
 
-typedef struct BallData {
+class BallData {
+public:
     uint16_t angle;
     uint8_t strength;
 
@@ -21,6 +24,14 @@ typedef struct BallData {
     bool operator !=(const BallData &d) {
         return angle != d.angle || strength != d.strength;
     }
-} BallData;
+
+    Point position(int heading) {
+        Point returnPoint;
+
+        returnPoint.setAngleMagnitude(doubleMod(angle + heading, 360), 180 - strength);
+
+        return returnPoint;
+    }
+};
 
 #endif // BALL_DATA_H

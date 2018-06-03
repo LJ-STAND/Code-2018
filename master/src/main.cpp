@@ -184,15 +184,39 @@ void calculateOrbit() {
     }
 }
 
-void moveToCoordinate(Point point) {
+bool moveToCoordinate(Point point) {
     if (camera.goalsVisible()) {
         Point difference = point - robotPosition;
 
         moveData.angle = mod(difference.getAngle() - imu.getHeading(), 360);
-        moveData.speed = difference.getMagnitude() * 2;
+        moveData.speed = constrain(difference.getMagnitude() * MOVE_TO_COORDINATE_SPEED_MULTIPLIER, 0, MOVE_TO_COORDINATE_MAX_SPEED);
+
+        return difference.getMagnitude() < AT_COORDINATE_THRESHOLD_DISTANCE;
     } else {
         moveData.angle = 0;
         moveData.speed = 0;
+    }
+
+    return false;
+}
+
+void goalTracking() {
+    if (attackingGoalVisible()) {
+        int goalAngle = mod(attackingGoalAngle + 180, 360) - 180;
+
+        if (!ballData.visible()) {
+            facingDirection = 0;
+        } else if (ballData.strength > GOAL_TRACK_SHORT_STRENGTH) {
+            facingDirection = goalAngle;
+        } else if (ballData.strength > GOAL_TRACK_FAR_STRENGTH) {
+            facingDirection = ((double)(ballData.strength - GOAL_TRACK_FAR_STRENGTH) / (double)(GOAL_TRACK_SHORT_STRENGTH - GOAL_TRACK_FAR_STRENGTH)) * (double)attackingGoalAngle;
+        } else {
+            facingDirection = 0;
+        }
+
+        facingDirection = mod(facingDirection, 360);
+    } else {
+        facingDirection = 0;
     }
 }
 
@@ -212,11 +236,7 @@ void updateCamera() {
             attackingGoalAngle = settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
             defendingGoalAngle = !settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
 
-            if (attackingGoalVisible() && (ballData.strength > GOAL_TRACK_STRENGTH || angleIsInside(360 - ORBIT_BIG_ANGLE, ORBIT_BIG_ANGLE, ballData.angle))) {
-                facingDirection = attackingGoalAngle;
-            } else {
-                facingDirection = 0;
-            }            
+            goalTracking();
         }
     } else {
         facingDirection = 0;
@@ -231,7 +251,31 @@ void attack() {
     }
 }
 
-void defend() {}
+void defend() {
+    if (camera.goalsVisible()) {
+        Point goalPosition = Point(0, -(FIELD_LENGTH_CENTIMETERS / 2) + GOAL_EDGE_OFFSET_CENTIMETERS);
+
+        if (ballData.visible()) {
+            Point ballPosition = ballData.position(imu.getHeading()) + robotPosition;
+            Point difference = ballPosition - goalPosition;
+
+            Point defendCoordinate = Point(constrain(DEFEND_GOAL_DISTANCE * difference.x / difference.y, -MAX_DEFEND_X, MAX_DEFEND_X), goalPosition.y + DEFEND_GOAL_DISTANCE);
+
+            moveToCoordinate(defendCoordinate);
+            facingDirection = ballData.angle + imu.getHeading();
+        } else {
+            moveToCoordinate(Point(0, goalPosition.y + DEFEND_GOAL_DISTANCE));
+            facingDirection = 0;
+        }
+    } else {
+        if (ballData.visible()) {
+            calculateOrbit();
+        } else {
+            moveData.speed = 0;
+            moveData.angle = 0;
+        }
+    }
+}
 
 void calculateMovement() {
     if (currentPlayMode() == PlayMode::attackMode) {

@@ -9,6 +9,13 @@ public:
     Point() {}
     Point(double x, double y) : x(x), y(y) {}
 
+    void setAngleMagnitude(double angle, double magnitude) {
+        double polarAngle = doubleMod(90 - angle, 360);
+
+        x = magnitude * cos(degreesToRadians(polarAngle));
+        y = magnitude * sin(degreesToRadians(polarAngle));
+    }
+
     double getAngle() {
         return doubleMod(90 - radiansToDegrees(atan2(y, x)), 360);
     }

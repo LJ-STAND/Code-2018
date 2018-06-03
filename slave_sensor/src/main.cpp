@@ -35,6 +35,7 @@ void loop() {
 
     if (tsopTimer.timeHasPassed()) {
         tsops.finishRead();
+        // Serial.println(tsops.getStrength());
 
         lightSensors.read();
         lightSensors.calculateClusters();
