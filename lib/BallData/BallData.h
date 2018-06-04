@@ -28,7 +28,7 @@ public:
     Point position(int heading) {
         Point returnPoint;
 
-        returnPoint.setAngleMagnitude(doubleMod(angle + heading, 360), 180 - strength);
+        returnPoint.setAngleMagnitude(doubleMod(angle + heading, 360), max(200 - strength, 1));
 
         return returnPoint;
     }

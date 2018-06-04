@@ -256,13 +256,20 @@ void defend() {
         Point goalPosition = Point(0, -(FIELD_LENGTH_CENTIMETERS / 2) + GOAL_EDGE_OFFSET_CENTIMETERS);
 
         if (ballData.visible()) {
-            Point ballPosition = ballData.position(imu.getHeading()) + robotPosition;
-            Point difference = ballPosition - goalPosition;
+            Point relativeBallPosition = ballData.position(imu.getHeading());
 
-            Point defendCoordinate = Point(constrain(DEFEND_GOAL_DISTANCE * difference.x / difference.y, -MAX_DEFEND_X, MAX_DEFEND_X), goalPosition.y + DEFEND_GOAL_DISTANCE);
+            if (relativeBallPosition.y < 0) {
+                moveToCoordinate(Point(MAX_DEFEND_X * sign(relativeBallPosition.x), goalPosition.y + DEFEND_GOAL_DISTANCE));
+                facingDirection = mod(90 * sign(relativeBallPosition.x), 360);
+            } else {
+                Point ballPosition = ballData.position(imu.getHeading()) + robotPosition;
+                Point difference = ballPosition - goalPosition;
 
-            moveToCoordinate(defendCoordinate);
-            facingDirection = ballData.angle + imu.getHeading();
+                Point defendCoordinate = Point(constrain(DEFEND_GOAL_DISTANCE * difference.x / difference.y, -MAX_DEFEND_X, MAX_DEFEND_X), goalPosition.y + DEFEND_GOAL_DISTANCE);
+
+                moveToCoordinate(defendCoordinate);
+                facingDirection = ballData.angle + imu.getHeading();
+            }        
         } else {
             moveToCoordinate(Point(0, goalPosition.y + DEFEND_GOAL_DISTANCE));
             facingDirection = 0;
