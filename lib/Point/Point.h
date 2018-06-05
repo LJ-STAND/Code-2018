@@ -6,7 +6,11 @@
 
 class Point {
 public:
-    Point() {}
+    Point() {
+        x = 0;
+        y = 0;
+    }
+    
     Point(double x, double y) : x(x), y(y) {}
 
     void setAngleMagnitude(double angle, double magnitude) {
@@ -44,8 +48,12 @@ public:
         return Point(x - rhs.x, y - rhs.y);
     }
 
-    double x = 0;
-    double y = 0;
+    bool operator !=(const Point &p) {
+        return x != p.x || y != p.y;
+    }
+
+    double x;
+    double y;
 };
 
 #endif // POINT_H

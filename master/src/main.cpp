@@ -13,6 +13,7 @@
 #include <MoveData.h>
 #include <Camera.h>
 #include <Bluetooth.h>
+#include <BluetoothData.h>
 #include <PlayMode.h>
 #include <Point.h>
 #include <EEPROM.h>
@@ -24,6 +25,7 @@ SlaveMotor slaveMotor;
 SlaveDebug slaveDebug;
 
 Bluetooth bluetooth;
+BluetoothData bluetoothData;
 Timer bluetoothTimer(BLUETOOTH_UPDATE_TIME);
 
 IMUFusion imu;
@@ -46,38 +48,21 @@ Timer slaveDebugUpdateTimer(SLAVE_DEBUG_UPDATE_TIME);
 
 PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
 
-PlayMode playMode = PlayMode::undecidedMode;
+PlayMode playMode;
 
 bool ledOn;
 
+// Robot ID:
+// 0: Default attacker 
+// 1: Default defender - switching master
 uint8_t robotID;
 
-void setup() {
-    #if WRITE_ROBOT_ID_EEPROM
-        EEPROM.write(ROBOT_ID_EEPROM_ADDRESS, 1);
-    #endif
-
-    robotID = EEPROM.read(ROBOT_ID_EEPROM_ADDRESS);
-    
-    Serial.begin(9600);
-
-    bluetooth.init();
-
-    spi.begin_MASTER(MASTER_SCK, MASTER_MOSI, MASTER_MISO, MASTER_CS_MOTOR, CS_ActiveLOW);
-    spi.setCTAR(CTAR_0, 16, SPI_MODE0, LSB_FIRST, SPI_CLOCK_DIV16);
-
-    slaveSensor.init();
-    slaveMotor.init();
-    slaveDebug.init();
-
-    imu.init();
-    camera.init();
-
-	pinMode(LED_BUILTIN, OUTPUT);
-}
-
 PlayMode currentPlayMode() {
-    return playMode == PlayMode::undecidedMode ? (settings.defaultPlayModeIsAttack ? PlayMode::attackMode : PlayMode::defendMode) : playMode;
+    if (settings.gameMode || settings.playModeSwitching) {
+        return playMode;
+    } else {
+        return settings.defaultPlayModeIsAttack ? PlayMode::attackMode : PlayMode::defendMode;
+    }
 }
 
 bool attackingGoalVisible() {
@@ -157,29 +142,23 @@ void calculateLineAvoid() {
 void calculateOrbit() {
     if (angleIsInside(360 - ORBIT_SMALL_ANGLE, ORBIT_SMALL_ANGLE, ballData.angle)) {
         moveData.angle = (int)round(ballData.angle < 180 ? (ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) : (360 - (360 - ballData.angle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER));
-        
-    } else if (angleIsInside(360 - ORBIT_BIG_ANGLE, ORBIT_BIG_ANGLE, ballData.angle)) {       
+    } else if (angleIsInside(360 - ORBIT_BIG_ANGLE, ORBIT_BIG_ANGLE, ballData.angle)) {
         if (ballData.angle < 180) {
             double nearFactor = (double)(ballData.angle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
             moveData.angle = (int)round(90 * nearFactor + ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + ballData.angle * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor);
-            
         } else {
             double nearFactor = (double)(360 - ballData.angle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
             moveData.angle = (int)round(360 - (90 * nearFactor + (360 - ballData.angle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + (360 - ballData.angle) * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor));
-          
         }
     } else {
         if (ballData.strength > ORBIT_SHORT_STRENGTH) {
             moveData.angle = ballData.angle + (ballData.angle < 180 ? 90 : -90);
-           
         } else if (ballData.strength > ORBIT_BIG_STRENGTH) {
             double strengthFactor = (double)(ballData.strength - ORBIT_BIG_STRENGTH) / (double)(ORBIT_SHORT_STRENGTH - ORBIT_BIG_STRENGTH);
             double angleFactor = strengthFactor * 90;
             moveData.angle = ballData.angle + (ballData.angle < 180 ? angleFactor : -angleFactor);
-            
         } else {
             moveData.angle = ballData.angle;
-        
         }
     }
 
@@ -219,7 +198,7 @@ void goalTracking() {
         } else if (ballData.strength > GOAL_TRACK_SHORT_STRENGTH) {
             facingDirection = goalAngle;
         } else if (ballData.strength > GOAL_TRACK_FAR_STRENGTH) {
-            facingDirection = ((double)(ballData.strength - GOAL_TRACK_FAR_STRENGTH) / (double)(GOAL_TRACK_SHORT_STRENGTH - GOAL_TRACK_FAR_STRENGTH)) * (double)attackingGoalAngle;
+            facingDirection = ((double)(ballData.strength - GOAL_TRACK_FAR_STRENGTH) / (double)(GOAL_TRACK_SHORT_STRENGTH - GOAL_TRACK_FAR_STRENGTH)) * (double)goalAngle;
         } else {
             facingDirection = 0;
         }
@@ -240,21 +219,23 @@ void updateCamera() {
 
             angle = mod(angle + imu.getHeading(), 360);
 
-            robotPosition.x = distance * -sin(degreesToRadians(angle));
-            robotPosition.y = FIELD_LENGTH_CENTIMETERS / 2 - mod(distance * cos(degreesToRadians(angle)) + GOAL_EDGE_OFFSET_CENTIMETERS * sign(cos(degreesToRadians(angle))), FIELD_LENGTH_CENTIMETERS);
+            robotPosition.x = constrain(distance * -sin(degreesToRadians(angle)), -(FIELD_WIDTH_CENTIMETERS / 2), FIELD_WIDTH_CENTIMETERS / 2);
+            robotPosition.y = FIELD_LENGTH_CENTIMETERS / 2 - doubleMod(distance * cos(degreesToRadians(angle)) + GOAL_EDGE_OFFSET_CENTIMETERS * sign(cos(degreesToRadians(angle))), FIELD_LENGTH_CENTIMETERS);
 
             attackingGoalAngle = settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
             defendingGoalAngle = !settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
-
-            goalTracking();
         }
-    } else {
-        facingDirection = 0;
     }
 }
 
 void attack() {
-    if (ballData.visible()) {
+    if (bluetooth.otherData.ballIsOut) {
+        moveToCoordinate(Point(BALL_OUT_CENTRE_X, BALL_OUT_CENTRE_Y));
+    } else if (ballData.visible()) {
+        #if CAMERA_ENABLED
+            goalTracking();
+        #endif
+            
         calculateOrbit();
     } else {
         moveToCoordinate(Point(NO_BALL_CENTRE_X, NO_BALL_CENTRE_Y));
@@ -279,7 +260,7 @@ void defend() {
 
                 moveToCoordinate(defendCoordinate);
                 facingDirection = ballData.angle + imu.getHeading();
-            }        
+            }
         } else {
             moveToCoordinate(Point(0, goalPosition.y + DEFEND_GOAL_DISTANCE));
             facingDirection = 0;
@@ -321,7 +302,7 @@ void updateDebug() {
         slaveMotor.updateRightRPM();
         slaveMotor.updateBackLeftRPM();
         slaveMotor.updateBackRightRPM();
-        
+
         slaveDebug.sendLeftRPM(slaveMotor.leftRPM);
         slaveDebug.sendRightRPM(slaveMotor.rightRPM);
         slaveDebug.sendBackLeftRPM(slaveMotor.backLeftRPM);
@@ -334,9 +315,13 @@ void updateDebug() {
 
         slaveDebug.sendGoals(camera.yellowAngle, camera.yellowPixelDistance, camera.blueAngle, camera.bluePixelDistance);
 
-        slaveDebug.sendRobotPosition((int8_t)robotPosition.x, (int8_t)robotPosition.y);
-    }    
-    
+        slaveDebug.sendRobotPosition(robotPosition);
+
+        if (bluetooth.isConnected) {
+            slaveDebug.sendBluetoothData(bluetooth.otherData);
+        }
+    }
+
     if (settings.IMUNeedsResetting) {
         slaveMotor.brake();
         imu.calibrate();
@@ -359,41 +344,29 @@ void updateDebug() {
     slaveDebug.updateDebugSettings();
 }
 
-void updatePlayMode() {
-    if (robotID == 0) {
-        // Robot ID 0 decides on play mode
+bool shouldSwitchPlayMode(BluetoothData attackerData, BluetoothData defenderData) {
+    return angleIsInside(360 - PLAYMODE_SWITCH_DEFENDER_ANGLE, PLAYMODE_SWITCH_DEFENDER_ANGLE, defenderData.ballData.angle) && defenderData.ballData.strength > PLAYMODE_SWITCH_DEFENDER_STRENGTH && attackerData.ballData.strength < PLAYMODE_SWITCH_ATTACKER_STRENGTH && (angleIsInside(360 - PLAYMODE_SWITCH_ATTACKER_ANGLE, PLAYMODE_SWITCH_ATTACKER_ANGLE, attackerData.ballData.angle) || attackerData.ballData.strength < PLAYMODE_SWITCH_ATTACKER_STRENGTH_FAR) && attackerData.isOnField && defenderData.isOnField;
+}
 
-        if (playMode == PlayMode::undecidedMode) {
-            if (bluetooth.otherData.playMode == PlayMode::undecidedMode) {
-                if (bluetooth.otherData.ballAngle == TSOP_NO_BALL && ballData.visible()) {
-                    playMode == PlayMode::attackMode;
-                } else if (bluetooth.otherData.ballAngle != TSOP_NO_BALL && !ballData.visible()) {
-                    playMode == PlayMode::defendMode;
-                } else if (bluetooth.otherData.ballAngle != TSOP_NO_BALL && ballData.visible()) {
-                    if (angleIsInside(90, 270, ballData.angle) && angleIsInside(90, 270, bluetooth.otherData.ballAngle)) {
-                        playMode = ballData.strength > bluetooth.otherData.ballStrength ? PlayMode::attackMode : PlayMode::defendMode;
-                    } else if (angleIsInside(270, 90, ballData.angle) && angleIsInside(90, 270, bluetooth.otherData.ballAngle)) {
-                        playMode = PlayMode::attackMode;
-                    } else if (angleIsInside(90, 270, ballData.angle) && angleIsInside(270, 90, bluetooth.otherData.ballAngle)) {
-                        playMode = PlayMode::defendMode;
-                    } else {
-                        playMode = ballData.strength > bluetooth.otherData.ballStrength ? PlayMode::attackMode : PlayMode::defendMode;
-                    }
-                }
-            } else {
-                playMode = bluetooth.otherData.playMode == PlayMode::attackMode ? PlayMode::defendMode : PlayMode::attackMode;
-            }
-        } else {
-            
+void updatePlayMode() {
+    if (robotID == 1) {
+        // Robot ID 1 (default defender) decides on play mode
+
+        BluetoothData attackerData = playMode == PlayMode::attackMode ? bluetoothData : bluetooth.otherData;
+        BluetoothData defenderData = playMode == PlayMode::defendMode ? bluetoothData : bluetooth.otherData;
+
+        if (shouldSwitchPlayMode(attackerData, defenderData)) {
+            playMode = playMode == PlayMode::attackMode ? PlayMode::defendMode : PlayMode::attackMode;
         }
-    } else if (bluetooth.otherData.playMode != PlayMode::undecidedMode) {
+    } else {
         playMode = bluetooth.otherData.playMode == PlayMode::attackMode ? PlayMode::defendMode : PlayMode::attackMode;
-    }   
+    }
 }
 
 void updateBluetooth() {
     if (settings.gameMode || settings.playModeSwitching) {
-        bluetooth.update(BluetoothData(ballData.angle, ballData.strength, imu.getHeading(), isOutsideLine(ballData.angle), playMode, lineData.onField));
+        bluetoothData = BluetoothData(ballData, imu.getHeading(), isOutsideLine(ballData.angle), playMode, lineData.onField, robotPosition);
+        bluetooth.update(bluetoothData);
 
         if (bluetooth.isConnected) {
             updatePlayMode();
@@ -404,17 +377,44 @@ void updateBluetooth() {
         }
     } else {
         bluetooth.disconnect();
-        playMode = PlayMode::undecidedMode;
     }
+}
+
+void setup() {
+    #if WRITE_ROBOT_ID_EEPROM
+        EEPROM.write(ROBOT_ID_EEPROM_ADDRESS, 1);
+    #endif
+
+    robotID = EEPROM.read(ROBOT_ID_EEPROM_ADDRESS);
+    
+    playMode = robotID == 0 ? PlayMode::attackMode : PlayMode::defendMode;
+
+    Serial.begin(9600);
+
+    bluetooth.init();
+
+    spi.begin_MASTER(MASTER_SCK, MASTER_MOSI, MASTER_MISO, MASTER_CS_MOTOR, CS_ActiveLOW);
+    spi.setCTAR(CTAR_0, 16, SPI_MODE0, LSB_FIRST, SPI_CLOCK_DIV16);
+
+    slaveSensor.init();
+    slaveMotor.init();
+    slaveDebug.init();
+
+    imu.init();
+    camera.init();
+
+    updateDebug();
+
+	pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
     slaveSensor.updateBallData();
     slaveSensor.updateLineAngle();
     slaveSensor.updateLineSize();
-    
+
     ballData = slaveSensor.ballData();
-    
+
     updateLine(slaveSensor.lineAngle, slaveSensor.lineSize);
 
     imu.update();
@@ -423,11 +423,9 @@ void loop() {
         updateCamera();
     #endif
 
-    #if BLUETOOTH_ENABLED
-        if (bluetoothTimer.timeHasPassed()) {
-            updateBluetooth();
-        }
-    #endif
+    if (bluetoothTimer.timeHasPassed()) {
+        updateBluetooth();
+    }
 
     calculateMovement();
 

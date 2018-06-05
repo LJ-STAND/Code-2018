@@ -101,11 +101,14 @@ public:
     RobotPositionView(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
     void draw();
-    void setRobotPositionData(int8_t px, int8_t py);
+    void setRobotPositionData(Point robotPosition);
+    void setOtherRobotPositionData(Point robotPosition);
 
 protected:
-    int8_t positionX, positionY;
-    int8_t oldX, oldY;    
+    Point position;
+    Point oldPosition; 
+    Point otherPosition;
+    Point oldOtherPosition;
 };
 
 class Button : public View {
@@ -138,6 +141,17 @@ public:
 protected:
     char *str;
     uint8_t textSize;
+};
+
+class IndicatorLabel : public Label {
+public:
+    IndicatorLabel() {}
+    IndicatorLabel(uint16_t x, uint16_t y, uint16_t w, uint16_t h, char *str, uint8_t textSize);
+
+    void draw();
+    void setEnabled(bool isEnabled);
+protected:
+    bool enabled = false;
 };
 
 class CircleButton : public Button {

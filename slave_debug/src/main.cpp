@@ -16,7 +16,7 @@ T3SPI spi;
 BallData ballData = BallData(TSOP_NO_BALL, 0);
 LineData lineData = LineData();
 
-int yellowAngle, yellowDistance, blueAngle, blueDistance;
+int yellowAngle, blueAngle;
 DebugController debug = DebugController();
 
 LED leds;
@@ -214,8 +214,7 @@ void spi0_isr() {
         break;
 
     case SlaveCommand::yellowDistanceCommand:
-        yellowDistance = data;
-        screen.yellowDistance = yellowDistance;
+        screen.yellowDistance = data;
 
         break;
 
@@ -226,21 +225,48 @@ void spi0_isr() {
         break;
 
     case SlaveCommand::blueDistanceCommand:
-        blueDistance = data;
-        screen.blueDistance = blueDistance;
+        screen.blueDistance = data;
 
         break;
 
     case SlaveCommand::robotPositionXCommand:
-        screen.robotPositionX = (int8_t)data;
+        screen.robotPosition.x = (int8_t)data;
         break;
 
     case SlaveCommand::robotPositionYCommand:
-        screen.robotPositionY = (int8_t)data;
+        screen.robotPosition.y = (int8_t)data;
         break;
 
     case SlaveCommand::bluetoothConnectedCommand:
         screen.setBluetoothConnected(data);
+        break;
+
+    case SlaveCommand::bluetoothDataBallAngleCommand:
+        screen.otherRobotData.ballData.angle = data;
+        break;
+
+    case SlaveCommand::bluetoothDataBallStrengthCommand:
+        screen.otherRobotData.ballData.strength = data;
+        break;
+
+    case SlaveCommand::bluetoothDataHeadingCommand:
+        screen.otherRobotData.heading = data;
+        break;
+
+    case SlaveCommand::bluetoothDataBallIsOutCommand:
+        screen.otherRobotData.ballIsOut = data;
+        break;
+
+    case SlaveCommand::bluetoothDataIsOnFieldCommand:
+        screen.otherRobotData.isOnField = data;
+        break;
+
+    case SlaveCommand::bluetoothDataRobotPositionXCommand:
+        screen.otherRobotData.robotPosition.x = (int8_t)data;
+        break;
+
+    case SlaveCommand::bluetoothDataRobotPositionYCommand:
+        screen.otherRobotData.robotPosition.y = (int8_t)data;
         break;
     }
 

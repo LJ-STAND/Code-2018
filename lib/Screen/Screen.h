@@ -11,6 +11,8 @@
 #include <Timer.h>
 #include <BallData.h>
 #include <LED.h>
+#include <Point.h>
+#include <BluetoothData.h>
 
 enum ScreenType: uint8_t {
     mainScreenType,
@@ -35,7 +37,8 @@ public:
     void clear();
     void changeScreen(ScreenType newType);
     void redrawScreen();
-
+    
+    void setOtherDebugData(bool otherData);
     void checkTouch();
     void updateBatteryMeter();
     void setBluetoothConnected(bool connected);
@@ -61,7 +64,8 @@ public:
     LineData lineData = LineData();
     int yellowAngle = 0, yellowDistance = 0, blueAngle = 0, blueDistance = 0;
     uint16_t lsFirst = 0, lsSecond = 0, lsThird = 0, lsFourth = 0;
-    int8_t robotPositionX = 0, robotPositionY = 0;
+    Point robotPosition = Point();
+    BluetoothData otherRobotData = BluetoothData();
     
 private:
     TouchScreen ts = TouchScreen(SCREEN_XP, SCREEN_YP, SCREEN_XM, SCREEN_YM, TS_RESISTANCE);
@@ -72,6 +76,8 @@ private:
     bool messageClearable = false;
 
     bool bluetoothConnected = false;
+
+    bool otherDebugData = false;
 
     MovingAverage batteryAverage = MovingAverage(50);
 
@@ -113,6 +119,14 @@ private:
     TextButton cameraDebugButton;
     TextButton ledsDebugButton;
     TextButton terminalDebugButton;
+
+    Switch otherRobotDataSwitch;
+
+    TextButton otherIMUDebugButton;
+    TextButton otherBallDebugButton;
+
+    IndicatorLabel otherBallIsOutLabel;
+    IndicatorLabel otherIsOnFieldLabel;
 
     // IMU Debug Screen
 

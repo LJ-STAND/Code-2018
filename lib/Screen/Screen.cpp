@@ -40,13 +40,21 @@ void Screen::init() {
 
     // Debug Screen
 
-    imuDebugButton = TextButton(120, LINE_Y + 40, 30, "IMU", 1);
-    motorsDebugButton = TextButton(200, LINE_Y + 40, 30, "Motors", 1);
-    ballDebugButton = TextButton(80, LINE_Y + (TFT.height() - LINE_Y) / 2, 30, "Ball", 1);
-    lightSensorsDebugButton = TextButton(160, LINE_Y + (TFT.height() - LINE_Y) / 2, 30, "Light", 1);
-    cameraDebugButton = TextButton(240, LINE_Y + (TFT.height() - LINE_Y) / 2, 30, "Camera", 1);
-    ledsDebugButton = TextButton(120, TFT.height() - 40, 30, "LEDs", 1);
-    terminalDebugButton = TextButton(200, TFT.height() - 40, 30, "Terminal", 1);
+    imuDebugButton = TextButton(80, LINE_Y + 40, 30, "IMU", 1);
+    motorsDebugButton = TextButton(160, LINE_Y + 40, 30, "Motors", 1);
+    ballDebugButton = TextButton(40, LINE_Y + (TFT.height() - LINE_Y) / 2, 30, "Ball", 1);
+    lightSensorsDebugButton = TextButton(120, LINE_Y + (TFT.height() - LINE_Y) / 2, 30, "Light", 1);
+    cameraDebugButton = TextButton(200, LINE_Y + (TFT.height() - LINE_Y) / 2, 30, "Camera", 1);
+    ledsDebugButton = TextButton(80, TFT.height() - 40, 30, "LEDs", 1);
+    terminalDebugButton = TextButton(160, TFT.height() - 40, 30, "Terminal", 1);
+
+    otherRobotDataSwitch = Switch(TFT.width() - SWITCH_WIDTH - 10, LINE_Y + 10, FOREGROUND_COLOR, "T", FOREGROUND_COLOR, "O");
+
+    otherIMUDebugButton = TextButton(60, LINE_Y + 60, 35, "IMU", 1);
+    otherBallDebugButton = TextButton(60, TFT.height() - 60, 35, "Ball", 1);
+
+    otherIsOnFieldLabel = IndicatorLabel(150, LINE_Y + 30 + SWITCH_HEIGHT, 200, 14, "Is on field", 2);
+    otherBallIsOutLabel = IndicatorLabel(150, LINE_Y + 30 + SWITCH_HEIGHT + 30, 200, 14, "Ball is out", 2);
 
     // Settings Screen
 
@@ -157,32 +165,42 @@ void Screen::checkTouch() {
                 break;
 
             case ScreenType::debugScreenType:
-                if (imuDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                    changeScreen(ScreenType::imuDebugScreenType);
-                }
+                if (!otherDebugData) {
+                    if (imuDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                        changeScreen(ScreenType::imuDebugScreenType);
+                    }
 
-                if (motorsDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                    changeScreen(ScreenType::motorsDebugScreenType);
-                }
+                    if (motorsDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                        changeScreen(ScreenType::motorsDebugScreenType);
+                    }
 
-                if (ballDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                    changeScreen(ScreenType::ballDebugScreenType);
-                }
+                    if (ballDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                        changeScreen(ScreenType::ballDebugScreenType);
+                    }
 
-                if (lightSensorsDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                    changeScreen(ScreenType::lightSensorsDebugScreenType);
-                }
+                    if (lightSensorsDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                        changeScreen(ScreenType::lightSensorsDebugScreenType);
+                    }
 
-                if (cameraDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                    changeScreen(ScreenType::cameraDebugScreenType);
-                }
+                    if (cameraDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                        changeScreen(ScreenType::cameraDebugScreenType);
+                    }
 
-                if (ledsDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                    changeScreen(ScreenType::ledDebugScreenType);
-                }
+                    if (ledsDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                        changeScreen(ScreenType::ledDebugScreenType);
+                    }
 
-                if (terminalDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
-                    changeScreen(ScreenType::terminalDebugScreenType);
+                    if (terminalDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                        changeScreen(ScreenType::terminalDebugScreenType);
+                    }
+                } else {
+                    if (otherIMUDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                        changeScreen(ScreenType::imuDebugScreenType);
+                    }
+
+                    if (otherBallDebugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                        changeScreen(ScreenType::ballDebugScreenType);
+                    }
                 }
 
                 break;
@@ -238,6 +256,10 @@ void Screen::checkTouch() {
         if (backButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
             changeScreen(lastScreenType);
         }
+
+        if (screenType == ScreenType::debugScreenType && otherRobotDataSwitch.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+            setOtherDebugData(!otherDebugData);
+        }
     }
 
     lastIsTouching = isTouching;
@@ -257,13 +279,24 @@ void Screen::update() {
             break;
 
         case ScreenType::debugScreenType:
-            imuDebugButton.checkDraw();
-            motorsDebugButton.checkDraw();
-            ballDebugButton.checkDraw();
-            lightSensorsDebugButton.checkDraw();
-            cameraDebugButton.checkDraw();
-            ledsDebugButton.checkDraw();
-            terminalDebugButton.checkDraw();
+            if (otherDebugData) {
+                otherIMUDebugButton.checkDraw();
+                otherBallDebugButton.checkDraw();
+
+                otherIsOnFieldLabel.setEnabled(otherRobotData.isOnField);
+                otherBallIsOutLabel.setEnabled(otherRobotData.ballIsOut);
+
+                otherIsOnFieldLabel.checkDraw();
+                otherBallIsOutLabel.checkDraw();
+            } else {
+                imuDebugButton.checkDraw();
+                motorsDebugButton.checkDraw();
+                ballDebugButton.checkDraw();
+                lightSensorsDebugButton.checkDraw();
+                cameraDebugButton.checkDraw();
+                ledsDebugButton.checkDraw();
+                terminalDebugButton.checkDraw();
+            }
 
             break;
 
@@ -288,7 +321,7 @@ void Screen::update() {
             break;
 
         case ScreenType::imuDebugScreenType:
-            headingDial.setValue(heading);
+            headingDial.setValue(otherDebugData ? otherRobotData.heading : heading);
             headingDial.checkDraw();
             
             break;
@@ -309,7 +342,7 @@ void Screen::update() {
             break;
 
         case ScreenType::ballDebugScreenType:
-            ballView.setBallData(ballData);
+            ballView.setBallData(otherDebugData ? otherRobotData.ballData : ballData);
             ballView.checkDraw();
 
             break;
@@ -327,7 +360,12 @@ void Screen::update() {
             goalView.setGoalData(yellowAngle, yellowDistance, blueAngle, blueDistance);
             goalView.checkDraw();
 
-            robotPositionView.setRobotPositionData(robotPositionX, robotPositionY);
+            robotPositionView.setRobotPositionData(robotPosition);
+
+            if (bluetoothConnected) {
+                robotPositionView.setOtherRobotPositionData(otherRobotData.robotPosition);
+            }
+
             robotPositionView.checkDraw();
 
             break;
@@ -366,6 +404,11 @@ void Screen::update() {
         homeButton.checkDraw();
         backButton.checkDraw();
 
+        if (screenType == ScreenType::debugScreenType) {
+            otherRobotDataSwitch.setEnabled(!otherDebugData);
+            otherRobotDataSwitch.checkDraw();
+        }
+
         checkTouch();
     }
 
@@ -390,13 +433,27 @@ void Screen::redrawScreen() {
         if (settings.gameMode) {
             displayMessage("Game mode - no debug", true);
         } else {
-            imuDebugButton.setNeedsDraw();
-            motorsDebugButton.setNeedsDraw();
-            ballDebugButton.setNeedsDraw();
-            lightSensorsDebugButton.setNeedsDraw();
-            cameraDebugButton.setNeedsDraw();
-            ledsDebugButton.setNeedsDraw();
-            terminalDebugButton.setNeedsDraw();
+            if (otherDebugData) {
+                if (bluetoothConnected) {
+                    otherIMUDebugButton.setNeedsDraw();
+                    otherBallDebugButton.setNeedsDraw();
+
+                    otherIsOnFieldLabel.setNeedsDraw();
+                    otherBallIsOutLabel.setNeedsDraw();
+                } else {
+                    displayMessage("Not connected", true);
+                }
+            } else {
+                imuDebugButton.setNeedsDraw();
+                motorsDebugButton.setNeedsDraw();
+                ballDebugButton.setNeedsDraw();
+                lightSensorsDebugButton.setNeedsDraw();
+                cameraDebugButton.setNeedsDraw();
+                ledsDebugButton.setNeedsDraw();
+                terminalDebugButton.setNeedsDraw();
+            }
+
+            otherRobotDataSwitch.setNeedsDraw();
         }
         
         break;
@@ -505,6 +562,7 @@ void Screen::displayMessage(char *message, bool clearable) {
     TFT.fillRect(TFT.width() / 2 - (width + MESSAGE_BOX_PADDING) / 2, TFT.height() / 2 - (height + MESSAGE_BOX_PADDING) / 2, width + MESSAGE_BOX_PADDING, height + MESSAGE_BOX_PADDING, BACKGROUND_COLOR);
     TFT.drawRect(TFT.width() / 2 - (width + MESSAGE_BOX_PADDING) / 2, TFT.height() / 2 - (height + MESSAGE_BOX_PADDING) / 2, width + MESSAGE_BOX_PADDING, height + MESSAGE_BOX_PADDING, FOREGROUND_COLOR);
 
+    TFT.setTextColor(FOREGROUND_COLOR);
     TFT.print(message);
 }
 
@@ -525,6 +583,17 @@ size_t Screen::write(uint8_t c) {
 void Screen::setBluetoothConnected(bool connected) {
     if (bluetoothConnected != connected) {
         bluetoothConnected = connected;
+
+        if (bluetoothConnected && screenType == ScreenType::debugScreenType) {
+            otherRobotDataSwitch.setNeedsDraw();
+        }
+
+        if (!bluetoothConnected) {
+            setOtherDebugData(false);
+        } else if (otherDebugData && screenType == ScreenType::debugScreenType) {
+            redrawScreen();
+        }
+
         drawBluetoothIcon(connected);
     }
 }
@@ -538,5 +607,15 @@ void Screen::drawBluetoothIcon(bool connected) {
         TFT.drawLine(BLUETOOTH_ICON_X + BLUETOOTH_ICON_WIDTH, BLUETOOTH_ICON_Y + BLUETOOTH_ICON_HEIGHT / 4, BLUETOOTH_ICON_X, BLUETOOTH_ICON_Y + 3 * BLUETOOTH_ICON_HEIGHT / 4, FOREGROUND_COLOR);
     } else {
         TFT.fillRect(BLUETOOTH_ICON_X, BLUETOOTH_ICON_Y, BLUETOOTH_ICON_WIDTH + 2, BLUETOOTH_ICON_HEIGHT + 2, BACKGROUND_COLOR);
+    }
+}
+
+void Screen::setOtherDebugData(bool otherData) {
+    if (otherData != otherDebugData) {
+        otherDebugData = otherData;
+
+        if (screenType == ScreenType::debugScreenType) {
+            redrawScreen();
+        }
     }
 }

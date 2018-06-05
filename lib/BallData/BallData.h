@@ -10,7 +10,11 @@ public:
     uint16_t angle;
     uint8_t strength;
 
-    BallData() {}
+    BallData() {
+        angle = TSOP_NO_BALL;
+        strength = 0;
+    }
+
     BallData(uint16_t angle, uint8_t strength) : angle(angle), strength(strength) {}
 
     bool visible() {

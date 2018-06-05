@@ -164,19 +164,29 @@ void LightSensorView::setLightSensorData(int data) {
 RobotPositionView::RobotPositionView(uint16_t x, uint16_t y, uint16_t w, uint16_t h) : View(x, y, w, h) {}
 
 void RobotPositionView::draw() {
-    TFT.fillCircle(x + w / 2 + (double)(w - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)oldX / (double)FIELD_WIDTH_CENTIMETERS), y + h / 2 - (double)(h - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)oldY / (double)FIELD_LENGTH_CENTIMETERS), ROBOT_POSITION_VIEW_ROBOT_RADIUS, BACKGROUND_COLOR);
-    TFT.fillCircle(x + w / 2 + (double)(w - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)positionX / (double)FIELD_WIDTH_CENTIMETERS), y + h / 2 - (double)(h - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)positionY / (double)FIELD_LENGTH_CENTIMETERS), ROBOT_POSITION_VIEW_ROBOT_RADIUS, FOREGROUND_COLOR);
+    TFT.fillCircle(x + w / 2 + (double)(w - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)oldPosition.x / (double)FIELD_WIDTH_CENTIMETERS), y + h / 2 - (double)(h - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)oldPosition.y / (double)FIELD_LENGTH_CENTIMETERS), ROBOT_POSITION_VIEW_ROBOT_RADIUS, BACKGROUND_COLOR);
+    TFT.fillCircle(x + w / 2 + (double)(w - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)position.x / (double)FIELD_WIDTH_CENTIMETERS), y + h / 2 - (double)(h - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)position.y / (double)FIELD_LENGTH_CENTIMETERS), ROBOT_POSITION_VIEW_ROBOT_RADIUS, FOREGROUND_COLOR);
 
-    oldX = positionX;
-    oldY = positionY;
+    TFT.fillCircle(x + w / 2 + (double)(w - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)oldOtherPosition.x / (double)FIELD_WIDTH_CENTIMETERS), y + h / 2 - (double)(h - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)oldOtherPosition.y / (double)FIELD_LENGTH_CENTIMETERS), ROBOT_POSITION_VIEW_ROBOT_RADIUS, BACKGROUND_COLOR);
+    TFT.fillCircle(x + w / 2 + (double)(w - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)otherPosition.x / (double)FIELD_WIDTH_CENTIMETERS), y + h / 2 - (double)(h - 2 * ROBOT_POSITION_VIEW_ROBOT_RADIUS) * ((double)otherPosition.y / (double)FIELD_LENGTH_CENTIMETERS), ROBOT_POSITION_VIEW_ROBOT_RADIUS, HIGHLIGHT_COLOR);
+
+    oldPosition = position;
+    oldOtherPosition = otherPosition;
 
     TFT.drawRect(x, y, w, h, FOREGROUND_COLOR);
 }
 
-void RobotPositionView::setRobotPositionData(int8_t px, int8_t py) {
-    if (positionX != px || positionY != py) {
-        positionX = px;
-        positionY = py;
+void RobotPositionView::setRobotPositionData(Point robotPosition) {
+    if (position != robotPosition) {
+        position = robotPosition;
+
+        setNeedsDraw();
+    }
+}
+
+void RobotPositionView::setOtherRobotPositionData(Point robotPosition) {
+    if (otherPosition != robotPosition) {
+        otherPosition = robotPosition;
 
         setNeedsDraw();
     }
@@ -219,6 +229,24 @@ void Label::draw() {
 void Label::setText(char *newStr) {
     str = newStr;
     setNeedsDraw();
+}
+
+IndicatorLabel::IndicatorLabel(uint16_t x, uint16_t y, uint16_t w, uint16_t h, char *str, uint8_t textSize) : Label(x, y, w, h, str, textSize) {}
+
+void IndicatorLabel::draw() {
+    TFT.fillRect(x, y, w, h, BACKGROUND_COLOR);
+    TFT.setTextColor(FOREGROUND_COLOR);
+    TFT.setCursor(x + h + 8, y);
+    TFT.setTextSize(textSize);
+    TFT.print(str);
+    TFT.fillCircle(x + h / 2, y + h / 2, h / 2, enabled ? FOREGROUND_COLOR : BACKGROUND_COLOR);
+}
+
+void IndicatorLabel::setEnabled(bool isEnabled) {
+    if (enabled != isEnabled) {
+        enabled = isEnabled;
+        setNeedsDraw();
+    }
 }
 
 CircleButton::CircleButton(uint16_t cx, uint16_t cy, uint16_t r) : Button(cx - r, cy - r, r * 2, r * 2), cx(cx), cy(cy), r(r) {}
@@ -274,6 +302,7 @@ void TextButton::draw() {
     TFT.drawCircle(cx, cy, r, highlighted ? HIGHLIGHT_COLOR : FOREGROUND_COLOR);
     TFT.setCursor(cx - textWidth / 2, cy - textHeight / 2);
     TFT.setTextSize(textSize);
+    TFT.setTextColor(FOREGROUND_COLOR);
     TFT.print(str);
 }
 

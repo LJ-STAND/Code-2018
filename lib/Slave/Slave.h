@@ -8,6 +8,8 @@
 #include <MoveData.h>
 #include <DebugSettings.h>
 #include <LineData.h>
+#include <Point.h>
+#include <BluetoothData.h>
 
 enum SlaveCommand : uint8_t {
     motorAngleCommand,
@@ -39,7 +41,14 @@ enum SlaveCommand : uint8_t {
     blueDistanceCommand,
     robotPositionXCommand,
     robotPositionYCommand,
-    bluetoothConnectedCommand
+    bluetoothConnectedCommand,
+    bluetoothDataBallAngleCommand,
+    bluetoothDataBallStrengthCommand,
+    bluetoothDataHeadingCommand,
+    bluetoothDataBallIsOutCommand,
+    bluetoothDataIsOnFieldCommand,
+    bluetoothDataRobotPositionXCommand,
+    bluetoothDataRobotPositionYCommand
 };
 
 class Slave {
@@ -113,10 +122,11 @@ public:
     void sendBackLeftRPM(uint16_t rpm);
     void sendBackRightRPM(uint16_t rpm);
     void sendGoals(uint16_t yellowAngle, uint16_t yellowDistance, uint16_t blueAngle, uint16_t blueDistance);
-    void sendRobotPosition(int8_t x, int8_t y);
+    void sendRobotPosition(Point robotPosition);
     void sendBluetoothConnected(bool bluetoothConnected);
-    DebugSettings getDebugSettings();
+    void sendBluetoothData(BluetoothData bluetoothData);
 
+    DebugSettings getDebugSettings();
     void updateDebugSettings();
 
     size_t write(uint8_t c);

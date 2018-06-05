@@ -226,9 +226,9 @@ void SlaveDebug::sendGoals(uint16_t yellowAngle, uint16_t yellowDistance, uint16
     transaction(SlaveCommand::blueDistanceCommand, blueDistance);
 }
 
-void SlaveDebug::sendRobotPosition(int8_t x, int8_t y) {
-    transaction(SlaveCommand::robotPositionXCommand, x);
-    transaction(SlaveCommand::robotPositionYCommand, y);
+void SlaveDebug::sendRobotPosition(Point robotPosition) {
+    transaction(SlaveCommand::robotPositionXCommand, (int8_t)robotPosition.x);
+    transaction(SlaveCommand::robotPositionYCommand, (int8_t)robotPosition.y);
 }
 
 size_t SlaveDebug::write(uint8_t c) {
@@ -238,4 +238,14 @@ size_t SlaveDebug::write(uint8_t c) {
 
 void SlaveDebug::sendBluetoothConnected(bool bluetoothConnected) {
     transaction(SlaveCommand::bluetoothConnectedCommand, bluetoothConnected);
+}
+
+void SlaveDebug::sendBluetoothData(BluetoothData bluetoothData) {
+    transaction(SlaveCommand::bluetoothDataBallAngleCommand, bluetoothData.ballData.angle);
+    transaction(SlaveCommand::bluetoothDataBallStrengthCommand, bluetoothData.ballData.strength);
+    transaction(SlaveCommand::bluetoothDataHeadingCommand, bluetoothData.heading);
+    transaction(SlaveCommand::bluetoothDataBallIsOutCommand, bluetoothData.ballIsOut);
+    transaction(SlaveCommand::bluetoothDataIsOnFieldCommand, bluetoothData.isOnField);
+    transaction(SlaveCommand::bluetoothDataRobotPositionXCommand, (int8_t)bluetoothData.robotPosition.x);
+    transaction(SlaveCommand::bluetoothDataRobotPositionYCommand, (int8_t)bluetoothData.robotPosition.y);
 }
