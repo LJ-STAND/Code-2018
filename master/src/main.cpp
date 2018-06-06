@@ -52,6 +52,9 @@ PlayMode playMode;
 
 bool ledOn;
 
+bool movingSideways = false;
+Point sidewaysCoordinate;
+
 // Robot ID:
 // 0: Default attacker 
 // 1: Default defender - switching master
@@ -229,7 +232,13 @@ void updateCamera() {
 }
 
 void attack() {
-    if (bluetooth.otherData.ballIsOut) {
+    if (movingSideways) {
+        if ((ballData.visible() || bluetooth.otherData.ballData.visible()) && !bluetooth.otherData.ballIsOut) {
+            movingSideways = !moveToCoordinate(sidewaysCoordinate);
+        } else {
+            movingSideways = false;
+        }
+    } else if (bluetooth.otherData.ballIsOut) {
         moveToCoordinate(Point(BALL_OUT_CENTRE_X, BALL_OUT_CENTRE_Y));
     } else if (ballData.visible()) {
         #if CAMERA_ENABLED
@@ -239,6 +248,10 @@ void attack() {
         calculateOrbit();
     } else {
         moveToCoordinate(Point(NO_BALL_CENTRE_X, NO_BALL_CENTRE_Y));
+    }
+
+    if (camera.goalsVisible() && bluetooth.isConnected && bluetooth.otherData.robotPosition.y < -(FIELD_LENGTH_CENTIMETERS / 2 - GOAL_EDGE_OFFSET_CENTIMETERS - DEFEND_BOX_WIDTH_CENTIMETERS) && robotPosition.y < -(FIELD_LENGTH_CENTIMETERS / 2 - GOAL_EDGE_OFFSET_CENTIMETERS - DEFEND_BOX_WIDTH_CENTIMETERS)) {
+        moveToCoordinate(Point(robotPosition.x, -(FIELD_LENGTH_CENTIMETERS / 2 - GOAL_EDGE_OFFSET_CENTIMETERS - DEFEND_BOX_WIDTH_CENTIMETERS) + 10));
     }
 }
 
@@ -268,6 +281,7 @@ void defend() {
     } else {
         if (ballData.visible()) {
             calculateOrbit();
+            facingDirection = 0;
         } else {
             moveData.speed = 0;
             moveData.angle = 0;
@@ -349,6 +363,8 @@ bool shouldSwitchPlayMode(BluetoothData attackerData, BluetoothData defenderData
 }
 
 void updatePlayMode() {
+    PlayMode previousPlayMode = playMode;
+
     if (robotID == 1) {
         // Robot ID 1 (default defender) decides on play mode
 
@@ -360,6 +376,13 @@ void updatePlayMode() {
         }
     } else {
         playMode = bluetooth.otherData.playMode == PlayMode::attackMode ? PlayMode::defendMode : PlayMode::attackMode;
+    }
+
+    if (playMode != previousPlayMode && previousPlayMode == PlayMode::attackMode) {
+        movingSideways = true;
+        sidewaysCoordinate = Point(40 * sign(robotPosition.x), robotPosition.y);
+    } else {
+        movingSideways = false;
     }
 }
 
