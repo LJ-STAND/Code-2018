@@ -539,7 +539,8 @@ void Screen::changeScreen(ScreenType newType) {
 void Screen::updateBatteryMeter() {
     batteryAverage.update(analogRead(BATTERY_VOLTAGE));
 
-    double batteryLevel = (double)(fmin(fmax(batteryAverage.average() * BATTERY_VOLTAGE_MULTIPILER, MIN_BATTERY_VOLTAGE), MAX_BATTERY_VOLTAGE) - MIN_BATTERY_VOLTAGE) / (double)(MAX_BATTERY_VOLTAGE - MIN_BATTERY_VOLTAGE);
+    double batteryVoltage = 0.0175 * batteryAverage.average() + 0.2586;
+    double batteryLevel = (double)(fmin(fmax(batteryVoltage, MIN_BATTERY_VOLTAGE), MAX_BATTERY_VOLTAGE) - MIN_BATTERY_VOLTAGE) / (double)(MAX_BATTERY_VOLTAGE - MIN_BATTERY_VOLTAGE);
     uint16_t batteryMeterWidth = (BATTERY_METER_WIDTH - 2 * BATTERY_METER_INSET) * batteryLevel;
 
     TFT.fillRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_INSET, BATTERY_METER_Y + BATTERY_METER_INSET, batteryMeterWidth, BATTERY_METER_HEIGHT - 2 * BATTERY_METER_INSET, batteryLevel < 0.2 ? RED : GREEN);

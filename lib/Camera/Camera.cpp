@@ -69,3 +69,7 @@ bool Camera::newData() {
 
     return returnValue;
 }
+
+bool Camera::yellowClosest() {
+    return shortestDistance() == yellowCentimeterDistance();
+}

@@ -217,13 +217,13 @@ void updateCamera() {
 
     if (camera.goalsVisible()) {
         if (camera.newData()) {
-            int angle = camera.shortestDistance() == camera.yellowCentimeterDistance() ? camera.yellowAngle : camera.blueAngle;
+            int angle = camera.yellowClosest() ? camera.yellowAngle : camera.blueAngle;
             double distance = camera.shortestDistance();
 
             angle = mod(angle + imu.getHeading(), 360);
 
             robotPosition.x = constrain(distance * -sin(degreesToRadians(angle)), -(FIELD_WIDTH_CENTIMETERS / 2), FIELD_WIDTH_CENTIMETERS / 2);
-            robotPosition.y = FIELD_LENGTH_CENTIMETERS / 2 - doubleMod(distance * cos(degreesToRadians(angle)) + GOAL_EDGE_OFFSET_CENTIMETERS * sign(cos(degreesToRadians(angle))), FIELD_LENGTH_CENTIMETERS);
+            robotPosition.y = (FIELD_LENGTH_CENTIMETERS / 2 - GOAL_EDGE_OFFSET_CENTIMETERS) * (settings.goalIsYellow && camera.yellowClosest() || !settings.goalIsYellow && !camera.yellowClosest() ? 1 : -1) + distance * -cos(degreesToRadians(angle));
 
             attackingGoalAngle = settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);
             defendingGoalAngle = !settings.goalIsYellow ? mod(camera.yellowAngle + imu.getHeading(), 360) : mod(camera.blueAngle + imu.getHeading(), 360);

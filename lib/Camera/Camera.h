@@ -14,6 +14,7 @@ public:
     double blueCentimeterDistance();
     double yellowCentimeterDistance();
     double shortestDistance();
+    bool yellowClosest();
 
     bool blueGoalVisible();
     bool yellowGoalVisible();
