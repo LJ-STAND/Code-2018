@@ -99,12 +99,10 @@
 
 // --- Orbit --- //
 
-#define ORBIT_CLOSE_STRENGTH 220
-#define ORBIT_FAR_STRENGTH 0
+#define BALL_CLOSE_STRENGTH 220
+#define BALL_FAR_STRENGTH 0
 
 #define ORBIT_SPEED 50
-
-#define BALL_FRONT_BUFFER 10
 
 // --- Debug --- //
 
@@ -230,7 +228,7 @@
 
 #define CAMERA_BAUD 115200
 
-#define CAMERA_ENABLED false
+#define CAMERA_ENABLED true
 
 #define GOAL_TRACK_SHORT_STRENGTH 140
 #define GOAL_TRACK_FAR_STRENGTH 120

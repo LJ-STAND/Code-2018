@@ -36,6 +36,10 @@ public:
 
         return returnPoint;
     }
+
+    double strengthFactor() {
+        return ((double)strength - (double)BALL_FAR_STRENGTH) / ((double)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH);
+    }
 };
 
 #endif // BALL_DATA_H

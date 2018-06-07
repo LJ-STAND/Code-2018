@@ -144,8 +144,7 @@ void calculateLineAvoid() {
 
 void calculateOrbit() {
     double ballAngleDifference = -sign(ballData.angle - 180) * fmin(90, 0.6 * pow(MATH_E, 0.12 * (double)smallestAngleBetween(ballData.angle, 0)));
-    double strengthFactor = ((double)ballData.strength - (double)ORBIT_FAR_STRENGTH) / ((double)ORBIT_CLOSE_STRENGTH - (double)ORBIT_FAR_STRENGTH);
-    double distanceMultiplier = constrain(0.01 * strengthFactor * pow(MATH_E, 5 * strengthFactor), 0, 1);
+    double distanceMultiplier = constrain(0.01 * ballData.strengthFactor() * pow(MATH_E, 5 * ballData.strengthFactor()), 0, 1);
     moveData.angle = ballData.angle + ballAngleDifference * distanceMultiplier;
     moveData.speed = ORBIT_SPEED;
 }
@@ -168,19 +167,7 @@ bool moveToCoordinate(Point point) {
 
 void goalTracking() {
     if (attackingGoalVisible()) {
-        int goalAngle = mod(attackingGoalAngle + 180, 360) - 180;
-
-        if (!ballData.visible()) {
-            facingDirection = 0;
-        } else if (ballData.strength > GOAL_TRACK_SHORT_STRENGTH) {
-            facingDirection = goalAngle;
-        } else if (ballData.strength > GOAL_TRACK_FAR_STRENGTH) {
-            facingDirection = ((double)(ballData.strength - GOAL_TRACK_FAR_STRENGTH) / (double)(GOAL_TRACK_SHORT_STRENGTH - GOAL_TRACK_FAR_STRENGTH)) * (double)goalAngle;
-        } else {
-            facingDirection = 0;
-        }
-
-        facingDirection = mod(facingDirection, 360);
+        facingDirection = mod((double)(mod(attackingGoalAngle + 180, 360) - 180) * constrain(0.00000000005 * ballData.strengthFactor() * pow(MATH_E, 30 * ballData.strengthFactor()), 0, 1), 360);
     } else {
         facingDirection = 0;
     }
