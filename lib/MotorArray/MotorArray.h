@@ -19,14 +19,6 @@ public:
     void move(int angle, int rotation, int speed);
     void update();
     void brake();
-
-private:
-    double lastLeftSpeed = 0;
-    double lastRightSpeed = 0;
-    double lastBackLeftSpeed = 0;
-    double lastBackRightSpeed = 0;
-
-    unsigned long lastTime = 0;
 };
 
 #endif // MOTOR_ARRAY_H

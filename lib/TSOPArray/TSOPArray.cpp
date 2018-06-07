@@ -69,19 +69,19 @@ void TSOPArray::updateOnce() {
 void TSOPArray::finishRead() {
     // Complete a reading of the TSOPs after a certain amount of individual readings, TSOP values are now stored in the values array until the next complete read
     for (uint8_t i = 0; i < TSOP_NUM; i++) {
-        #if DEBUG_TSOP
-            Serial.print(tempValues[i]);
-            if (i != TSOP_NUM - 1) {
-                Serial.print(", ");
-            } else {
-                Serial.println();
-            }
-        #endif
-
         values[i] = 100 * (double)tempValues[i] / (double)tsopCounter;
         tempValues[i] = 0;
         sortedValues[i] = 0;
         indexes[i] = 0;
+
+         #if DEBUG_TSOP
+            Serial.print(values[i]);
+            if (i != TSOP_NUM - 1) {
+                Serial.print(" ");
+            } else {
+                Serial.println();
+            }
+        #endif
     }
 
     tsopCounter = 0;

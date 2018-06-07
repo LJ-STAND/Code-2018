@@ -143,37 +143,11 @@ void calculateLineAvoid() {
 }
 
 void calculateOrbit() {
-    if (angleIsInside(360 - ORBIT_SMALL_ANGLE, ORBIT_SMALL_ANGLE, ballData.angle)) {
-        moveData.angle = (int)round(ballData.angle < 180 ? (ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) : (360 - (360 - ballData.angle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER));
-    } else if (angleIsInside(360 - ORBIT_BIG_ANGLE, ORBIT_BIG_ANGLE, ballData.angle)) {
-        if (ballData.angle < 180) {
-            double nearFactor = (double)(ballData.angle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
-            moveData.angle = (int)round(90 * nearFactor + ballData.angle * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + ballData.angle * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor);
-        } else {
-            double nearFactor = (double)(360 - ballData.angle - ORBIT_SMALL_ANGLE) / (double)(ORBIT_BIG_ANGLE - ORBIT_SMALL_ANGLE);
-            moveData.angle = (int)round(360 - (90 * nearFactor + (360 - ballData.angle) * ORBIT_BALL_FORWARD_ANGLE_TIGHTENER + (360 - ballData.angle) * (1 - ORBIT_BALL_FORWARD_ANGLE_TIGHTENER) * nearFactor));
-        }
-    } else {
-        if (ballData.strength > ORBIT_SHORT_STRENGTH) {
-            moveData.angle = ballData.angle + (ballData.angle < 180 ? 90 : -90);
-        } else if (ballData.strength > ORBIT_BIG_STRENGTH) {
-            double strengthFactor = (double)(ballData.strength - ORBIT_BIG_STRENGTH) / (double)(ORBIT_SHORT_STRENGTH - ORBIT_BIG_STRENGTH);
-            double angleFactor = strengthFactor * 90;
-            moveData.angle = ballData.angle + (ballData.angle < 180 ? angleFactor : -angleFactor);
-        } else {
-            moveData.angle = ballData.angle;
-        }
-    }
-
-    if (angleIsInside(360 - ORBIT_SMALL_ANGLE, ORBIT_SMALL_ANGLE, ballData.angle)) {
-        moveData.speed = ATTACK_ORBIT_SPEED;
-    } else if (ballData.strength > ORBIT_SHORT_STRENGTH) {
-        moveData.speed = FRONT_ORBIT_SPEED + (double)(CLOSE_ORBIT_SPEED - FRONT_ORBIT_SPEED) * (double)abs(mod(attackingGoalAngle + 180, 360) - 180) / 180.0;
-    } else if (ballData.strength > ORBIT_BIG_STRENGTH) {
-        moveData.speed = CLOSE_ORBIT_SPEED + (double)(FAR_ORBIT_SPEED - CLOSE_ORBIT_SPEED) * (1.0 - (double)(ballData.strength - ORBIT_BIG_STRENGTH) / (double)(ORBIT_SHORT_STRENGTH - ORBIT_BIG_STRENGTH));
-    } else {
-        moveData.speed = FAR_ORBIT_SPEED;
-    }
+    double ballAngleDifference = -sign(ballData.angle - 180) * fmin(90, 0.6 * pow(MATH_E, 0.12 * (double)smallestAngleBetween(ballData.angle, 0)));
+    double strengthFactor = ((double)ballData.strength - (double)ORBIT_FAR_STRENGTH) / ((double)ORBIT_CLOSE_STRENGTH - (double)ORBIT_FAR_STRENGTH);
+    double distanceMultiplier = constrain(0.01 * strengthFactor * pow(MATH_E, 5 * strengthFactor), 0, 1);
+    moveData.angle = ballData.angle + ballAngleDifference * distanceMultiplier;
+    moveData.speed = ORBIT_SPEED;
 }
 
 bool moveToCoordinate(Point point) {
