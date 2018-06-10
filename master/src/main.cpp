@@ -48,7 +48,8 @@ Timer slaveDebugUpdateTimer(SLAVE_DEBUG_UPDATE_TIME);
 
 PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
 
-PlayMode playMode;
+PlayMode playMode = PlayMode::undecidedMode;
+PlayMode defaultPlayMode;
 
 bool ledOn;
 
@@ -61,8 +62,10 @@ Point sidewaysCoordinate;
 uint8_t robotID;
 
 PlayMode currentPlayMode() {
-    if (settings.gameMode || settings.playModeSwitching) {
-        return playMode;
+    if (bluetooth.isConnected) {
+        return playMode == PlayMode::undecidedMode ? defaultPlayMode : playMode;
+    } else if (bluetooth.previouslyConnected) {
+        return PlayMode::defendMode;
     } else {
         return settings.defaultPlayModeIsAttack ? PlayMode::attackMode : PlayMode::defendMode;
     }
@@ -326,7 +329,13 @@ bool shouldSwitchPlayMode(BluetoothData attackerData, BluetoothData defenderData
 void updatePlayMode() {
     PlayMode previousPlayMode = playMode;
 
-    if (robotID == 1) {
+    if (playMode == PlayMode::undecidedMode) {
+        if (bluetooth.otherData.playMode == PlayMode::undecidedMode) {
+            playMode = defaultPlayMode;
+        } else {
+            playMode = bluetooth.otherData.playMode == PlayMode::attackMode ? PlayMode::defendMode : PlayMode::attackMode;
+        }     
+    } else if (robotID == 1) {
         // Robot ID 1 (default defender) decides on play mode
 
         BluetoothData attackerData = playMode == PlayMode::attackMode ? bluetoothData : bluetooth.otherData;
@@ -354,10 +363,8 @@ void updateBluetooth() {
 
         if (bluetooth.isConnected) {
             updatePlayMode();
-        } else {
-            if (bluetooth.previouslyConnected) {
-                playMode = PlayMode::defendMode;
-            }
+        } else if (bluetooth.previouslyConnected) {
+            playMode = PlayMode::defendMode;
         }
     } else {
         bluetooth.disconnect();
@@ -371,7 +378,7 @@ void setup() {
 
     robotID = EEPROM.read(ROBOT_ID_EEPROM_ADDRESS);
     
-    playMode = robotID == 0 ? PlayMode::attackMode : PlayMode::defendMode;
+    defaultPlayMode = robotID == 0 ? PlayMode::attackMode : PlayMode::defendMode;
 
     Serial.begin(9600);
 
@@ -398,6 +405,8 @@ void loop() {
     slaveSensor.updateLineSize();
 
     ballData = slaveSensor.ballData();
+
+    Serial.println(playMode);
 
     updateLine(slaveSensor.lineAngle, slaveSensor.lineSize);
 

@@ -3,7 +3,8 @@
 
 enum PlayMode: uint8_t {
     attackMode,
-    defendMode
+    defendMode,
+    undecidedMode
 };
 
 #endif // PLAY_MODE_H

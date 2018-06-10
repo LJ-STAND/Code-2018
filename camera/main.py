@@ -11,7 +11,7 @@ CENTRE_Y_1 = 77
 
 MAX_VALID_RADIUS_1 = 88
 
-YELLOW_THRESHOLD = (83, 100, -21, 10, 50, 78)
+YELLOW_THRESHOLD = (70, 92, -21, 10, 45, 78)
 BLUE_THRESHOLD = (60, 70, -30, -5, -25, 5)
 
 # --- Robot 2 --- #
@@ -49,11 +49,11 @@ sensor.skip_frames(time=100)
 
 #print(sensor.get_rgb_gain_db())
 sensor.set_auto_whitebal(False, rgb_gain_db=(-6.02073, -5.494869, -0.634088))
-sensor.set_auto_exposure(False, exposure_us=7000)
+sensor.set_auto_exposure(False, exposure_us=6000)
 sensor.set_auto_gain(False, gain_db=18.8)
 sensor.skip_frames(time=500)
 
-sensor.set_brightness(0)
+sensor.set_brightness(1)
 sensor.set_contrast(3)
 sensor.set_saturation(3)
 sensor.skip_frames(time=500)
