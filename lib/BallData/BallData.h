@@ -38,7 +38,7 @@ public:
     }
 
     double strengthFactor() {
-        return ((double)strength - (double)BALL_FAR_STRENGTH) / ((double)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH);
+        return (double)(strength - ALL_FAR_STRENGTH) / (double)(BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH);
     }
 };
 
