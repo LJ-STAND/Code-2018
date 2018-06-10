@@ -401,10 +401,13 @@ void setup() {
 
 void loop() {
     slaveSensor.updateBallData();
+
+    ballData = slaveSensor.ballData();
+
     slaveSensor.updateLineAngle();
     slaveSensor.updateLineSize();
 
-    ballData = slaveSensor.ballData();
+    updateLine(slaveSensor.lineAngle, slaveSensor.lineSize);
 
     imu.update();
 
@@ -415,8 +418,6 @@ void loop() {
     if (bluetoothTimer.timeHasPassed()) {
         updateBluetooth();
     }
-
-    updateLine(slaveSensor.lineAngle, slaveSensor.lineSize);
 
     calculateMovement();
 
