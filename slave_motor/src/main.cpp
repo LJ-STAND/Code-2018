@@ -18,8 +18,6 @@ Timer ledTimer = Timer(LED_BLINK_TIME_SLAVE_MOTOR);
 
 bool ledOn;
 
-int rpm = 0;
-
 void setup() {
     motors.init();
 

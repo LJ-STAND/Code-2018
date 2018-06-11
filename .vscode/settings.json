@@ -44,6 +44,9 @@
         "atomic": "cpp",
         "system_error": "cpp",
         "ostream": "cpp",
-        "hashtable": "cpp"
+        "hashtable": "cpp",
+        "__string": "cpp",
+        "future": "cpp",
+        "type_traits": "cpp"
     }
 }

@@ -11,14 +11,14 @@ CENTRE_Y_1 = 77
 
 MAX_VALID_RADIUS_1 = 88
 
-YELLOW_THRESHOLD = (70, 92, -21, 10, 45, 78)
-BLUE_THRESHOLD = (60, 70, -30, -5, -25, 5)
+YELLOW_THRESHOLD = (50, 100, -26, 25, 42, 127)
+BLUE_THRESHOLD = (38, 50, -33, -8, -33, 9)
 
 # --- Robot 2 --- #
 
 ROI2 = (77, 0, 180, 159)
 
-CENTRE_X_2 = 92
+CENTRE_X_2 = 91
 CENTRE_Y_2 = 66
 
 MAX_VALID_RADIUS_2 = 87
@@ -36,7 +36,7 @@ MAX_VALID_RADIUS = MAX_VALID_RADIUS_1
 
 DRAW_CROSSES = False
 DRAW_RECTANGLES = False
-DRAW_CIRCLES = False
+DRAW_CIRCLES = True
 
 NO_GOAL_ANGLE = 400
 
@@ -50,10 +50,10 @@ sensor.skip_frames(time=100)
 #print(sensor.get_rgb_gain_db())
 sensor.set_auto_whitebal(False, rgb_gain_db=(-6.02073, -5.494869, -0.634088))
 sensor.set_auto_exposure(False, exposure_us=6000)
-sensor.set_auto_gain(False, gain_db=18.8)
+sensor.set_auto_gain(False, gain_db=18.7)
 sensor.skip_frames(time=500)
 
-sensor.set_brightness(1)
+sensor.set_brightness(2)
 sensor.set_contrast(3)
 sensor.set_saturation(3)
 sensor.skip_frames(time=500)

@@ -32,13 +32,13 @@ public:
     Point position(int heading) {
         Point returnPoint;
 
-        returnPoint.setAngleMagnitude(doubleMod(angle + heading, 360), max(200 - strength, 1));
+        returnPoint.setAngleMagnitude(doubleMod(angle + heading, 360), max(-0.9801 * (double)strength + 229.42, 1));
 
         return returnPoint;
     }
 
     double strengthFactor() {
-        return ((double)strength - (double)BALL_FAR_STRENGTH) / ((double)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH);
+        return constrain(((double)strength - (double)BALL_FAR_STRENGTH) / ((double)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1);
     }
 };
 

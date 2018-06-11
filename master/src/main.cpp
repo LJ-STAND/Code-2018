@@ -157,7 +157,8 @@ bool moveToCoordinate(Point point) {
         Point difference = point - robotPosition;
 
         moveData.angle = mod(difference.getAngle() - imu.getHeading(), 360);
-        moveData.speed = constrain(difference.getMagnitude() * MOVE_TO_COORDINATE_SPEED_MULTIPLIER, 0, MOVE_TO_COORDINATE_MAX_SPEED);
+        moveData.speed = constrain(difference.getMagnitude() * 
+        MOVE_TO_COORDINATE_SPEED_MULTIPLIER, 0, MOVE_TO_COORDINATE_MAX_SPEED);
 
         return difference.getMagnitude() < AT_COORDINATE_THRESHOLD_DISTANCE;
     } else {
@@ -227,8 +228,12 @@ void defend() {
             Point relativeBallPosition = ballData.position(imu.getHeading());
 
             if (relativeBallPosition.y < 0) {
-                moveToCoordinate(Point(MAX_DEFEND_X * sign(relativeBallPosition.x), goalPosition.y + DEFEND_GOAL_DISTANCE));
-                facingDirection = mod(90 * sign(relativeBallPosition.x), 360);
+                if (robotPosition.y < goalPosition.y + DEFEND_GOAL_DISTANCE_ORBIT) {
+                    moveToCoordinate(Point(MAX_DEFEND_X * sign(relativeBallPosition.x), goalPosition.y + DEFEND_GOAL_DISTANCE_CLOSE));
+                    facingDirection = mod(90 * sign(relativeBallPosition.x), 360);
+                } else {
+                    calculateOrbit();
+                }
             } else {
                 Point ballPosition = ballData.position(imu.getHeading()) + robotPosition;
                 Point difference = ballPosition - goalPosition;
@@ -236,7 +241,8 @@ void defend() {
                 Point defendCoordinate = Point(constrain(DEFEND_GOAL_DISTANCE * difference.x / difference.y, -MAX_DEFEND_X, MAX_DEFEND_X), goalPosition.y + DEFEND_GOAL_DISTANCE);
 
                 moveToCoordinate(defendCoordinate);
-                facingDirection = ballData.angle + imu.getHeading();
+                
+                facingDirection = mod(ballData.angle + imu.getHeading(), 360);
             }
         } else {
             moveToCoordinate(Point(0, goalPosition.y + DEFEND_GOAL_DISTANCE));
@@ -405,9 +411,7 @@ void loop() {
     slaveSensor.updateLineSize();
 
     ballData = slaveSensor.ballData();
-
-    Serial.println(playMode);
-
+ 
     updateLine(slaveSensor.lineAngle, slaveSensor.lineSize);
 
     imu.update();
