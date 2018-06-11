@@ -147,10 +147,11 @@ void calculateLineAvoid() {
 }
 
 void calculateOrbit() {
-    double ballAngleDifference = -sign(ballData.angle - 180) * fmin(90, 0.6 * pow(MATH_E, 0.12 * (double)smallestAngleBetween(ballData.angle, 0)));
+    double ballAngleDifference = -sign(ballData.angle - 180) * fmin(90, 0.009 * pow(MATH_E, 0.15 * (double)smallestAngleBetween(ballData.angle, 0)));
     double distanceMultiplier = constrain(0.01 * ballData.strengthFactor() * pow(MATH_E, 5 * ballData.strengthFactor()), 0, 1);
-    moveData.angle = ballData.angle + ballAngleDifference * distanceMultiplier;
-    moveData.speed = ORBIT_SPEED;
+    double angleAddition = ballAngleDifference * distanceMultiplier;
+    moveData.angle = ballData.angle + angleAddition;
+    moveData.speed = ORBIT_SPEED_SLOW + (double)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (double)abs(angleAddition) / 90.0);
 }
 
 bool moveByDifference(Point difference) {

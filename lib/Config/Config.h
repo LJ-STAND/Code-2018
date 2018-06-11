@@ -25,8 +25,8 @@
 #define LINE_SMALL_SIZE 0.2
 #define LINE_BIG_SIZE 0.5
 
-#define LINE_SPEED 20
-#define OVER_LINE_SPEED 40
+#define LINE_SPEED 10
+#define OVER_LINE_SPEED 30
 
 #define AVOID_LINE true
 
@@ -95,10 +95,11 @@
 
 // --- Orbit --- //
 
-#define BALL_CLOSE_STRENGTH 220
+#define BALL_CLOSE_STRENGTH 225
 #define BALL_FAR_STRENGTH 0
 
-#define ORBIT_SPEED 50
+#define ORBIT_SPEED_FAST 67
+#define ORBIT_SPEED_SLOW 45
 
 // --- Debug --- //
 
@@ -224,7 +225,7 @@
 
 #define CAMERA_BAUD 115200
 
-#define CAMERA_ENABLED true
+#define CAMERA_ENABLED false
 
 #define GOAL_TRACK_SHORT_STRENGTH 140
 #define GOAL_TRACK_FAR_STRENGTH 120

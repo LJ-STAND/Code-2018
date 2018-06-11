@@ -10,11 +10,14 @@
 #include <Slave.h>
 #include <Timer.h>
 #include <DebugController.h>
+#include <PlayMode.h>
 
 T3SPI spi;
 
 BallData ballData = BallData(TSOP_NO_BALL, 0);
 LineData lineData = LineData();
+
+PlayMode playMode;
 
 int yellowAngle, blueAngle;
 DebugController debug = DebugController();
@@ -75,7 +78,7 @@ void loop() {
                 break;
 
             case RGBType::goalRGBType:
-                if (screen.settings.goalIsYellow) {
+                if ((screen.settings.goalIsYellow && playMode == PlayMode::attackMode) || (!screen.settings.goalIsYellow && playMode == PlayMode::defendMode)) {
                     if (yellowAngle != NO_GOAL_ANGLE) {
                         leds.displayAngle(yellowAngle, 60);
                     } else {
@@ -135,6 +138,7 @@ void spi0_isr() {
         break;
 
     case SlaveCommand::playModeCommand:
+        playMode = data ? PlayMode::attackMode : PlayMode::defendMode;
         leds.displayPlayMode(data);
         break;
 
