@@ -57,7 +57,7 @@ bool movingSideways = false;
 Point sidewaysCoordinate;
 
 // Robot ID:
-// 0: Default attacker 
+// 0: Default attacker
 // 1: Default defender - switching master
 uint8_t robotID;
 
@@ -209,7 +209,7 @@ void attack() {
         #if CAMERA_ENABLED
             goalTracking();
         #endif
-            
+
         calculateOrbit();
     } else {
         moveToCoordinate(Point(NO_BALL_CENTRE_X, NO_BALL_CENTRE_Y));
@@ -340,7 +340,7 @@ void updatePlayMode() {
             playMode = defaultPlayMode;
         } else {
             playMode = bluetooth.otherData.playMode == PlayMode::attackMode ? PlayMode::defendMode : PlayMode::attackMode;
-        }     
+        }
     } else if (robotID == 1) {
         // Robot ID 1 (default defender) decides on play mode
 
@@ -383,7 +383,7 @@ void setup() {
     #endif
 
     robotID = EEPROM.read(ROBOT_ID_EEPROM_ADDRESS);
-    
+
     defaultPlayMode = robotID == 0 ? PlayMode::attackMode : PlayMode::defendMode;
 
     Serial.begin(9600);
@@ -407,11 +407,12 @@ void setup() {
 
 void loop() {
     slaveSensor.updateBallData();
+
+    ballData = slaveSensor.ballData();
+
     slaveSensor.updateLineAngle();
     slaveSensor.updateLineSize();
 
-    ballData = slaveSensor.ballData();
- 
     updateLine(slaveSensor.lineAngle, slaveSensor.lineSize);
 
     imu.update();
