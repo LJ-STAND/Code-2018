@@ -29,7 +29,7 @@ public:
         return angle != d.angle || strength != d.strength;
     }
 
-    Point position(int heading) {
+    Point position(int heading = 0) {
         Point returnPoint;
 
         returnPoint.setAngleMagnitude(doubleMod(angle + heading, 360), max(-0.9801 * (double)strength + 229.42, 1));

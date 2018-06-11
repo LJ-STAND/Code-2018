@@ -47,6 +47,7 @@ Timer ledTimer(LED_BLINK_TIME_MASTER);
 Timer slaveDebugUpdateTimer(SLAVE_DEBUG_UPDATE_TIME);
 
 PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
+PID coordinatePID(MOVE_TO_COORDINATE_KP, MOVE_TO_COORDINATE_KI, MOVE_TO_COORDINATE_KD, MOVE_TO_COORDINATE_MAX_SPEED);
 
 PlayMode playMode = PlayMode::undecidedMode;
 PlayMode defaultPlayMode;
@@ -152,15 +153,23 @@ void calculateOrbit() {
     moveData.speed = ORBIT_SPEED;
 }
 
+bool moveByDifference(Point difference) {
+    if (difference.getMagnitude() < AT_COORDINATE_THRESHOLD_DISTANCE) {
+        moveData.angle = 0;
+        moveData.speed = 0;
+
+        return true;
+    } else {
+        moveData.angle = mod(difference.getAngle() - imu.getHeading(), 360);
+        moveData.speed = abs(coordinatePID.update(difference.getMagnitude(), 0));
+    }
+
+    return false;
+}
+
 bool moveToCoordinate(Point point) {
     if (camera.goalsVisible()) {
-        Point difference = point - robotPosition;
-
-        moveData.angle = mod(difference.getAngle() - imu.getHeading(), 360);
-        moveData.speed = constrain(difference.getMagnitude() * 
-        MOVE_TO_COORDINATE_SPEED_MULTIPLIER, 0, MOVE_TO_COORDINATE_MAX_SPEED);
-
-        return difference.getMagnitude() < AT_COORDINATE_THRESHOLD_DISTANCE;
+        return moveByDifference(point - robotPosition);
     } else {
         moveData.angle = 0;
         moveData.speed = 0;
@@ -235,14 +244,9 @@ void defend() {
                     calculateOrbit();
                 }
             } else {
-                Point ballPosition = ballData.position(imu.getHeading()) + robotPosition;
-                Point difference = ballPosition - goalPosition;
-
-                Point defendCoordinate = Point(constrain(DEFEND_GOAL_DISTANCE * difference.x / difference.y, -MAX_DEFEND_X, MAX_DEFEND_X), goalPosition.y + DEFEND_GOAL_DISTANCE);
-
-                moveToCoordinate(defendCoordinate);
+                moveByDifference(Point(smallestAngleBetween(ballData.angle, 0) * -sign(ballData.angle - 180) * DEFEND_BALL_ANGLE_MULTIPLIER, goalPosition.y + DEFEND_GOAL_DISTANCE - robotPosition.y));
                 
-                facingDirection = mod(ballData.angle + imu.getHeading(), 360);
+                facingDirection = mod(defendingGoalAngle + 180, 360);
             }
         } else {
             moveToCoordinate(Point(0, goalPosition.y + DEFEND_GOAL_DISTANCE));
