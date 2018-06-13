@@ -143,11 +143,15 @@ void calculateLineAvoid() {
         if (lineData.size > LINE_BIG_SIZE) {
             moveData.angle = mod(lineData.angle + 180 - imu.getHeading(), 360);
             moveData.speed = lineData.size == 3 ? OVER_LINE_SPEED : min(lineData.size / 2.0 * LINE_SPEED * 5, LINE_SPEED);
-        } else if (lineData.size > LINE_SMALL_SIZE) {
-            if (isOutsideLine(moveData.angle)) {
+        } else if (lineData.size > LINE_SMALL_SIZE) && isOutsideLine(moveData.angle)) {
+            // Sliding along line
+            // if (smallestAngleBetween(lineData.angle, moveData.angle) < LINE_SLIDE_ANGLE_BUFFER) {
+            //     // moveData.angle = ;
+            //     // moveData.speed = LINE_SLIDE_SPEED;
+            // } else {
                 moveData.angle = 0;
                 moveData.speed = 0;
-            }
+            // }          
         }
     }
 }
@@ -349,7 +353,12 @@ void updateDebug() {
 }
 
 bool shouldSwitchPlayMode(BluetoothData attackerData, BluetoothData defenderData) {
-    return angleIsInside(360 - PLAYMODE_SWITCH_DEFENDER_ANGLE, PLAYMODE_SWITCH_DEFENDER_ANGLE, defenderData.ballData.angle) && defenderData.ballData.strength > PLAYMODE_SWITCH_DEFENDER_STRENGTH && attackerData.ballData.strength < PLAYMODE_SWITCH_ATTACKER_STRENGTH && (angleIsInside(360 - PLAYMODE_SWITCH_ATTACKER_ANGLE, PLAYMODE_SWITCH_ATTACKER_ANGLE, attackerData.ballData.angle) || attackerData.ballData.strength < PLAYMODE_SWITCH_ATTACKER_STRENGTH_FAR) && attackerData.isOnField && defenderData.isOnField;
+    return angleIsInside(360 - PLAYMODE_SWITCH_DEFENDER_ANGLE, PLAYMODE_SWITCH_DEFENDER_ANGLE, defenderData.ballData.angle) 
+    && defenderData.ballData.strength > PLAYMODE_SWITCH_DEFENDER_STRENGTH 
+    && attackerData.ballData.strength < PLAYMODE_SWITCH_ATTACKER_STRENGTH 
+    && (angleIsInside(360 - PLAYMODE_SWITCH_ATTACKER_ANGLE, PLAYMODE_SWITCH_ATTACKER_ANGLE, attackerData.ballData.angle) || attackerData.ballData.strength < PLAYMODE_SWITCH_ATTACKER_STRENGTH_FAR) 
+    && attackerData.isOnField 
+    && defenderData.isOnField;
 }
 
 void updatePlayMode() {
@@ -399,7 +408,7 @@ void updateBluetooth() {
 
 void setup() {
     #if WRITE_ROBOT_ID_EEPROM
-        EEPROM.write(ROBOT_ID_EEPROM_ADDRESS, 1);
+        EEPROM.write(ROBOT_ID_EEPROM_ADDRESS, ROBOT_ID_WRITE);
     #endif
 
     robotID = EEPROM.read(ROBOT_ID_EEPROM_ADDRESS);
