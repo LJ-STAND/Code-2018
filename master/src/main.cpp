@@ -43,11 +43,17 @@ int facingDirection = 0;
 int attackingGoalAngle = 0;
 int defendingGoalAngle = 0;
 
+bool facingGoal = false;
+bool attackingGoal = false;
+
 Timer ledTimer(LED_BLINK_TIME_MASTER);
 Timer slaveDebugUpdateTimer(SLAVE_DEBUG_UPDATE_TIME);
 
 PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
+PID goalHeadingPID(GOAL_HEADING_KP, GOAL_HEADING_KI, GOAL_HEADING_KD, GOAL_HEADING_MAX_CORRECTION);
+PID goalHeadingAttackPID(GOAL_HEADING_ATTACK_KP, GOAL_HEADING_ATTACK_KI, GOAL_HEADING_ATTACK_KD, GOAL_HEADING_ATTACK_MAX_CORRECTION);
 PID coordinatePID(MOVE_TO_COORDINATE_KP, MOVE_TO_COORDINATE_KI, MOVE_TO_COORDINATE_KD, MOVE_TO_COORDINATE_MAX_SPEED);
+PID defendPID(DEFEND_BALL_ANGLE_KP, DEFEND_BALL_ANGLE_KI, DEFEND_BALL_ANGLE_KD, MAX_DEFEND_MOVEMENT_X);
 
 PlayMode playMode = PlayMode::undecidedMode;
 PlayMode defaultPlayMode;
@@ -147,8 +153,8 @@ void calculateLineAvoid() {
 }
 
 void calculateOrbit() {
-    double ballAngleDifference = -sign(ballData.angle - 180) * fmin(90, 0.009 * pow(MATH_E, 0.15 * (double)smallestAngleBetween(ballData.angle, 0)));
-    double distanceMultiplier = constrain(0.01 * ballData.strengthFactor() * pow(MATH_E, 5 * ballData.strengthFactor()), 0, 1);
+    double ballAngleDifference = -sign(ballData.angle - 180) * fmin(90, 0.1 * pow(MATH_E, 0.15 * (double)smallestAngleBetween(ballData.angle, 0)));
+    double distanceMultiplier = constrain(0.02 * ballData.strengthFactor() * pow(MATH_E, 4.5 * ballData.strengthFactor()), 0, 1);
     double angleAddition = ballAngleDifference * distanceMultiplier;
     moveData.angle = ballData.angle + angleAddition;
     moveData.speed = ORBIT_SPEED_SLOW + (double)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (double)abs(angleAddition) / 90.0);
@@ -180,10 +186,13 @@ bool moveToCoordinate(Point point) {
 }
 
 void goalTracking() {
-    if (attackingGoalVisible()) {
-        facingDirection = mod((double)(mod(attackingGoalAngle + 180, 360) - 180) * constrain(0.00000000005 * ballData.strengthFactor() * pow(MATH_E, 30 * ballData.strengthFactor()), 0, 1), 360);
+    if (attackingGoalVisible() && GOAL_TRACKING) {
+        facingDirection = mod((double)(mod(attackingGoalAngle + 180, 360) - 180) * constrain(0.00000005 * ballData.strengthFactor() * pow(MATH_E, 20 * ballData.strengthFactor()), 0, 1), 360);
+        attackingGoal = true;
+        facingGoal = true;
     } else {
-        facingDirection = 0;
+        attackingGoal = false;
+        facingGoal = false;
     }
 }
 
@@ -213,16 +222,18 @@ void attack() {
         } else {
             movingSideways = false;
         }
+
+        facingGoal = false;
     } else if (bluetooth.otherData.ballIsOut) {
         moveToCoordinate(Point(BALL_OUT_CENTRE_X, BALL_OUT_CENTRE_Y));
+        facingGoal = false;
     } else if (ballData.visible()) {
-        #if CAMERA_ENABLED
-            goalTracking();
-        #endif
+        goalTracking();
 
         calculateOrbit();
     } else {
         moveToCoordinate(Point(NO_BALL_CENTRE_X, NO_BALL_CENTRE_Y));
+        facingGoal = false;
     }
 
     if (camera.goalsVisible() && bluetooth.isConnected && bluetooth.otherData.robotPosition.y < -(FIELD_LENGTH_CENTIMETERS / 2 - GOAL_EDGE_OFFSET_CENTIMETERS - DEFEND_BOX_WIDTH_CENTIMETERS) && robotPosition.y < -(FIELD_LENGTH_CENTIMETERS / 2 - GOAL_EDGE_OFFSET_CENTIMETERS - DEFEND_BOX_WIDTH_CENTIMETERS)) {
@@ -237,31 +248,27 @@ void defend() {
         if (ballData.visible()) {
             Point relativeBallPosition = ballData.position(imu.getHeading());
 
-            if (relativeBallPosition.y < 0) {
-                if (robotPosition.y < goalPosition.y + DEFEND_GOAL_DISTANCE_ORBIT) {
-                    moveToCoordinate(Point(MAX_DEFEND_X * sign(relativeBallPosition.x), goalPosition.y + DEFEND_GOAL_DISTANCE_CLOSE));
-                    facingDirection = mod(90 * sign(relativeBallPosition.x), 360);
-                } else {
-                    calculateOrbit();
-                }
-            } else {
-                moveByDifference(Point(smallestAngleBetween(ballData.angle, 0) * -sign(ballData.angle - 180) * DEFEND_BALL_ANGLE_MULTIPLIER, goalPosition.y + DEFEND_GOAL_DISTANCE - robotPosition.y));
-                
-                facingDirection = mod(defendingGoalAngle + 180, 360);
-            }
+            double xDifference = defendPID.update(smallestAngleBetween(ballData.angle, 0) * -sign(ballData.angle - 180), 0);
+
+            moveByDifference(Point(abs(robotPosition.x) > MAX_DEFEND_X && sign(xDifference) == sign(robotPosition.x) ? MAX_DEFEND_X * sign(robotPosition.x) - robotPosition.x : xDifference, goalPosition.y + DEFEND_GOAL_DISTANCE - robotPosition.y));
+            
+            facingDirection = mod(defendingGoalAngle + 180, 360);
+            facingGoal = true;
         } else {
             moveToCoordinate(Point(0, goalPosition.y + DEFEND_GOAL_DISTANCE));
-            facingDirection = 0;
+            facingGoal = false;
         }
     } else {
         if (ballData.visible()) {
             calculateOrbit();
-            facingDirection = 0;
+            facingGoal = false;
         } else {
             moveData.speed = 0;
             moveData.angle = 0;
         }
     }
+
+    attackingGoal = false;
 }
 
 void calculateMovement() {
@@ -273,7 +280,15 @@ void calculateMovement() {
 
     calculateLineAvoid();
 
-    moveData.rotation = (int8_t)round(headingPID.update(doubleMod(doubleMod(imu.getHeading() - facingDirection, 360) + 180, 360) - 180, 0));
+    if (facingGoal) {
+        if (attackingGoal) {
+            moveData.rotation = (int8_t)round(goalHeadingAttackPID.update(doubleMod(doubleMod(imu.getHeading() - facingDirection, 360) + 180, 360) - 180, 0));
+        } else {
+            moveData.rotation = (int8_t)round(goalHeadingPID.update(doubleMod(doubleMod(imu.getHeading() - facingDirection, 360) + 180, 360) - 180, 0));
+        }
+    } else {
+        moveData.rotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
+    }
 }
 
 void updateDebug() {
@@ -422,9 +437,7 @@ void loop() {
 
     imu.update();
 
-    #if CAMERA_ENABLED
-        updateCamera();
-    #endif
+    updateCamera();
 
     if (bluetoothTimer.timeHasPassed()) {
         updateBluetooth();

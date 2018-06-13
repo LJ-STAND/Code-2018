@@ -21,4 +21,6 @@ public:
     void brake();
 };
 
+/* There is a 100% chance that Sam won't see this, because he is never actually contributes ~TFrasz #GreenWhiteBlackWhiteGreenWhiteBlack */
+
 #endif // MOTOR_ARRAY_H

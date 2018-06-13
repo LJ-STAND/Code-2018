@@ -11,8 +11,8 @@ CENTRE_Y_1 = 77
 
 MAX_VALID_RADIUS_1 = 88
 
-YELLOW_THRESHOLD = (52, 100, -26, 8, 50, 127)
-BLUE_THRESHOLD = (45, 67, -33, 2, -31, 3)
+YELLOW_THRESHOLD = (60, 100, -20, 13, 55, 85)
+BLUE_THRESHOLD = (23, 72, -24, -4, -21, 3)
 
 # --- Robot 2 --- #
 
@@ -34,8 +34,8 @@ MAX_VALID_RADIUS = MAX_VALID_RADIUS_1
 
 # -------------- #
 
-DRAW_CROSSES = False
-DRAW_RECTANGLES = False
+DRAW_CROSSES = True
+DRAW_RECTANGLES = True
 DRAW_CIRCLES = False
 
 NO_GOAL_ANGLE = 400
@@ -48,12 +48,12 @@ sensor.set_windowing(ROI)
 sensor.skip_frames(time=100)
 
 #print(sensor.get_rgb_gain_db())
-sensor.set_auto_whitebal(False, rgb_gain_db=(-6.02073, -5.494869, -0.634088))
-sensor.set_auto_exposure(False, exposure_us=4000)
-sensor.set_auto_gain(False, gain_db=18.5)
+sensor.set_auto_whitebal(False, rgb_gain_db=(-6.02073, -5.368132, -0.931115))
+sensor.set_auto_exposure(False, exposure_us=7000)
+sensor.set_auto_gain(False, gain_db=18.3)
 sensor.skip_frames(time=500)
 
-sensor.set_brightness(2)
+sensor.set_brightness(0)
 sensor.set_contrast(3)
 sensor.set_saturation(3)
 sensor.skip_frames(time=500)
@@ -104,8 +104,8 @@ while True:
     if DRAW_CROSSES:
         img.draw_cross(CENTRE_X, CENTRE_Y)
 
-    yellowBlobs = img.find_blobs([YELLOW_THRESHOLD], x_stride=5, y_stride=5, area_threshold=5, pixel_threshold=5, merge=True, margin=12)
-    blueBlobs = img.find_blobs([BLUE_THRESHOLD], x_stride=5, y_stride=5, area_threshold=5, pixel_threshold=5, merge=True, margin=12)
+    yellowBlobs = img.find_blobs([YELLOW_THRESHOLD], x_stride=5, y_stride=5, area_threshold=5, pixel_threshold=5, merge=True, margin=23)
+    blueBlobs = img.find_blobs([BLUE_THRESHOLD], x_stride=5, y_stride=5, area_threshold=5, pixel_threshold=5, merge=True, margin=23)
 
     yellowAngle, yellowDistance = sortBlobs(yellowBlobs, img)
     blueAngle, blueDistance = sortBlobs(blueBlobs, img)
