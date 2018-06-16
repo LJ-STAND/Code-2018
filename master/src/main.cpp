@@ -143,7 +143,7 @@ void calculateLineAvoid() {
         if (lineData.size > LINE_BIG_SIZE) {
             moveData.angle = mod(lineData.angle + 180 - imu.getHeading(), 360);
             moveData.speed = lineData.size == 3 ? OVER_LINE_SPEED : min(lineData.size / 2.0 * LINE_SPEED * 5, LINE_SPEED);
-        } else if (lineData.size > LINE_SMALL_SIZE) && isOutsideLine(moveData.angle)) {
+        } else if ((lineData.size > LINE_SMALL_SIZE) && isOutsideLine(moveData.angle)) {
             // Sliding along line
             // if (smallestAngleBetween(lineData.angle, moveData.angle) < LINE_SLIDE_ANGLE_BUFFER) {
             //     // moveData.angle = ;
