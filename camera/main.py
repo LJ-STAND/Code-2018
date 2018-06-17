@@ -12,7 +12,7 @@ CENTRE_Y_1 = 77
 MAX_VALID_RADIUS_1 = 88
 
 YELLOW_THRESHOLD = (60, 100, -20, 13, 55, 85)
-BLUE_THRESHOLD = (25, 52, -20, -11, -6, 13)
+BLUE_THRESHOLD = (40, 57, -15, -8, -29, 9)
 
 # --- Robot 2 --- #
 
