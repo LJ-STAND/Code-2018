@@ -2,37 +2,42 @@ import image, sensor, time
 from math import atan2, sqrt, pi, degrees, radians, sin, cos
 from pyb import UART
 
-# --- Robot 1 --- #
+# --- Robot 13A --- #
 
-ROI1 = (58, 0, 174, 164)
+ROI_A = (77, 0, 180, 159)
 
-CENTRE_X_1 = 89
-CENTRE_Y_1 = 77
+CENTRE_X_A = 91
+CENTRE_Y_A = 66
 
-MAX_VALID_RADIUS_1 = 88
+MAX_VALID_RADIUS_A = 87
 
-YELLOW_THRESHOLD = (60, 100, -20, 13, 55, 85)
-BLUE_THRESHOLD = (23, 72, -24, -4, -21, 3)
+# --- Robot 13B --- #
 
-# --- Robot 2 --- #
+ROI_B = (58, 0, 174, 164)
 
-ROI2 = (77, 0, 180, 159)
+CENTRE_X_B = 88
+CENTRE_Y_B = 85
 
-CENTRE_X_2 = 91
-CENTRE_Y_2 = 66
+MAX_VALID_RADIUS_B = 88
 
-MAX_VALID_RADIUS_2 = 87
+# --- Stuff to Change --- #
 
-# --- Current --- #
+ROBOT = "A"
 
-ROI = ROI1
+YELLOW_THRESHOLD = (81, 100, -20, -7, 15, 78)
+BLUE_THRESHOLD = (39, 73, -35, 18, -68, 0)
 
-CENTRE_X = CENTRE_X_1
-CENTRE_Y = CENTRE_Y_1
-
-MAX_VALID_RADIUS = MAX_VALID_RADIUS_1
+DEBUG_WHITEBALANCE = False
+DEBUG_PRINTING = False
 
 # -------------- #
+
+exec("ROI = ROI_" + ROBOT)
+exec("CENTRE_X = CENTRE_X_" + ROBOT)
+exec("CENTRE_Y = CENTRE_Y_" + ROBOT)
+exec("MAX_VALID_RADIUS = MAX_VALID_RADIUS_" + ROBOT)
+
+DEBUG_COUNT = 0
 
 DRAW_CROSSES = True
 DRAW_RECTANGLES = True
@@ -47,16 +52,21 @@ sensor.set_framesize(sensor.QVGA)
 sensor.set_windowing(ROI)
 sensor.skip_frames(time=100)
 
-#print(sensor.get_rgb_gain_db())
-sensor.set_auto_whitebal(False, rgb_gain_db=(-6.02073, -5.368132, -0.931115))
-sensor.set_auto_exposure(False, exposure_us=7000)
-sensor.set_auto_gain(False, gain_db=18.3)
+if (DEBUG_WHITEBALANCE):
+    sensor.set_auto_whitebal(True)
+else:
+    sensor.set_auto_whitebal(False, rgb_gain_db=(-6.02073, -3.454361, 3.00945))
+
+
 sensor.skip_frames(time=500)
 
-sensor.set_brightness(0)
-sensor.set_contrast(3)
-sensor.set_saturation(3)
-sensor.skip_frames(time=500)
+if (not DEBUG_WHITEBALANCE):
+    sensor.set_brightness(0)
+    sensor.set_contrast(3)
+    sensor.set_saturation(2)
+    sensor.set_auto_exposure(False, exposure_us=10000)
+    sensor.set_auto_gain(False, gain_db=15)
+    sensor.skip_frames(time=500)
 
 uart = UART(3, 115200, timeout_char=10)
 
@@ -98,16 +108,30 @@ def sortBlobs(blobs, img):
 while True:
     img = sensor.snapshot()
 
-    if DRAW_CIRCLES:
-        img.draw_circle(CENTRE_X, CENTRE_Y, MAX_VALID_RADIUS)
+    if (DEBUG_WHITEBALANCE):
+        DEBUG_COUNT += 1
+        if (DEBUG_COUNT >= 30):
+            print(sensor.get_rgb_gain_db())
+            DEBUG_COUNT = 0
+    else:
+        if DRAW_CIRCLES:
+            img.draw_circle(CENTRE_X, CENTRE_Y, MAX_VALID_RADIUS)
 
-    if DRAW_CROSSES:
-        img.draw_cross(CENTRE_X, CENTRE_Y)
+        if DRAW_CROSSES:
+            img.draw_cross(CENTRE_X, CENTRE_Y)
 
-    yellowBlobs = img.find_blobs([YELLOW_THRESHOLD], x_stride=5, y_stride=5, area_threshold=5, pixel_threshold=5, merge=True, margin=23)
-    blueBlobs = img.find_blobs([BLUE_THRESHOLD], x_stride=5, y_stride=5, area_threshold=5, pixel_threshold=5, merge=True, margin=23)
+        yellowBlobs = img.find_blobs([YELLOW_THRESHOLD], x_stride=5, y_stride=5, area_threshold=200, pixel_threshold=200, merge=True, margin=23)
+        blueBlobs = img.find_blobs([BLUE_THRESHOLD], x_stride=5, y_stride=5, area_threshold=200, pixel_threshold=200, merge=True, margin=23)
 
-    yellowAngle, yellowDistance = sortBlobs(yellowBlobs, img)
-    blueAngle, blueDistance = sortBlobs(blueBlobs, img)
+        yellowAngle, yellowDistance = sortBlobs(yellowBlobs, img)
+        blueAngle, blueDistance = sortBlobs(blueBlobs, img)
 
-    send([yellowAngle, yellowDistance, blueAngle, blueDistance])
+
+        if (DEBUG_PRINTING):
+            DEBUG_COUNT += 1
+            if (DEBUG_COUNT >= 30):
+                print([yellowAngle, yellowDistance, blueAngle, blueDistance])
+                DEBUG_COUNT = 0
+        send([yellowAngle, yellowDistance, blueAngle, blueDistance])
+
+
