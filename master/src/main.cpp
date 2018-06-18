@@ -287,11 +287,11 @@ void defend() {
 }
 
 void calculateMovement() {
-    if (currentPlayMode() == PlayMode::attackMode) {
+    // if (currentPlayMode() == PlayMode::attackMode) {
         attack();
-    } else {
-        defend();
-    }
+    // } else {
+        // defend();
+    // }
 
     calculateLineAvoid();
 
@@ -341,22 +341,42 @@ void updateDebug() {
         }
     }
 
-    if (settings.IMUNeedsResetting) {
+    if (settings.IMUNeedsResetting && settings.lightSensorsNeedResetting) {
         slaveMotor.brake();
+
         imu.calibrate();
         imu.resetHeading();
-        slaveDebug.sendIMUIsReset();
-        slaveDebug.updateDebugSettings();
-        delay(500);
-    }
-
-    if (settings.lightSensorsNeedResetting) {
-        slaveMotor.brake();
         slaveSensor.sendCalibrateLightSensors();
         lineData = LineData();
+
         delay(500);
+
+        slaveDebug.sendLightSensorsAreReset();
+        slaveDebug.sendIMUIsReset();
+        slaveDebug.updateDebugSettings();
+
+        delay(500);
+    } else if (settings.IMUNeedsResetting) {
+        slaveMotor.brake();
+
+        imu.calibrate();
+        imu.resetHeading();
+
+        slaveDebug.sendIMUIsReset();
+        slaveDebug.updateDebugSettings();
+
+        delay(500);
+    } else if (settings.lightSensorsNeedResetting) {
+        slaveMotor.brake();
+
+        slaveSensor.sendCalibrateLightSensors();
+        lineData = LineData();
+
+        delay(500);
+
         slaveDebug.sendLightSensorsAreReset();
         slaveDebug.updateDebugSettings();
+
         delay(500);
     }
 
@@ -457,10 +477,12 @@ void loop() {
 
     imu.update();
 
-    updateCamera();
+    #if CAMERA_ENABLED
+        updateCamera();
+    #endif
 
     if (bluetoothTimer.timeHasPassed()) {
-        // updateBluetooth();
+        updateBluetooth();
     }
 
     calculateMovement();

@@ -143,8 +143,21 @@ void LightSensorView::draw() {
     int16_t centreX = x + w / 2;
     int16_t centreY = y + h / 2;
 
-    for (int i = 0; i < LS_NUM; i++) {
-        bool on = (lightSensorData >> i) & 0x1;
+    int lsFirstCombined = first | (second << 10);
+    int lsSecondCombined = third | (fourth << 10);
+
+    for (int i = 0; i < 20; i++) {
+        bool on = (lsFirstCombined >> i) & 0x1;
+
+        int16_t sensorX = centreX + (min(w, h) / 2 - LIGHT_SENSOR_VIEW_SENSOR_RADIUS * 2) * cos(degreesToRadians(i * LS_NUM_MULTIPLIER - 90));
+        int16_t sensorY = centreY + (min(w, h) / 2 - LIGHT_SENSOR_VIEW_SENSOR_RADIUS * 2) * sin(degreesToRadians(i * LS_NUM_MULTIPLIER - 90));
+
+        TFT.drawCircle(sensorX, sensorY, LIGHT_SENSOR_VIEW_SENSOR_RADIUS, FOREGROUND_COLOR);
+        TFT.fillCircle(sensorX, sensorY, LIGHT_SENSOR_VIEW_SENSOR_RADIUS / 2, on ? FOREGROUND_COLOR : BACKGROUND_COLOR);
+    }
+
+    for (int i = 20; i < 36; i++) {
+        bool on = (lsSecondCombined >> (i - 20)) & 0x1;
 
         int16_t sensorX = centreX + (min(w, h) / 2 - LIGHT_SENSOR_VIEW_SENSOR_RADIUS * 2) * cos(degreesToRadians(i * LS_NUM_MULTIPLIER - 90));
         int16_t sensorY = centreY + (min(w, h) / 2 - LIGHT_SENSOR_VIEW_SENSOR_RADIUS * 2) * sin(degreesToRadians(i * LS_NUM_MULTIPLIER - 90));
@@ -154,9 +167,12 @@ void LightSensorView::draw() {
     }
 }
 
-void LightSensorView::setLightSensorData(int data) {
-    if (lightSensorData != data) {
-        lightSensorData = data;
+void LightSensorView::setLightSensorData(uint16_t lsFirst, uint16_t lsSecond, uint16_t lsThird, uint16_t lsFourth) {
+    if (first != lsFirst || second != lsSecond || third != lsThird || fourth != lsFourth) {
+        first = lsFirst;
+        second = lsSecond;
+        third = lsThird;
+        fourth = lsFourth;
         setNeedsDraw();
     }
 }

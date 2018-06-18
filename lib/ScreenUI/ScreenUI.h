@@ -89,10 +89,10 @@ public:
     LightSensorView(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
     void draw();
-    void setLightSensorData(int data);
+    void setLightSensorData(uint16_t lsFirst, uint16_t lsSecond, uint16_t lsThird, uint16_t lsFourth);
     
 protected:
-    int lightSensorData;
+    uint16_t first, second, third, fourth;
 };
 
 class RobotPositionView : public View {

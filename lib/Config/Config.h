@@ -239,6 +239,7 @@
 
 #define CAMERA_BAUD 115200
 
+#define CAMERA_ENABLED true
 #define GOAL_TRACKING false
 
 #define GOAL_TRACK_SHORT_STRENGTH 140

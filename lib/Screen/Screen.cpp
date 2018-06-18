@@ -279,20 +279,16 @@ void Screen::update() {
         switch (screenType) {
         case ScreenType::mainScreenType:
             if (settings.gameMode) {
-                engineStartButton.setEnabled(settings.engineStarted);
-                engineStartButton.checkDraw();
                 resetAllButton.checkDraw();
-                settingsButton.checkDraw();
-                IMUResetButton.checkDraw();
-                lightSensorsResetButton.checkDraw();
             } else {
-                engineStartButton.setEnabled(settings.engineStarted);
-                engineStartButton.checkDraw();
                 debugButton.checkDraw();
-                settingsButton.checkDraw();
-                IMUResetButton.checkDraw();
-                lightSensorsResetButton.checkDraw();
             }
+
+            engineStartButton.setEnabled(settings.engineStarted);
+            engineStartButton.checkDraw();
+            settingsButton.checkDraw();
+            IMUResetButton.checkDraw();
+            lightSensorsResetButton.checkDraw();
             
             break;
 
@@ -368,8 +364,7 @@ void Screen::update() {
         case ScreenType::lightSensorsDebugScreenType:
             lineView.setLineData(lineData);
             lineView.checkDraw();
-
-            lightSensorView.setLightSensorData(lsFirst | (lsSecond << 10) | (lsThird << 20) | (lsFourth << 30));
+            lightSensorView.setLightSensorData(lsFirst, lsSecond, lsThird, lsFourth);
             lightSensorView.checkDraw();
 
             break;
@@ -440,18 +435,15 @@ void Screen::redrawScreen() {
     switch (screenType) {
     case ScreenType::mainScreenType:
         if (settings.gameMode) {
-            engineStartButton.setNeedsDraw();
             resetAllButton.setNeedsDraw();
-            settingsButton.setNeedsDraw();
-            IMUResetButton.setNeedsDraw();
-            lightSensorsResetButton.setNeedsDraw(); 
         } else {
-            engineStartButton.setNeedsDraw();
             debugButton.setNeedsDraw();
-            settingsButton.setNeedsDraw();
-            IMUResetButton.setNeedsDraw();
-            lightSensorsResetButton.setNeedsDraw();
         }
+        
+        engineStartButton.setNeedsDraw();
+        settingsButton.setNeedsDraw();
+        IMUResetButton.setNeedsDraw();
+        lightSensorsResetButton.setNeedsDraw();
 
         break;
 
