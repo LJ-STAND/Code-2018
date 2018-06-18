@@ -252,12 +252,23 @@ void defend() {
         if (ballData.visible()) {
             Point relativeBallPosition = ballData.position(imu.getHeading());
 
-            double xDifference = defendPID.update(smallestAngleBetween(ballData.angle, 0) * -sign(ballData.angle - 180), 0);
+            if (relativeBallPosition.y < 0) {
+                if (robotPosition.y < goalPosition.y + DEFEND_GOAL_DISTANCE_ORBIT) {
+                    moveToCoordinate(Point(MAX_DEFEND_X * sign(relativeBallPosition.x), goalPosition.y + DEFEND_GOAL_DISTANCE_CLOSE));
+                    facingDirection = mod(90 * sign(relativeBallPosition.x), 360);
+                } else {
+                    calculateOrbit();
+                }
 
-            moveByDifference(Point(abs(robotPosition.x) > MAX_DEFEND_X && sign(xDifference) == sign(robotPosition.x) ? MAX_DEFEND_X * sign(robotPosition.x) - robotPosition.x : xDifference, goalPosition.y + DEFEND_GOAL_DISTANCE - robotPosition.y));
-            
-            facingDirection = mod(defendingGoalAngle + 180, 360);
-            facingGoal = true;
+                facingGoal = false;
+            } else {
+                double xDifference = defendPID.update(smallestAngleBetween(ballData.angle, 0) * -sign(ballData.angle - 180), 0);
+
+                moveByDifference(Point(abs(robotPosition.x) > MAX_DEFEND_X && sign(xDifference) == sign(robotPosition.x) ? MAX_DEFEND_X * sign(robotPosition.x) - robotPosition.x : xDifference, goalPosition.y + DEFEND_GOAL_DISTANCE - robotPosition.y));
+                
+                facingDirection = mod(defendingGoalAngle + 180, 360);
+                facingGoal = true;
+            }
         } else {
             moveToCoordinate(Point(0, goalPosition.y + DEFEND_GOAL_DISTANCE));
             facingGoal = false;
@@ -392,7 +403,7 @@ void updatePlayMode() {
 }
 
 void updateBluetooth() {
-    if (settings.gameMode || settings.playModeSwitching) {
+    if (settings.playModeSwitching) {
         bluetoothData = BluetoothData(ballData, imu.getHeading(), isOutsideLine(ballData.angle), playMode, lineData.onField, robotPosition);
         bluetooth.update(bluetoothData);
 
@@ -449,7 +460,7 @@ void loop() {
     updateCamera();
 
     if (bluetoothTimer.timeHasPassed()) {
-        updateBluetooth();
+        // updateBluetooth();
     }
 
     calculateMovement();

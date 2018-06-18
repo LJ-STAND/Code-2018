@@ -108,6 +108,8 @@ void IMUFusion::update() {
     double reading2 = imu2.readGyroZ();
     double reading3 = imu3.readGyroZ();
 
+    unsigned long currentTime = micros();
+
     double diff12 = abs(reading1 - reading2);
     double diff23 = abs(reading2 - reading3);
     double diff31 = abs(reading3 - reading1);
@@ -122,8 +124,6 @@ void IMUFusion::update() {
     } else {
         finalDiff = (reading3 + reading1) / 2.0;
     }
-
-    unsigned long currentTime = micros();
 
     heading += ((double)(currentTime - previousTime) / 1000000.0) * finalDiff;
     heading = doubleMod(heading, 360.0);

@@ -96,6 +96,8 @@ private:
     TextButton IMUResetButton;
     TextButton lightSensorsResetButton;
 
+    TextButton resetAllButton;
+
     // Settings Screen
 
     Label playModeSwitchingLabel;

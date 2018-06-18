@@ -37,6 +37,8 @@ void Screen::init() {
     settingsButton = TextButton(TFT.width() - MAIN_SCREEN_BUTTON_INSET, TFT.height() - MAIN_SCREEN_BUTTON_INSET, MAIN_SCREEN_BUTTON_RADIUS, "Settings", 1);
     IMUResetButton = TextButton(MAIN_SCREEN_BUTTON_INSET, TFT.height() - MAIN_SCREEN_BUTTON_INSET, MAIN_SCREEN_BUTTON_RADIUS, "Reset IMU", 1);
     lightSensorsResetButton = TextButton(MAIN_SCREEN_BUTTON_INSET, LINE_Y + MAIN_SCREEN_BUTTON_INSET, MAIN_SCREEN_BUTTON_RADIUS, "Reset LS", 1);
+    
+    resetAllButton = TextButton(TFT.width() - MAIN_SCREEN_BUTTON_INSET, LINE_Y + MAIN_SCREEN_BUTTON_INSET, MAIN_SCREEN_BUTTON_RADIUS, "Reset All", 1);
 
     // Debug Screen
 
@@ -142,7 +144,7 @@ void Screen::checkTouch() {
                     settings.engineStarted = !settings.engineStarted;
                 }
 
-                if (debugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
+                if (debugButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching) && !settings.gameMode) {
                     changeScreen(ScreenType::debugScreenType);
                 }
 
@@ -160,6 +162,13 @@ void Screen::checkTouch() {
                     settings.lightSensorsNeedResetting = true;
                     settings.engineStarted = false;
                     displayMessage("Resetting LS...");
+                }
+
+                if (resetAllButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching) && settings.gameMode) {
+                    settings.IMUNeedsResetting = true;
+                    settings.lightSensorsNeedResetting = true;
+                    settings.engineStarted = false;
+                    displayMessage("Resetting All...");
                 }
 
                 break;
@@ -269,13 +278,22 @@ void Screen::update() {
     if (!displayingMessage) {
         switch (screenType) {
         case ScreenType::mainScreenType:
-            engineStartButton.setEnabled(settings.engineStarted);
-            engineStartButton.checkDraw();
-            debugButton.checkDraw();
-            settingsButton.checkDraw();
-            IMUResetButton.checkDraw();
-            lightSensorsResetButton.checkDraw();
-
+            if (settings.gameMode) {
+                engineStartButton.setEnabled(settings.engineStarted);
+                engineStartButton.checkDraw();
+                resetAllButton.checkDraw();
+                settingsButton.checkDraw();
+                IMUResetButton.checkDraw();
+                lightSensorsResetButton.checkDraw();
+            } else {
+                engineStartButton.setEnabled(settings.engineStarted);
+                engineStartButton.checkDraw();
+                debugButton.checkDraw();
+                settingsButton.checkDraw();
+                IMUResetButton.checkDraw();
+                lightSensorsResetButton.checkDraw();
+            }
+            
             break;
 
         case ScreenType::debugScreenType:
@@ -421,11 +439,19 @@ void Screen::redrawScreen() {
 
     switch (screenType) {
     case ScreenType::mainScreenType:
-        engineStartButton.setNeedsDraw();
-        debugButton.setNeedsDraw();
-        settingsButton.setNeedsDraw();
-        IMUResetButton.setNeedsDraw();
-        lightSensorsResetButton.setNeedsDraw();
+        if (settings.gameMode) {
+            engineStartButton.setNeedsDraw();
+            resetAllButton.setNeedsDraw();
+            settingsButton.setNeedsDraw();
+            IMUResetButton.setNeedsDraw();
+            lightSensorsResetButton.setNeedsDraw(); 
+        } else {
+            engineStartButton.setNeedsDraw();
+            debugButton.setNeedsDraw();
+            settingsButton.setNeedsDraw();
+            IMUResetButton.setNeedsDraw();
+            lightSensorsResetButton.setNeedsDraw();
+        }
 
         break;
 
