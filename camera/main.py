@@ -3,7 +3,6 @@ from math import atan2, sqrt, pi, degrees, radians, sin, cos
 from pyb import UART
 
 # --- Robot 13A --- #
-
 ROI_A = (77, 0, 180, 159)
 
 CENTRE_X_A = 91
@@ -12,7 +11,6 @@ CENTRE_Y_A = 66
 MAX_VALID_RADIUS_A = 87
 
 # --- Robot 13B --- #
-
 ROI_B = (58, 0, 174, 164)
 
 CENTRE_X_B = 88
@@ -56,9 +54,6 @@ if (DEBUG_WHITEBALANCE):
     sensor.set_auto_whitebal(True)
 else:
     sensor.set_auto_whitebal(False, rgb_gain_db=(-6.02073, -3.454361, 3.00945))
-
-
-sensor.skip_frames(time=500)
 
 if (not DEBUG_WHITEBALANCE):
     sensor.set_brightness(0)
