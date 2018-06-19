@@ -157,10 +157,12 @@ void calculateLineAvoid() {
 }
 
 void calculateOrbit() {
+    double attackingGoalAngleAddition = angleIsInside(270, 90, ballData.angle) ? attackingGoalAngle : 0;
+    double ballAngle = mod(ballData.angle - attackingGoalAngleAddition, 360);
     double ballAngleDifference = -sign(ballData.angle - 180) * fmin(90, 0.1 * pow(MATH_E, 0.15 * (double)smallestAngleBetween(ballData.angle, 0)));
     double distanceMultiplier = constrain(0.02 * ballData.strengthFactor() * pow(MATH_E, 4.5 * ballData.strengthFactor()), 0, 1);
     double angleAddition = ballAngleDifference * distanceMultiplier;
-    moveData.angle = ballData.angle + angleAddition;
+    moveData.angle = mod(ballData.angle + angleAddition + attackingGoalAngleAddition, 360);
     moveData.speed = ORBIT_SPEED_SLOW + (double)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (double)abs(angleAddition) / 90.0);
 }
 
@@ -219,6 +221,20 @@ void updateCamera() {
     }
 }
 
+// void avoidDoubleDefence() {
+//     if (bluetooth.isConnected) {
+//         int moveAngle = moveData.angle;
+//         int moveSpeed = moveData.speed;
+
+//         if (angleIsInside(90, 270, moveAngle) && bluetooth.otherData.robotPosition.y < DOUBLE_DEFENCE_MIN_Y) {
+//             if (robotPosition.y < DOUBLE_DEFENCE_MIN_Y && moveToCoordinate(Point(robotPosition.x, DOUBLE_DEFENCE_MIN_Y))) {
+//                 moveData.speed = moveSpeed;
+//                 moveData.angle = smallestAngleBetween(180, moveAngle) * -sign(moveAngle - 180);
+//             }
+//         }  
+//     }
+// }
+
 void attack() {
     if (movingSideways) {
         if ((ballData.visible() || bluetooth.otherData.ballData.visible()) && !bluetooth.otherData.ballIsOut) {
@@ -243,6 +259,10 @@ void attack() {
     if (camera.goalsVisible() && bluetooth.isConnected && bluetooth.otherData.robotPosition.y < -(FIELD_LENGTH_CENTIMETERS / 2 - GOAL_EDGE_OFFSET_CENTIMETERS - DEFEND_BOX_WIDTH_CENTIMETERS) && robotPosition.y < -(FIELD_LENGTH_CENTIMETERS / 2 - GOAL_EDGE_OFFSET_CENTIMETERS - DEFEND_BOX_WIDTH_CENTIMETERS)) {
         moveToCoordinate(Point(robotPosition.x, -(FIELD_LENGTH_CENTIMETERS / 2 - GOAL_EDGE_OFFSET_CENTIMETERS - DEFEND_BOX_WIDTH_CENTIMETERS) + 10));
     }
+
+    // #if AVOID_DOUBLE_DEFENCE
+    //     avoidDoubleDefence();
+    // #endif
 }
 
 void defend() {
@@ -287,11 +307,11 @@ void defend() {
 }
 
 void calculateMovement() {
-    // if (currentPlayMode() == PlayMode::attackMode) {
+    if (currentPlayMode() == PlayMode::attackMode) {
         attack();
-    // } else {
-        // defend();
-    // }
+    } else {
+        defend();
+    }
 
     calculateLineAvoid();
 

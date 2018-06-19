@@ -33,7 +33,7 @@ void Bluetooth::send() {
     Serial5.write((int8_t)thisData.robotPosition.x & 0x7F);
 
     Serial5.write(((int8_t)thisData.robotPosition.y >> 7) & 0x7F);
-    Serial5.write((int8_t)thisData.robotPosition.x & 0x7F);
+    Serial5.write((int8_t)thisData.robotPosition.y & 0x7F);
 }
 
 void Bluetooth::recieve() {
