@@ -157,9 +157,9 @@ void calculateLineAvoid() {
 }
 
 void calculateOrbit() {
-    double attackingGoalAngleAddition = angleIsInside(270, 90, ballData.angle) ? attackingGoalAngle : 0;
+    double attackingGoalAngleAddition = FORWARD_GOAL_TRACKING && ballData.strength > GOAL_TRACK_SHORT_STRENGTH ? attackingGoalAngle : 0;
     double ballAngle = mod(ballData.angle - attackingGoalAngleAddition, 360);
-    double ballAngleDifference = -sign(ballData.angle - 180) * fmin(90, 0.1 * pow(MATH_E, 0.15 * (double)smallestAngleBetween(ballData.angle, 0)));
+    double ballAngleDifference = -sign(ballData.angle - 180) * fmin(90, 0.4 * pow(MATH_E, 0.15 * (double)smallestAngleBetween(ballData.angle, 0)));
     double distanceMultiplier = constrain(0.02 * ballData.strengthFactor() * pow(MATH_E, 4.5 * ballData.strengthFactor()), 0, 1);
     double angleAddition = ballAngleDifference * distanceMultiplier;
     moveData.angle = mod(ballData.angle + angleAddition + attackingGoalAngleAddition, 360);
@@ -193,7 +193,7 @@ bool moveToCoordinate(Point point) {
 
 void goalTracking() {
     if (attackingGoalVisible() && GOAL_TRACKING) {
-        facingDirection = mod((double)(mod(attackingGoalAngle + 180, 360) - 180) * constrain(0.00000005 * ballData.strengthFactor() * pow(MATH_E, 20 * ballData.strengthFactor()), 0, 1), 360);
+        facingDirection = ALWAYS_FACE_GOAL ? attackingGoalAngle : mod((double)(mod(attackingGoalAngle + 180, 360) - 180) * constrain(0.00000005 * ballData.strengthFactor() * pow(MATH_E, 20 * ballData.strengthFactor()), 0, 1), 360);
         attackingGoal = true;
         facingGoal = true;
     } else {
@@ -255,14 +255,6 @@ void attack() {
         moveToCoordinate(Point(NO_BALL_CENTRE_X, NO_BALL_CENTRE_Y));
         facingGoal = false;
     }
-
-    if (camera.goalsVisible() && bluetooth.isConnected && bluetooth.otherData.robotPosition.y < -(FIELD_LENGTH_CENTIMETERS / 2 - GOAL_EDGE_OFFSET_CENTIMETERS - DEFEND_BOX_WIDTH_CENTIMETERS) && robotPosition.y < -(FIELD_LENGTH_CENTIMETERS / 2 - GOAL_EDGE_OFFSET_CENTIMETERS - DEFEND_BOX_WIDTH_CENTIMETERS)) {
-        moveToCoordinate(Point(robotPosition.x, -(FIELD_LENGTH_CENTIMETERS / 2 - GOAL_EDGE_OFFSET_CENTIMETERS - DEFEND_BOX_WIDTH_CENTIMETERS) + 10));
-    }
-
-    // #if AVOID_DOUBLE_DEFENCE
-    //     avoidDoubleDefence();
-    // #endif
 }
 
 void defend() {
@@ -272,7 +264,10 @@ void defend() {
         if (ballData.visible()) {
             Point relativeBallPosition = ballData.position(imu.getHeading());
 
-            if (relativeBallPosition.y < 0) {
+            if (ballData.strength > DEFEND_CHARGE_STRENGTH && angleIsInside(360 - DEFEND_CHARGE_ANGLE, DEFEND_CHARGE_ANGLE, ballData.angle) && robotPosition.y < DEFEND_CHARGE_MAX_Y) {
+                moveData.speed = DEFEND_CHARGE_SPEED;
+                moveData.angle = 0;
+            } else if (relativeBallPosition.y < 0) {
                 if (robotPosition.y < goalPosition.y + DEFEND_GOAL_DISTANCE_ORBIT) {
                     moveToCoordinate(Point(MAX_DEFEND_X * sign(relativeBallPosition.x), goalPosition.y + DEFEND_GOAL_DISTANCE_CLOSE));
                     facingDirection = mod(90 * sign(relativeBallPosition.x), 360);
@@ -282,12 +277,13 @@ void defend() {
 
                 facingGoal = false;
             } else {
-                double xDifference = defendPID.update(smallestAngleBetween(ballData.angle, 0) * -sign(ballData.angle - 180), 0);
+                double ballAngle = mod(ballData.angle - (180 + defendingGoalAngle), 360);
+                double xDifference = defendPID.update(smallestAngleBetween(ballAngle, 0) * -sign(ballAngle - 180), 0);
 
                 moveByDifference(Point(abs(robotPosition.x) > MAX_DEFEND_X && sign(xDifference) == sign(robotPosition.x) ? MAX_DEFEND_X * sign(robotPosition.x) - robotPosition.x : xDifference, goalPosition.y + DEFEND_GOAL_DISTANCE - robotPosition.y));
                 
-                facingDirection = mod(defendingGoalAngle + 180, 360);
-                facingGoal = true;
+                // facingDirection = mod(defendingGoalAngle + 180, 360);
+                // facingGoal = true;
             }
         } else {
             moveToCoordinate(Point(0, goalPosition.y + DEFEND_GOAL_DISTANCE));
@@ -304,6 +300,7 @@ void defend() {
     }
 
     attackingGoal = false;
+    facingGoal = false;
 }
 
 void calculateMovement() {
@@ -487,7 +484,6 @@ void setup() {
 
 void loop() {
     slaveSensor.updateBallData();
-
     ballData = slaveSensor.ballData();
 
     slaveSensor.updateLineAngle();
