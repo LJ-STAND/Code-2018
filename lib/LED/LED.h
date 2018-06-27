@@ -6,13 +6,14 @@
 #include <Config.h>
 #include <Common.h>
 
+// What data the RGB leds show
 enum RGBType {
-    ballRGBType,
-    lineRGBType,
-    rainbowRGBType,
-    goalRGBType
+    ballRGBType, // Ball angle and strength
+    lineRGBType, // Line angle and strength
+    rainbowRGBType, // RAINBOW!!
+    goalRGBType // Goal angle
 };
-
+// Class to control the RGB and play mode LEDs
 class LED {
 public:
     void init();
@@ -28,8 +29,8 @@ public:
     Adafruit_NeoPixel rgb = Adafruit_NeoPixel(RGB_LED_COUNT, DEBUG_RGB_LED, NEO_GRB + NEO_KHZ800);
 
 private:
-    unsigned long delayTimerLastReading = 0;
-    uint16_t loopCounter = 0;
+    unsigned long delayTimerLastReading = 0; // Time counter for between LED loops
+    uint16_t loopCounter = 0; // Loop counter of LED updates
 };
 
 #endif // LED_H

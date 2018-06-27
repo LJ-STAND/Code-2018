@@ -1,3 +1,5 @@
+// Communication between serial terminal on computer and HM-11. Used to change settings with AT commands.
+
 #include <Arduino.h>
 
 void setup() {

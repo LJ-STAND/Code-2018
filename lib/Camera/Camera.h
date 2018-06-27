@@ -5,6 +5,7 @@
 #include <Config.h>
 #include <Common.h>
 
+// Camera class interfaces with the OpenMV over UART
 class Camera {
 public:
     void init();
@@ -21,10 +22,12 @@ public:
     bool goalsVisible();
     bool newData();
 
-    int blueAngle;
-    int bluePixelDistance;
-    int yellowAngle;
-    int yellowPixelDistance;
+    // Note angles are relative to the front of the robot, and go clockwise from 0 to 360 degrees
+
+    int blueAngle; // Angle of the blue goal
+    int bluePixelDistance; // Pixel distance on the camera
+    int yellowAngle; // Angle of the yellow goal
+    int yellowPixelDistance; // Pixel distance on the camera
 
 private:
     bool newCameraData;

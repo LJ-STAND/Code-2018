@@ -12,8 +12,10 @@
 #include <DebugController.h>
 #include <PlayMode.h>
 
+// SPI object
 T3SPI spi;
 
+// Data from master
 BallData ballData = BallData(TSOP_NO_BALL, 0);
 LineData lineData = LineData();
 
@@ -22,12 +24,17 @@ PlayMode playMode;
 int yellowAngle, blueAngle;
 DebugController debug = DebugController();
 
+// LEDs
 LED leds;
+
+// Screen
 Screen screen;
 
+// Teensy LED
 Timer ledTimer(LED_BLINK_TIME_SLAVE_DEBUG);
 bool ledOn;
 
+// Timer for sending app data
 Timer appDebugTimer(50);
 
 void setup(void) {
@@ -48,11 +55,15 @@ void setup(void) {
 
 void loop() {
     if (screen.settings.gameMode) {
+        // Game mode, no RGB :(
         leds.rgbOff();
     } else {
         if (screen.settings.IMUNeedsResetting || screen.settings.lightSensorsNeedResetting) {
+            // rainbows
             leds.rainbow();
         } else {
+            // Pick what to show on the RGBs
+
             switch (screen.rgbType) {
             case RGBType::ballRGBType:
                 if (ballData.visible()) {
@@ -113,8 +124,11 @@ void loop() {
 }
 
 void spi0_isr() {
+    // SPI ISR. receive data and check command
+
     uint16_t dataIn = SPI0_POPR;
 
+    // Split recieved data into command and data
     uint8_t command = (dataIn >> 10);
     uint16_t data = dataIn & 0x3FF;
 

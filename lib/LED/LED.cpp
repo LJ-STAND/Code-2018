@@ -61,6 +61,9 @@ uint32_t LED::HSBToRGB(float hue, float saturation, float brightness) {
 }
 
 void LED::rainbow() {
+    // RAINBOW!!!!
+    // partyyyyyyyyyyy
+
     if (millis() - delayTimerLastReading >= RAINBOW_TIME) {
         for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
             rgb.setPixelColor(i, HSBToRGB((float)((i + loopCounter) % RGB_LED_COUNT) / (float)RGB_LED_COUNT * 360, 1.0, 1.0));
@@ -79,6 +82,7 @@ void LED::rainbow() {
 }
 
 void LED::displayAngle(uint16_t angle, double hue) {
+    // Displays an angle on the RGB LEDs, with a hue
     for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
         rgb.setPixelColor(i, HSBToRGB(hue, 1.0, 1.0 - ((double)min(smallestAngleBetween(angle, i * 360 / RGB_LED_COUNT), 60) / 60.0)));
     }
@@ -87,6 +91,7 @@ void LED::displayAngle(uint16_t angle, double hue) {
 }
 
 void LED::displayAngleSize(uint16_t angle, double size, double maxSize, double minHue, double maxHue) {
+    // Displays an angle and size on the RGB LEDs, with a hue from min to max using size from 0 to max
     for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
         rgb.setPixelColor(i, HSBToRGB(minHue + (size / maxSize) * (maxHue - minHue), 1.0, 1.0 - ((double)min(smallestAngleBetween(angle, i * 360 / RGB_LED_COUNT), 60) / 60.0)));
     }
@@ -95,6 +100,7 @@ void LED::displayAngleSize(uint16_t angle, double size, double maxSize, double m
 }
 
 void LED::rgbColor(uint32_t color) {
+    // Displays a colour on the RGB LEDs
     for (uint8_t i = 0; i < RGB_LED_COUNT; i++) {
         rgb.setPixelColor(i, color);
     }
@@ -103,11 +109,13 @@ void LED::rgbColor(uint32_t color) {
 }
 
 void LED::displayPlayMode(bool isAttacker) {
+    // Play mode LEDs
     analogWrite(DEBUG_LED_DEFENDER, isAttacker ? 0 : 30);
     analogWrite(DEBUG_LED_ATTACKER, isAttacker ? 30 : 0);
 }
 
 void LED::rgbOff() {
+    // Turns off RGB LEDs
     rgb.clear();
     rgb.show();
 }

@@ -1,3 +1,5 @@
+// UI elements for the touchscreen
+
 #ifndef SCREEN_UI_H
 #define SCREEN_UI_H
 
@@ -10,6 +12,7 @@
 #include <BallData.h>
 #include <LineData.h>
 
+// Base view
 class View {
 public:
     View() {}
@@ -22,9 +25,10 @@ public:
     uint16_t x, y, w, h;
 
 protected:
-    bool needsDrawing = true;
+    bool needsDrawing = true; // Only redraw to the screen if this is true
 };
 
+// Dial, shows a number with a needle
 class Dial : public View {
 public:
     Dial() {}
@@ -42,6 +46,7 @@ protected:
     uint16_t cx, cy, r;
 };
 
+// View for ball angle and strength
 class BallView : public View {
 public:
     BallView() {}
@@ -55,6 +60,7 @@ protected:
     BallData oldData;
 };
 
+// Shows the robot's position on the line (angle and size)
 class LineView : public View {
 public:
     LineView() {}
@@ -68,6 +74,7 @@ protected:
     LineData oldData;
 };
 
+// Position of the two goals on the camera
 class GoalView : public View {
 public:
     GoalView() {}
@@ -83,6 +90,7 @@ protected:
     int blueDistance, oldBlueDistance;
 };
 
+// Array of light sensors as on / off values in a ring
 class LightSensorView : public View {
 public:
     LightSensorView() {}
@@ -95,6 +103,7 @@ protected:
     uint16_t first, second, third, fourth;
 };
 
+// Robot's position on the field
 class RobotPositionView : public View {
 public:
     RobotPositionView() {}
@@ -111,6 +120,7 @@ protected:
     Point oldOtherPosition;
 };
 
+// Generic button
 class Button : public View {
 public:
     Button() {}
@@ -130,6 +140,7 @@ protected:
     bool needsHighlightOnly = false;
 };
 
+// Text label
 class Label : public View {
 public:
     Label() {}
@@ -143,6 +154,7 @@ protected:
     uint8_t textSize;
 };
 
+// Label with an on/off dot
 class IndicatorLabel : public Label {
 public:
     IndicatorLabel() {}
@@ -154,6 +166,7 @@ protected:
     bool enabled = false;
 };
 
+// Generic button with a circle bounds
 class CircleButton : public Button {
 public:
     CircleButton() {}
@@ -165,6 +178,7 @@ protected:
     uint16_t cx, cy, r;
 };
 
+// ENGINE START
 class EngineStartButton : public CircleButton {
 public:
     EngineStartButton() {}
@@ -173,6 +187,7 @@ public:
     void draw();
 };
 
+// Home button
 class HomeButton : public CircleButton {
 public:
     HomeButton() {}
@@ -181,6 +196,7 @@ public:
     void draw();
 };
 
+// Back button
 class BackButton : public Button {
 public:
     BackButton() {}
@@ -189,6 +205,7 @@ public:
     void draw();
 };
 
+// Circle button with text
 class TextButton : public CircleButton {
 public:
     TextButton() {}
@@ -203,6 +220,7 @@ protected:
     uint16_t textWidth, textHeight;
 };
 
+// On/off checkbox
 class CheckBox : public Button {
 public:
     CheckBox() {}
@@ -211,6 +229,7 @@ public:
     void draw();
 };
 
+// On/off slide switch
 class Switch : public Button {
 public:
     Switch() {}
@@ -225,6 +244,7 @@ protected:
     char *offChar;
 };
 
+// Serial terminal
 class Terminal : public View, public Print {
 public:
     Terminal() {}

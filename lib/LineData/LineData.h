@@ -1,6 +1,7 @@
 #ifndef LINE_DATA_H
 #define LINE_DATA_H
 
+// Struct for line angle and size
 typedef struct LineData {
     double angle;
     double size;

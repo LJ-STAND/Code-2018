@@ -6,13 +6,18 @@
 #include <LightSensorArray.h>
 #include <Timer.h>
 
+// SPI object
 T3SPI spi;
 
+// Sensors
 TSOPArray tsops;
 LightSensorArray lightSensors;
 
-Timer ledTimer(LED_BLINK_TIME_SLAVE_SENSOR);
+// Update IR sensors for a certain amount of time before computing ball data
 Timer tsopTimer(833 * TSOP_TIMER_PERIOD_NUMBER);
+
+// Teensy LED
+Timer ledTimer(LED_BLINK_TIME_SLAVE_SENSOR);
 bool ledOn;
 
 void setup() {
@@ -34,6 +39,7 @@ void loop() {
     tsops.updateOnce();
 
     if (tsopTimer.timeHasPassed()) {
+        // Once a certain amount of time has passed, compute ball data and update light sensors
         tsops.finishRead();
 
         lightSensors.read();
@@ -50,8 +56,11 @@ void loop() {
 }
 
 void spi0_isr() {
+    // SPI ISR. receive data and check command
+
     uint16_t dataIn = SPI0_POPR;
 
+    // Split recieved data into command and data
     uint8_t command = (dataIn >> 10);
     uint16_t data = dataIn & 0x3FF;
 

@@ -47,6 +47,7 @@
         "hashtable": "cpp",
         "__string": "cpp",
         "future": "cpp",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "__locale": "cpp"
     }
 }

@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 
+// Timer class. Check if a certain time has elapsed
 class Timer {
 public:
     Timer(unsigned long duration);

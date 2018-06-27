@@ -18,6 +18,7 @@ enum AppDataType: int {
     lineSize
 };
 
+// Communication with iOS app
 class DebugController {
 public:
     DebugController() {}
@@ -29,12 +30,6 @@ public:
     void appSendHeading(int heading);
     void appSendLineAngle(int angle);
     void appSendLineSize(int size);
-    // void appSendCompass(double angle);
-    // void appSendTSOPs(double angle);
-    // void appSendOrbitAngle(double angle);
-    // void appSendString(String string);
-    // void appSendLightSensors(uint16_t first16Bit, uint16_t second16Bit);
-    // void appSendRobotPosition(double lineAngle, double lineSize);
 };
 
 #endif

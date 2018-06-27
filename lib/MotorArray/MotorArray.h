@@ -7,8 +7,10 @@
 #include <Motor.h>
 #include <Config.h>
 
+// Class for controlling the 4 motors in an omnidrive
 class MotorArray {
 public:
+    // Motor objects
     Motor motorRight;
     Motor motorLeft;
     Motor motorBackRight;
@@ -20,7 +22,5 @@ public:
     void update();
     void brake();
 };
-
-/* There is a 100% chance that Sam won't see this, because he is never actually contributes ~TFrasz #GreenWhiteBlackWhiteGreenWhiteBlack */
 
 #endif // MOTOR_ARRAY_H

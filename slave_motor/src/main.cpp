@@ -6,16 +6,19 @@
 #include <Slave.h>
 #include <Config.h>
 
+// Motor object
 MotorArray motors;
 
+// Movement data
 volatile int8_t speed;
 volatile uint16_t angle;
 volatile int8_t rotation;
 
+// SPI object
 T3SPI spi;
 
+// Teensy LED
 Timer ledTimer = Timer(LED_BLINK_TIME_SLAVE_MOTOR);
-
 bool ledOn;
 
 void setup() {
@@ -42,8 +45,11 @@ void loop() {
 }
 
 void spi0_isr() {
+    // SPI ISR. receive data and check command
+
     uint16_t dataIn = SPI0_POPR;
 
+    // Split recieved data into command and data
     uint8_t command = (dataIn >> 10);
     uint16_t data = dataIn & 0x3FF;
 

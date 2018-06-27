@@ -7,6 +7,7 @@
 #include <Timer.h>
 #include <BluetoothData.h>
 
+// Bluetooth class for using the HM-11
 class Bluetooth {
 public:
     void init();

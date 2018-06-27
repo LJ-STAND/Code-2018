@@ -7,12 +7,15 @@ void Slave::init(int csPin) {
 }
 
 void Slave::transaction(SlaveCommand command, uint16_t data, uint8_t numSend) {
+    // Combine the data and command into one 16 bit number. First 10 bits are data, last 6 are command
     dataOut[0] = (command << 10) | (data & 0x3FF);
 
+    // Send the data numSend times
     for (int i = 0; i < numSend; i++) {
         spi.txrx16(dataOut, dataIn, 1, CTAR_0, cs);
     }
 
+    // Recieve
     handleReceive((dataIn[0] >> 10), dataIn[0] & 0x3FF);
 }
 

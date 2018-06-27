@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <Common.h>
 
+// 2D Cartesian point
 class Point {
 public:
     Point() {
@@ -14,6 +15,7 @@ public:
     Point(double x, double y) : x(x), y(y) {}
 
     void setAngleMagnitude(double angle, double magnitude) {
+        // Convert polar (angle and magnitude) to cartesian (x and y). Note angle is a bearing (0-360 clockwise)
         double polarAngle = doubleMod(90 - angle, 360);
 
         x = magnitude * cos(degreesToRadians(polarAngle));
@@ -21,10 +23,12 @@ public:
     }
 
     double getAngle() {
+        // Calculate polar angle as a bearing (0-360 clockwise)
         return doubleMod(90 - radiansToDegrees(atan2(y, x)), 360);
     }
 
     double getMagnitude() {
+        // Calculate polar magnitude
         return sqrt(x * x + y * y);
     }
 

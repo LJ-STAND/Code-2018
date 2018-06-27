@@ -24,9 +24,13 @@ void MotorArray::update() {
 }
 
 void MotorArray::move(int angle, int rotation, int speed) {
+    // Compute each motor speed from an overall angle, rotation and speed
+
+    // Convert speed and rotation from percentage to RPM
     int speedRPM = min(speed * MAX_SPEED / 100.0, MAX_SPEED);
     int rotationRPM = constrain(rotation * MAX_SPEED / 100.0, -MAX_SPEED, MAX_SPEED);
 
+    // Compute each motor as a ratio based on angle
     double a = cos(degreesToRadians(angle)) * MOTOR_MULTIPLIER;
     double b = sin(degreesToRadians(angle)) * MOTOR_MULTIPLIER;
 
@@ -35,8 +39,11 @@ void MotorArray::move(int angle, int rotation, int speed) {
     double motorBackLeftValue = b - a;
     double motorLeftValue = -a - b;
 
+    // Multiply by speed
     double maxSpeed = doubleAbs(fmax(fmax(fmax(doubleAbs(motorLeftValue), doubleAbs(motorRightValue)), doubleAbs(motorBackRightValue)), doubleAbs(motorBackLeftValue)));
     double updatedSpeed = maxSpeed != 0 ? (double)speedRPM / maxSpeed : 0;
+
+    // Add rotation and ensure speeds are scaled to be less than max
 
     double motorRightSpeed = motorRightValue * updatedSpeed - rotationRPM;
     double motorLeftSpeed = motorLeftValue * updatedSpeed - rotationRPM;
@@ -60,6 +67,8 @@ void MotorArray::move(int angle, int rotation, int speed) {
 }
 
 void MotorArray::brake() {
+    // Stop all motors
+    
     motorRight.brake();
     motorLeft.brake();
     motorBackRight.brake();

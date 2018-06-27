@@ -1,10 +1,13 @@
 #include "Screen.h"
 
 void Screen::init() {
+    // Load settings from EEPROM
     settings.readEEPROM();
 
+    // Init the display controller
     TFT.begin();
 
+    // Fill the background colour
     TFT.setRotation(SCREEN_ROTATION);
     TFT.fillScreen(BACKGROUND_COLOR);
 
@@ -16,17 +19,21 @@ void Screen::init() {
     uint16_t width, height;
     int16_t tempX, tempY;
 
+    // Draw title text
     TFT.getTextBounds("LJ STAND", 0, 0, &tempX, &tempY, &width, &height);
 
     TFT.setCursor(TFT.width() / 2 - width / 2, TITLE_Y);
     TFT.print("LJ STAND");
 
+    // Battery meter setup
     TFT.drawRoundRect(TFT.width() - BATTERY_METER_RIGHT_X, BATTERY_METER_Y, BATTERY_METER_WIDTH, BATTERY_METER_HEIGHT, BATTERY_METER_ROUNDED_RADIUS, FOREGROUND_COLOR);
     TFT.fillRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_WIDTH, BATTERY_METER_Y + (BATTERY_METER_HEIGHT - BATTERY_METER_END_HEIGHT) / 2, BATTERY_METER_END_WIDTH - 1, BATTERY_METER_END_HEIGHT, FOREGROUND_COLOR);
     TFT.fillRoundRect(TFT.width() - BATTERY_METER_RIGHT_X + BATTERY_METER_WIDTH, BATTERY_METER_Y + (BATTERY_METER_HEIGHT - BATTERY_METER_END_HEIGHT) / 2, BATTERY_METER_END_WIDTH, BATTERY_METER_END_HEIGHT, BATTERY_METER_END_ROUNDED_RADIUS, FOREGROUND_COLOR);
 
+    // Horizontal line
     TFT.drawLine(0, LINE_Y, TFT.width(), LINE_Y, FOREGROUND_COLOR);
 
+    // Home and back buttons
     homeButton = HomeButton(HOME_BUTTON_X, HOME_BUTTON_Y);
     backButton = BackButton(BACK_BUTTON_X, BACK_BUTTON_Y);
 
@@ -117,26 +124,35 @@ void Screen::init() {
 }
 
 void Screen::clearAll() {
+    // Clear the whole screen
     TFT.fillScreen(BACKGROUND_COLOR);
 }
 
 void Screen::clear() {
+    // Only clear the screen from the horizontal line down (leave title bar)
     TFT.fillRect(0, LINE_Y + 1, TFT.width(), TFT.height() - LINE_Y, BACKGROUND_COLOR);
 }
 
 void Screen::checkTouch() {
+    // Compute touches
+
     TSPoint p = ts.getPoint();
 
+    // Check if the pressure is valid for a touch
     bool isTouching = p.z > MIN_PRESSURE && p.z < MAX_PRESSURE && p.x > TS_MINX && p.y < TS_MAXX && p.y > TS_MINY && p.y < TS_MAXY;
 
+    // If the screen is or was being pressed
     if (isTouching || lastIsTouching) {
+        // Convert point to x and y
         TSPoint touchPoint = p;
         touchPoint.x = map(p.y, TS_MAXY, TS_MINY, 0, TFT.width());
         touchPoint.y = map(p.x, TS_MINX, TS_MAXX, 0, TFT.height());
 
+        // Use current touch point, or last if the touch just ended
         TSPoint currentTouchPoint = isTouching ? touchPoint : lastTouchPoint;
         lastTouchPoint = touchPoint;
 
+        // If there is no popup message, check each button on the current screen
         if (!displayingMessage) {
             switch (screenType) {
             case ScreenType::mainScreenType:
@@ -258,6 +274,8 @@ void Screen::checkTouch() {
             }
         }
 
+        // If there is a popup, this method will only be called if the message is clearable, in which case check the home and back buttons
+
         if (homeButton.isTouched(currentTouchPoint.x, currentTouchPoint.y, isTouching)) {
             changeScreen(ScreenType::mainScreenType);
         }
@@ -275,7 +293,11 @@ void Screen::checkTouch() {
 }
 
 void Screen::update() {
+    // Update the screen
+
     if (!displayingMessage) {
+        // Update the UI elements on the current screen if there is no popup message
+
         switch (screenType) {
         case ScreenType::mainScreenType:
             if (settings.gameMode) {
@@ -414,6 +436,8 @@ void Screen::update() {
     }
 
     if (!displayingMessage || messageClearable) {
+        // If the message is clearble, update the home and back buttons
+
         homeButton.checkDraw();
         backButton.checkDraw();
 
@@ -429,6 +453,8 @@ void Screen::update() {
 }
 
 void Screen::redrawScreen() {
+    // Redraw the screen when changed. Redraw the relevant UI elements
+
     clear();
     displayingMessage = false;
 
@@ -546,6 +572,8 @@ void Screen::redrawScreen() {
 }
 
 void Screen::changeScreen(ScreenType newType) {
+    // Change the screen if the type is different
+
     if (screenType != newType) {
         lastScreenType = screenType;
         screenType = newType;
@@ -555,6 +583,8 @@ void Screen::changeScreen(ScreenType newType) {
 }
 
 void Screen::updateBatteryMeter() {
+    // Draw the battery meter
+
     batteryAverage.update(analogRead(BATTERY_VOLTAGE));
 
     double batteryVoltage = 0.0175 * batteryAverage.average() + 0.2586;
@@ -566,6 +596,8 @@ void Screen::updateBatteryMeter() {
 }
 
 void Screen::displayMessage(char *message, bool clearable) {
+    // Display a popup message
+
     messageClearable = clearable;
     displayingMessage = true;
 
@@ -586,12 +618,14 @@ void Screen::displayMessage(char *message, bool clearable) {
 }
 
 void Screen::clearMessage() {
+    // Clear the screen if there is a popup message
     if (displayingMessage) {
         redrawScreen();
     }
 }
 
 size_t Screen::write(uint8_t c) {
+    // Write function for print class. Pass onto terminal object if this is the terminal screen
     if (screenType == ScreenType::terminalDebugScreenType) {
         terminal.write(c);
     }
@@ -600,6 +634,8 @@ size_t Screen::write(uint8_t c) {
 }
 
 void Screen::setBluetoothConnected(bool connected) {
+    // Bluetooth icon and other debug data control based on current bluetooth state
+
     if (bluetoothConnected != connected) {
         bluetoothConnected = connected;
 
@@ -618,6 +654,8 @@ void Screen::setBluetoothConnected(bool connected) {
 }
 
 void Screen::drawBluetoothIcon(bool connected) {
+    // Draw bluetooth connection icon
+
     if (connected) {
         TFT.drawLine(BLUETOOTH_ICON_X, BLUETOOTH_ICON_Y + BLUETOOTH_ICON_HEIGHT / 4, BLUETOOTH_ICON_X + BLUETOOTH_ICON_WIDTH, BLUETOOTH_ICON_Y + 3 * BLUETOOTH_ICON_HEIGHT / 4, FOREGROUND_COLOR);
         TFT.drawLine(BLUETOOTH_ICON_X + BLUETOOTH_ICON_WIDTH, BLUETOOTH_ICON_Y + 3 * BLUETOOTH_ICON_HEIGHT / 4, BLUETOOTH_ICON_X + BLUETOOTH_ICON_WIDTH / 2, BLUETOOTH_ICON_Y + BLUETOOTH_ICON_HEIGHT, FOREGROUND_COLOR);

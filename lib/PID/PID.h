@@ -5,6 +5,7 @@
 
 class PID {
 public:
+    // PID constants
     double kp;
     double ki;
     double kd;
@@ -15,12 +16,12 @@ public:
     double update(double input, double setpoint, double modulus = 0.0);
 
 private:
-    unsigned long lastTime = micros();
+    unsigned long lastTime = micros(); // Time since last update. for I and D
 
-    double absMax;
+    double absMax; // Absolute maxmimum correction
 
     double integral = 0;
-    double lastError = 0;
+    double lastError = 0; // Last error
 };
 
 #endif

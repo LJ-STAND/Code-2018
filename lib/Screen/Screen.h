@@ -14,19 +14,21 @@
 #include <Point.h>
 #include <BluetoothData.h>
 
+// Enum for the type of screens
 enum ScreenType: uint8_t {
-    mainScreenType,
-    debugScreenType,
-    settingScreenType,
-    imuDebugScreenType,
-    motorsDebugScreenType,
-    ballDebugScreenType,
-    lightSensorsDebugScreenType,
-    cameraDebugScreenType,
-    ledDebugScreenType,
-    terminalDebugScreenType
+    mainScreenType, // Main screen
+    debugScreenType, // Debug
+    settingScreenType, // Settings
+    imuDebugScreenType, // IMU debug
+    motorsDebugScreenType, // Motors debug
+    ballDebugScreenType, // Ball debug
+    lightSensorsDebugScreenType, // Light sensors debug
+    cameraDebugScreenType, // Camera debug
+    ledDebugScreenType, // LED debug
+    terminalDebugScreenType // Terminal
 };
 
+// Touchscreen controller. Is a subclass of print to enable printing to the terminal
 class Screen : public Print {
 public:
     Screen() {}
@@ -50,8 +52,8 @@ public:
 
     size_t write(uint8_t c);
 
-    DebugSettings settings;
-    RGBType rgbType = RGBType::ballRGBType;
+    DebugSettings settings; // Settings
+    RGBType rgbType = RGBType::ballRGBType; // RGB data type
 
     // Debug Variables
 
@@ -69,21 +71,23 @@ public:
     BluetoothData otherRobotData = BluetoothData();
     
 private:
-    TouchScreen ts = TouchScreen(SCREEN_XP, SCREEN_YP, SCREEN_XM, SCREEN_YM, TS_RESISTANCE);
-    TSPoint lastTouchPoint;
-    bool lastIsTouching;
+    TouchScreen ts = TouchScreen(SCREEN_XP, SCREEN_YP, SCREEN_XM, SCREEN_YM, TS_RESISTANCE); // Resistive touch controller object
+    TSPoint lastTouchPoint; // Touch point
+    bool lastIsTouching; // If the screen was previously touched
 
-    bool displayingMessage = false;
-    bool messageClearable = false;
+    bool displayingMessage = false; // Showing a popup message
+    bool messageClearable = false; // If the popup message is clearable, for example by pressing the home button
 
-    bool bluetoothConnected = false;
+    bool bluetoothConnected = false; // Bluetooth connection for the icon
 
-    bool otherDebugData = false;
+    bool otherDebugData = false; // Showing the other robot's data on the debug screen
 
-    MovingAverage batteryAverage = MovingAverage(50);
+    MovingAverage batteryAverage = MovingAverage(50); // Average for smoothing the battery voltage
 
-    ScreenType screenType = ScreenType::mainScreenType;
-    ScreenType lastScreenType = ScreenType::mainScreenType;
+    ScreenType screenType = ScreenType::mainScreenType; // Type of screen being shown
+    ScreenType lastScreenType = ScreenType::mainScreenType; // Last shown screen for back button
+
+    // UI Elements //
 
     HomeButton homeButton;
     BackButton backButton;
@@ -173,8 +177,6 @@ private:
     // Terminal Debug Screen
 
     Terminal terminal;
-
-    Timer updateTextTimer = Timer(SCREEN_UPDATE_TEXT_TIME);
 };
 
 #endif // SCREEN_H

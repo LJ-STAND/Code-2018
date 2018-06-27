@@ -6,7 +6,7 @@ void DebugController::init() {
 }
 
 void DebugController::send(String data, AppDataType dataCode) {
-    // Serial.print("-" + String(dataCode) + ";" + data + "-");
+    // Send a value and prefix over UART / bluetooth
     Serial5.print("-" + String(dataCode) + ";" + data + "-");
 }
 

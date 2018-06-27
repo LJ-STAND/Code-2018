@@ -1,5 +1,4 @@
-/* Library of common functions and macros.
- */
+// Library of common functions and macros.
 
 #ifndef COMMON_H
 #define COMMON_H

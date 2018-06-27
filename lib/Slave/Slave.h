@@ -11,6 +11,7 @@
 #include <Point.h>
 #include <BluetoothData.h>
 
+// Enum of commands for sending and recieving data with slaves
 enum SlaveCommand : uint8_t {
     motorAngleCommand,
     motorRotationCommand,
@@ -51,19 +52,22 @@ enum SlaveCommand : uint8_t {
     bluetoothDataRobotPositionYCommand
 };
 
+// Generic slave object
 class Slave {
 public:
     void init(int csPin);
     void transaction(SlaveCommand command, uint16_t data = 0, uint8_t numSend = 2);
 
 private:
+    // On recieving data, the respective slave object will set one of its variables based on the command recieved
     virtual void handleReceive(uint8_t command, uint16_t data);
 
-    volatile uint16_t dataIn[1];
-    volatile uint16_t dataOut[1];
-    int cs;
+    volatile uint16_t dataIn[1]; // Buffer for data to be sent
+    volatile uint16_t dataOut[1]; // Buffer for data recieved
+    int cs; // SPI chip select pin
 };
 
+// Motor Teensy slave
 class SlaveMotor: public Slave {
 public:
     void init();
@@ -84,6 +88,7 @@ public:
     int backRightRPM;
 };
 
+// Sensor Teensy slave
 class SlaveSensor: public Slave {
 public:
     void init();
@@ -106,6 +111,7 @@ public:
     uint16_t lsFirst, lsSecond, lsThird, lsFourth;
 };
 
+// Debug Teensy slave
 class SlaveDebug: public Slave, public Print {
 public:
     void init();

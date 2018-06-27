@@ -1,9 +1,6 @@
-/* Library for interfacing with TSOP array
- */
 #include "TSOPArray.h"
 
 void TSOPArray::init() {
-    // Set the correct pinmodes for all the TSOP pins
     pinMode(TSOP_PWR_1, OUTPUT);
     pinMode(TSOP_PWR_2, OUTPUT);
     pinMode(TSOP_PWR_3, OUTPUT);
@@ -37,7 +34,7 @@ void TSOPArray::init() {
 }
 
 void TSOPArray::updateOnce() {
-    // Read each TSOP once
+    // Read each sensor once
     tempValues[0] += digitalReadFast(TSOP_0) ^ 1;
     tempValues[1] += digitalReadFast(TSOP_1) ^ 1;
     tempValues[2] += digitalReadFast(TSOP_2) ^ 1;
@@ -67,8 +64,9 @@ void TSOPArray::updateOnce() {
 }
 
 void TSOPArray::finishRead() {
-    // Complete a reading of the TSOPs after a certain amount of individual readings, TSOP values are now stored in the values array until the next complete read
+    // Complete a reading of the sensors after a certain amount of individual readings, sensor values are now stored in the values array until the next complete read
     for (uint8_t i = 0; i < TSOP_NUM; i++) {
+        // 
         values[i] = 100 * (double)tempValues[i] / (double)tsopCounter;
         tempValues[i] = 0;
         sortedValues[i] = 0;
@@ -91,9 +89,9 @@ void TSOPArray::finishRead() {
 }
 
 void TSOPArray::sortValues() {
-    /* Sort the TSOP values from greatest to least in sortedFilteredValues
-     * and sort the TSOP indexes from greatest to least strength in indexes
-     */
+    // Sort the TSOP values from greatest to least in sortedFilteredValues
+    // and sort the TSOP indexes from greatest to least strength in indexes
+    
     for (uint8_t i = 0; i < TSOP_NUM; i++) {
         for (uint8_t j = 0; j < TSOP_NUM; j++) {
             if (values[i] > sortedValues[j]) {

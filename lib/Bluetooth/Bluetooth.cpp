@@ -1,10 +1,13 @@
 #include "Bluetooth.h"
 
 void Bluetooth::init() {
+    // Begin UART
     Serial5.begin(BLUETOOTH_BAUD);    
 }
 
 void Bluetooth::update(BluetoothData data) {
+    // Send and recieve
+
     thisData = data;
     
     send();
@@ -12,6 +15,8 @@ void Bluetooth::update(BluetoothData data) {
 }
 
 void Bluetooth::send() {
+    // Sends a start of packet byte (10000000) and then all other data split into 7 bit sections
+
     Serial5.write(BLUETOOTH_START_BYTE);
 
     Serial5.write((thisData.ballData.angle >> 7) & 0x7F);
@@ -37,15 +42,19 @@ void Bluetooth::send() {
 }
 
 void Bluetooth::recieve() {
+    // Receives the data from the other robot
+
     bool nothingRecieved = true;
 
+    // Loops while the amount of data is >= the packet size
     while (Serial5.available() >= BLUETOOTH_PACKET_SIZE) {
         uint8_t first = Serial5.read();
 
+        // Makes sure the first byte is the start of packet indicator, otherwise keeps looping
         if (first == BLUETOOTH_START_BYTE) {
-
             uint8_t dataBuffer[BLUETOOTH_PACKET_SIZE - 1];
 
+            // Put all the data into an array
             for (int i = 0; i < BLUETOOTH_PACKET_SIZE - 1; i++) {
                 dataBuffer[i] = Serial5.read();
             }
@@ -62,6 +71,7 @@ void Bluetooth::recieve() {
         }
     }
 
+    // Update the connected timer
     isConnected = !nothingRecieved || !connectedTimer.timeHasPassedNoUpdate();
 
     if (isConnected) {

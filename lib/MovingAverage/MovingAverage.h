@@ -3,6 +3,7 @@
 
 #include <Common.h>
 
+// Moving average class
 class MovingAverage {
 public:
     MovingAverage(int number) {

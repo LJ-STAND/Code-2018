@@ -7,6 +7,7 @@
 #include <Config.h>
 #include <EEPROM.h>
 
+// Array of light sensors
 class LightSensorArray {
 public:
     LightSensorArray() {}
@@ -27,23 +28,23 @@ public:
     double getLineAngle();
     double getLineSize();
 
-    bool data[LS_NUM];
-    bool filledInData[LS_NUM];
+    bool data[LS_NUM]; // Array of if sensors see white or not
+    bool filledInData[LS_NUM]; // Data after sensors are filled in (if an off sensor has two adjacent on sensors, it will be turned on)
 
-    uint16_t thresholds[LS_NUM];
+    uint16_t thresholds[LS_NUM]; // Thresholds for each sensor. A sensor is on if reading > threshold
 
-    int starts[4];
-    int ends[4];
+    int starts[4]; // Array of cluster start indexes
+    int ends[4]; // Array of cluster end indexes
 
-    int numClusters = 0;
+    int numClusters = 0; // Number of clusters found
 
 private:
     void resetClusters();
 
-    uint8_t muxChannels[32] = {12, 11, 10, 9, 13, 14, 15, 16, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 1, 2, 3, 4, 5, 6, 7, 8};
+    uint8_t muxChannels[32] = {12, 11, 10, 9, 13, 14, 15, 16, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 1, 2, 3, 4, 5, 6, 7, 8}; // Multiplexer channels for each sensor (5-36)
 
-    double angle;
-    double size;
+    double angle; // Line angle
+    double size; // Line size
 };
 
 #endif // LIGHT_SENSOR_ARRAY_H

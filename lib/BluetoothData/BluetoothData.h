@@ -6,13 +6,14 @@
 #include <Point.h>
 #include <PlayMode.h>
 
+// Struct to hold all the variables sent over Bluetooth
 typedef struct BluetoothData {
-    BallData ballData;
-    uint16_t heading;
-    bool ballIsOut;
-    PlayMode playMode;
-    bool isOnField;
-    Point robotPosition;
+    BallData ballData; // Ball info
+    uint16_t heading; // Robot heading
+    bool ballIsOut; // Ball is out
+    PlayMode playMode; // Play mode
+    bool isOnField; // Robot is on the field
+    Point robotPosition; // Position of the robot
 
     BluetoothData() {
         ballData = BallData();
