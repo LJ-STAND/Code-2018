@@ -44,13 +44,11 @@ int attackingGoalAngle = 0;
 int defendingGoalAngle = 0;
 
 bool facingGoal = false;
-bool attackingGoal = false;
 
 Timer ledTimer(LED_BLINK_TIME_MASTER);
 Timer slaveDebugUpdateTimer(SLAVE_DEBUG_UPDATE_TIME);
 
 PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
-PID goalHeadingPID(GOAL_HEADING_KP, GOAL_HEADING_KI, GOAL_HEADING_KD, GOAL_HEADING_MAX_CORRECTION);
 PID goalHeadingAttackPID(GOAL_HEADING_ATTACK_KP, GOAL_HEADING_ATTACK_KI, GOAL_HEADING_ATTACK_KD, GOAL_HEADING_ATTACK_MAX_CORRECTION);
 PID coordinatePID(MOVE_TO_COORDINATE_KP, MOVE_TO_COORDINATE_KI, MOVE_TO_COORDINATE_KD, MOVE_TO_COORDINATE_MAX_SPEED);
 PID defendPID(DEFEND_BALL_ANGLE_KP, DEFEND_BALL_ANGLE_KI, DEFEND_BALL_ANGLE_KD, MAX_DEFEND_MOVEMENT_X);
@@ -144,14 +142,8 @@ void calculateLineAvoid() {
             moveData.angle = mod(lineData.angle + 180 - imu.getHeading(), 360);
             moveData.speed = lineData.size == 3 ? OVER_LINE_SPEED : min(lineData.size / 2.0 * LINE_SPEED * 5, LINE_SPEED);
         } else if ((lineData.size > LINE_SMALL_SIZE) && isOutsideLine(moveData.angle)) {
-            // Sliding along line
-            // if (smallestAngleBetween(lineData.angle, moveData.angle) < LINE_SLIDE_ANGLE_BUFFER) {
-            //     // moveData.angle = ;
-            //     // moveData.speed = LINE_SLIDE_SPEED;
-            // } else {
-                moveData.angle = 0;
-                moveData.speed = 0;
-            // }          
+            moveData.angle = 0;
+            moveData.speed = 0;
         }
     }
 }
@@ -194,10 +186,8 @@ bool moveToCoordinate(Point point) {
 void goalTracking() {
     if (attackingGoalVisible() && GOAL_TRACKING) {
         facingDirection = ALWAYS_FACE_GOAL ? attackingGoalAngle : mod((double)(mod(attackingGoalAngle + 180, 360) - 180) * constrain(0.00000005 * ballData.strengthFactor() * pow(MATH_E, 20 * ballData.strengthFactor()), 0, 1), 360);
-        attackingGoal = true;
         facingGoal = true;
     } else {
-        attackingGoal = false;
         facingGoal = false;
     }
 }
@@ -221,19 +211,19 @@ void updateCamera() {
     }
 }
 
-// void avoidDoubleDefence() {
-//     if (bluetooth.isConnected) {
-//         int moveAngle = moveData.angle;
-//         int moveSpeed = moveData.speed;
+void avoidDoubleDefence() {
+    if (bluetooth.isConnected) {
+        int moveAngle = moveData.angle;
+        int moveSpeed = moveData.speed;
 
-//         if (angleIsInside(90, 270, moveAngle) && bluetooth.otherData.robotPosition.y < DOUBLE_DEFENCE_MIN_Y) {
-//             if (robotPosition.y < DOUBLE_DEFENCE_MIN_Y && moveToCoordinate(Point(robotPosition.x, DOUBLE_DEFENCE_MIN_Y))) {
-//                 moveData.speed = moveSpeed;
-//                 moveData.angle = smallestAngleBetween(180, moveAngle) * -sign(moveAngle - 180);
-//             }
-//         }  
-//     }
-// }
+        if (angleIsInside(90, 270, moveAngle) && bluetooth.otherData.robotPosition.y < DOUBLE_DEFENCE_MIN_Y) {
+            if (robotPosition.y < DOUBLE_DEFENCE_MIN_Y && moveToCoordinate(Point(robotPosition.x, DOUBLE_DEFENCE_MIN_Y))) {
+                moveData.speed = moveSpeed;
+                moveData.angle = smallestAngleBetween(180, moveAngle) * -sign(moveAngle - 180);
+            }
+        }  
+    }
+}
 
 void attack() {
     if (movingSideways) {
@@ -281,9 +271,6 @@ void defend() {
                 double xDifference = defendPID.update(smallestAngleBetween(ballAngle, 0) * -sign(ballAngle - 180), 0);
 
                 moveByDifference(Point(abs(robotPosition.x) > MAX_DEFEND_X && sign(xDifference) == sign(robotPosition.x) ? MAX_DEFEND_X * sign(robotPosition.x) - robotPosition.x : xDifference, goalPosition.y + DEFEND_GOAL_DISTANCE - robotPosition.y));
-                
-                // facingDirection = mod(defendingGoalAngle + 180, 360);
-                // facingGoal = true;
             }
         } else {
             moveToCoordinate(Point(0, goalPosition.y + DEFEND_GOAL_DISTANCE));
@@ -299,7 +286,6 @@ void defend() {
         }
     }
 
-    attackingGoal = false;
     facingGoal = false;
 }
 
@@ -313,11 +299,7 @@ void calculateMovement() {
     calculateLineAvoid();
 
     if (facingGoal) {
-        if (attackingGoal) {
-            moveData.rotation = (int8_t)round(goalHeadingAttackPID.update(doubleMod(doubleMod(imu.getHeading() - facingDirection, 360) + 180, 360) - 180, 0));
-        } else {
-            moveData.rotation = (int8_t)round(goalHeadingPID.update(doubleMod(doubleMod(imu.getHeading() - facingDirection, 360) + 180, 360) - 180, 0));
-        }
+        moveData.rotation = (int8_t)round(goalHeadingAttackPID.update(doubleMod(doubleMod(imu.getHeading() - facingDirection, 360) + 180, 360) - 180, 0));
     } else {
         moveData.rotation = (int8_t)round(headingPID.update(doubleMod(imu.getHeading() + 180, 360) - 180, 0));
     }
