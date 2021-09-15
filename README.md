@@ -3,7 +3,7 @@
 Code for team LJ STAND's 2018 robots.
 
 LJ STAND competed in the Lightweight Soccer division of the RoboCup Junior 2018 championships in Montreal, Canada.
-We successfully achieved first place. Videos of our competition can be found at https://www.youtube.com/watch?v=TCXnbb6RAY0&list=PLo6mctJCslLm9HMXaA4l_UsdaM2-xzUFP
+We successfully achieved first place. Videos of our competition can be found on [YouTube](https://www.youtube.com/watch?v=TCXnbb6RAY0&list=PLo6mctJCslLm9HMXaA4l_UsdaM2-xzUFP).
 
 This is our robot firmware, built for our custom robot platform. It made use of 4 Teensy 3.5s, along with an OpenMV camera for image processing.
 
